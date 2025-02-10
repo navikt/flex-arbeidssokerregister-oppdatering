@@ -1,0 +1,17 @@
+name: workflow
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  felles-workflow:
+    uses: navikt/flex-github-actions-workflows/.github/workflows/spring-boot.yml@main
+    permissions:
+      packages: read
+      contents: read
+      actions: read
+      id-token: write
+      security-events: write
+    with:
+      app: ${{ github.event.repository.name }}
+    secrets: inherit
