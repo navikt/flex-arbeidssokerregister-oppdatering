@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
-class DevelopmentController() {
+class DevelopmentController {
     @GetMapping("/api/v1/development", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
-    fun developmentResponse(): DevelopmentResponse {
-        return DevelopmentResponse("Response.")
-    }
+    fun developmentResponse(): DevelopmentResponse = DevelopmentResponse("Response.")
 }
 
-data class DevelopmentResponse(val message: String)
+data class DevelopmentResponse(
+    val message: String,
+)
