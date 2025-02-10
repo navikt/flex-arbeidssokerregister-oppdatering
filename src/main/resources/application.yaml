@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  profiles.active: remote
+  main.banner-mode: 'off'
+  flyway:
+    enabled: true
+    lockRetryCount: -1
+  datasource:
+    url: "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}?reWriteBatchedInserts=true"
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+
+management:
+  endpoint:
+    health.probes.enabled: true
+    prometheus:
+      access: read_only
+  endpoints.web:
+    base-path: "/internal"
+    exposure.include: health, prometheus
+  health:
+    livenessstate.enabled: true
+    readinessState.enabled: true
+  prometheus:
+    metrics.export.enabled: true
+
+logging.config: "classpath:logback.xml"
