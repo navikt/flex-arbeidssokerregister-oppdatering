@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 
-class TestDataResetConsumerIntegrationTest : FellesTestOppsett() {
+class TestdataResetConsumerTest : FellesTestOppsett() {
     @Autowired
     lateinit var kafkaProducer: Producer<String, String>
 

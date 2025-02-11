@@ -15,12 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.*
 
-class SykepengesoknadConsumerIntegrationTest : FellesTestOppsett() {
+class SykepengesoknadConsumerTest : FellesTestOppsett() {
     @Autowired
-    lateinit var kafkaProducer: Producer<String, String>
+    private lateinit var kafkaProducer: Producer<String, String>
 
     @Autowired
-    lateinit var sykepengesoknadTestConsumer: Consumer<String, String>
+    private lateinit var sykepengesoknadTestConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
