@@ -1,0 +1,38 @@
+name: "Deploy topic"
+on:
+  push:
+    paths:
+      - nais/topics/**
+      - .github/workflows/topic.yml
+jobs:
+  deploy-topic-to-dev:
+    if: github.ref_name == 'main' || startsWith(github.ref_name, 'dev-')
+    name: Deploy topics to dev-gcp
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+      - name: Deploy topic arbeidssokerregister-stopp-topic to dev-gcp
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: nais/topics/arbeidssokerregister-stopp-topic.yaml
+          VARS: nais/topics/dev.json
+
+  deploy-topic-to-prod:
+    if: github.ref_name == 'main'
+    name: Deploy topics to prod-gcp
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+      - name: Deploy topic arbeidssokerregister-stopp-topic to prod-gcp
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: nais/topics/arbeidssokerregister-stopp-topic.yaml
+          VARS: nais/topics/prod.json

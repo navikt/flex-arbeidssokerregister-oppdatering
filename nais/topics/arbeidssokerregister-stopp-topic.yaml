@@ -1,0 +1,26 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: arbeidssokerregister-stopp-topic
+  namespace: flex
+  labels:
+    team: flex
+  annotations:
+    dcat.data.nav.no/title: "flex.arbeidssokerregister-stopp-topic"
+    dcat.data.nav.no/description: "Topic for publisering av Stopp-meldinger ved avmelding som arbeidssøker."
+spec:
+  pool: {{kafkaPool}}
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 2
+    replication: 2
+    partitions: 1
+    retentionBytes: -1  # Messages will never be deleted because of disk space.
+    retentionHours: -1  # Messages will never be timed out.
+  acl:
+    - team: flex
+      application: flex-arbeidssokerregister-oppdatering
+      access: write
+    - team: flex
+      application: sykepengesoknad-backend
+      access: read
