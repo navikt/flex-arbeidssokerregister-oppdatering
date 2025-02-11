@@ -8,12 +8,13 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("testdata")
+@Profile("test", "testdatareset")
 class TestDataResetConsumer {
     private val log = logger()
 
     @KafkaListener(
         topics = [TESTDATA_RESET_TOPIC],
+        id = "flex-arbeidssokerregister-oppdatering",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset = latest"],
     )
