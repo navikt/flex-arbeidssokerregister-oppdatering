@@ -23,10 +23,20 @@ class TestKafkaConfig(
         )
 
     @Bean
-    fun testConsumer(): Consumer<String, String> =
+    fun testdataResetTestConsumer(): Consumer<String, String> =
         DefaultKafkaConsumerFactory(
             mapOf(
-                ConsumerConfig.GROUP_ID_CONFIG to "test-consumer",
+                ConsumerConfig.GROUP_ID_CONFIG to "testdatareset-consumer",
+            ) + consumerConfig + kafkaConfig.brokerConfig,
+            StringDeserializer(),
+            StringDeserializer(),
+        ).createConsumer()
+
+    @Bean
+    fun sykepengesoknadTestConsumer(): Consumer<String, String> =
+        DefaultKafkaConsumerFactory(
+            mapOf(
+                ConsumerConfig.GROUP_ID_CONFIG to "sykepengesoknad-consumer",
             ) + consumerConfig + kafkaConfig.brokerConfig,
             StringDeserializer(),
             StringDeserializer(),

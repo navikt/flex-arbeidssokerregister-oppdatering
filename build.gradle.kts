@@ -24,6 +24,7 @@ repositories {
 val testContainersVersion = "1.20.4"
 val logstashLogbackEncoderVersion = "8.0"
 val kluentVersion = "1.73"
+val sykepengesoknadKafkaVersion = "2025.02.07-14.12-e9fa8e2c"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -36,6 +37,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
+    implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
 
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainersVersion"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
