@@ -14,7 +14,7 @@ class TestDataResetConsumer {
 
     @KafkaListener(
         topics = [TESTDATA_RESET_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering",
+        id = "flex-arbeidssokerregister-oppdatering-testdatareset",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset = latest"],
     )

@@ -10,24 +10,24 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 
-class TestDataResetConsumerTest : FellesTestOppsett() {
+class TestDataResetConsumerIntegrationTest : FellesTestOppsett() {
     @Autowired
-    lateinit var testProducer: Producer<String, String>
+    lateinit var kafkaProducer: Producer<String, String>
 
     @Autowired
-    lateinit var testConsumer: Consumer<String, String>
+    lateinit var testdataResetTestConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
-        testConsumer.subscribeToTopics(TESTDATA_RESET_TOPIC)
+        testdataResetTestConsumer.subscribeToTopics(TESTDATA_RESET_TOPIC)
     }
 
     @Test
-    fun `Melding om reset av testdata blir mottatt`() {
+    fun `Mottat melding om testdata reset`() {
         val key = UUID.randomUUID().toString()
         val fnr = "11111111111"
 
-        testProducer
+        kafkaProducer
             .send(
                 ProducerRecord(
                     TESTDATA_RESET_TOPIC,
@@ -36,7 +36,7 @@ class TestDataResetConsumerTest : FellesTestOppsett() {
                 ),
             ).get()
 
-        testConsumer.waitForRecords(1).also {
+        testdataResetTestConsumer.waitForRecords(1).also {
             it.first().key() `should be equal to` key
             it.first().value() `should be equal to` fnr
         }
