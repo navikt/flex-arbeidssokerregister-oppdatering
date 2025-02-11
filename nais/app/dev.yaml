@@ -5,3 +5,5 @@ db_type: POSTGRES_16
 kafkaPool: nav-dev
 cpu: 100m
 memory: 500Mi
+env:
+  SPRING_PROFILES_ACTIVE: default,testdatareset

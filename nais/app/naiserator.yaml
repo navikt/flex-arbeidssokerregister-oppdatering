@@ -52,3 +52,8 @@ spec:
         maintenance:
           day: 2
           hour: 2
+  env:
+  {{#each env}}
+     - name: {{@key}}
+       value: "{{this}}"
+  {{/each}}
