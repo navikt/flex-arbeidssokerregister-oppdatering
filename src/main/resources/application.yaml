@@ -1,12 +1,13 @@
 server:
   port: 8080
+  shutdown: graceful
 
 spring:
-  profiles.active: remote
   main.banner-mode: 'off'
+  profiles:
+    active: default
   flyway:
     enabled: true
-    lockRetryCount: -1
   datasource:
     url: "${DB_JDBC_URL}&reWriteBatchedInserts=true"
     hikari:
@@ -28,3 +29,7 @@ management:
     metrics.export.enabled: true
 
 logging.config: "classpath:logback.xml"
+
+aiven-kafka:
+  auto-offset-reset: none
+  security-protocol: SSL
