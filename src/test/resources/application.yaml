@@ -4,7 +4,7 @@ server:
 spring:
   main.banner-mode: 'off'
   profiles:
-    active: default
+    active: test
   flyway:
     enabled: true
   datasource:
@@ -13,7 +13,7 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       minimum-idle: 1
-      maximum-pool-size: 3
+      maximum-pool-size: 5
 
 management:
   endpoint:
@@ -30,3 +30,11 @@ management:
     metrics.export.enabled: true
 
 logging.config: "classpath:logback-test.xml"
+
+aiven-kafka:
+  auto-offset-reset: earliest
+  security-protocol: PLAINTEXT
+
+KAFKA_TRUSTSTORE_PATH: /
+KAFKA_CREDSTORE_PASSWORD: /
+KAFKA_KEYSTORE_PATH: /
