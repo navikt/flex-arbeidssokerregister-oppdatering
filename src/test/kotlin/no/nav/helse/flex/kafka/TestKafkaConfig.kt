@@ -23,24 +23,13 @@ class TestKafkaConfig(
         )
 
     @Bean
-    fun testdataResetTestConsumer(): Consumer<String, String> =
-        DefaultKafkaConsumerFactory(
-            mapOf(
-                ConsumerConfig.GROUP_ID_CONFIG to "testdatareset-consumer",
-            ) + consumerConfig + kafkaConfig.brokerConfig,
-            StringDeserializer(),
-            StringDeserializer(),
-        ).createConsumer()
+    fun testdataResetTestConsumer(): Consumer<String, String> = lagConsumer("testdatareset-consumer")
 
     @Bean
-    fun sykepengesoknadTestConsumer(): Consumer<String, String> =
-        DefaultKafkaConsumerFactory(
-            mapOf(
-                ConsumerConfig.GROUP_ID_CONFIG to "sykepengesoknad-consumer",
-            ) + consumerConfig + kafkaConfig.brokerConfig,
-            StringDeserializer(),
-            StringDeserializer(),
-        ).createConsumer()
+    fun sykepengesoknadTestConsumer(): Consumer<String, String> = lagConsumer("sykepengesoknad-consumer")
+
+    @Bean
+    fun arbeidssokerRegisterStoppTestConsumer(): Consumer<String, String> = lagConsumer("arbeidssokerstopp-consumer")
 
     @Bean
     fun testProducer(): Producer<String, String> =
@@ -53,4 +42,13 @@ class TestKafkaConfig(
             StringSerializer(),
             StringSerializer(),
         ).createProducer()
+
+    private fun lagConsumer(groupId: String): Consumer<String, String> =
+        DefaultKafkaConsumerFactory(
+            mapOf(
+                ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ) + consumerConfig + kafkaConfig.brokerConfig,
+            StringDeserializer(),
+            StringDeserializer(),
+        ).createConsumer()
 }
