@@ -57,7 +57,7 @@ class TestKafkaConfig(
     fun sykepengesoknadTestConsumer(): Consumer<String, String> = lagConsumer("sykepengesoknad-consumer")
 
     @Bean
-    fun arbeidssokerRegisterStoppTestConsumer(): Consumer<String, String> = lagConsumer("arbeidssokerstopp-consumer")
+    fun arbeidssokerregisterStoppTestConsumer(): Consumer<String, String> = lagConsumer("arbeidssokerregisterstopp-consumer")
 
     @Bean
     fun testProducer(): Producer<String, String> =

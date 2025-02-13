@@ -9,27 +9,27 @@ import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
-class ArbeidssokerRegisterStoppProducer(
+class ArbeidssokerregisterStoppProducer(
     private val kafkaProducer: Producer<String, String>,
 ) {
-    fun send(arbeidssokerRegisterStopp: ArbeidssokerRegisterStopp) {
+    fun send(stoppMelding: ArbeidssokerregisterStoppMelding) {
         kafkaProducer.send(
             ProducerRecord(
                 ARBEIDSSOKERREGISTER_STOPP_TOPIC,
-                arbeidssokerRegisterStopp.fnr.asProducerRecordKey(),
-                arbeidssokerRegisterStopp.serialisertTilString(),
+                stoppMelding.fnr.asProducerRecordKey(),
+                stoppMelding.serialisertTilString(),
             ),
         )
     }
 }
 
-data class ArbeidssokerRegisterStopp(
+data class ArbeidssokerregisterStoppMelding(
     val id: String,
     val fnr: String,
 )
 
 internal fun String.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(this.toByteArray()).toString()
 
-internal fun String.tilArbeidssokerRegisterStopp(): ArbeidssokerRegisterStopp = objectMapper.readValue(this)
+internal fun String.tilArbeidssokerregisterStoppMelding(): ArbeidssokerregisterStoppMelding = objectMapper.readValue(this)
 
 const val ARBEIDSSOKERREGISTER_STOPP_TOPIC = "flex.arbeidssokerregister-stopp-topic"

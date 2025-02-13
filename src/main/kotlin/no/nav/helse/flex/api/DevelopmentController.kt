@@ -1,7 +1,7 @@
 package no.nav.helse.flex.api
 
-import no.nav.helse.flex.arbeidssoker.ArbeidssokerRegisterStopp
-import no.nav.helse.flex.arbeidssoker.ArbeidssokerRegisterStoppProducer
+import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppMelding
+import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppProducer
 import no.nav.helse.flex.paw.KafkaKeyGeneratorClient
 import no.nav.helse.flex.paw.KafkaKeyGeneratorRequest
 import no.nav.security.token.support.core.api.Unprotected
@@ -19,18 +19,18 @@ import java.util.*
 @Controller
 @RequestMapping("/api/v1")
 class DevelopmentController(
-    private val arbeidssokerRegisterStoppProducer: ArbeidssokerRegisterStoppProducer,
+    private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
 ) {
-    @PostMapping("/stopp")
+    @PostMapping("/arbeidssokerregister-stopp-melding")
     @ResponseBody
-    fun sendtStopp(fnr: String): DevelopmentResponse {
+    fun sendArbeidssokerregisterStoppMelding(fnr: String): DevelopmentResponse {
         val id = UUID.randomUUID().toString()
-        arbeidssokerRegisterStoppProducer.send(ArbeidssokerRegisterStopp(id = id, fnr = fnr))
+        arbeidssokerregisterStoppProducer.send(ArbeidssokerregisterStoppMelding(id = id, fnr = fnr))
         return DevelopmentResponse("id=$id")
     }
 
-    @GetMapping("/key/{fnr}")
+    @GetMapping("/kafka-key/{fnr}")
     @ResponseBody
     fun hentKafkaKey(
         @PathVariable fnr: String,
