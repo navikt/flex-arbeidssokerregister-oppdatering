@@ -21,6 +21,9 @@ repositories {
     }
 }
 
+ext["okhttp3"] = "4.12" // Token-support tester trenger MockWebServer.
+
+val tokenSupportVersion = "5.0.16"
 val testContainersVersion = "1.20.4"
 val logstashLogbackEncoderVersion = "8.0"
 val kluentVersion = "1.73"
@@ -35,7 +38,11 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.hibernate.validator:hibernate-validator")
+    implementation("org.apache.httpcomponents.client5:httpclient5")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
+    implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
     implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
 
@@ -45,6 +52,7 @@ dependencies {
     testImplementation("org.testcontainers:kafka")
     testImplementation("org.awaitility:awaitility")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+    testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
 }
 
 ktlint {

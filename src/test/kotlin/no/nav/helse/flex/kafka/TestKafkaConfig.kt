@@ -1,5 +1,9 @@
 package no.nav.helse.flex.kafka
 
+import no.nav.helse.flex.arbeidssoker.ARBEIDSSOKERREGISTER_STOPP_TOPIC
+import no.nav.helse.flex.sykepengesoknad.SYKEPENGESOKNAD_TOPIC
+import no.nav.helse.flex.testdata.TESTDATA_RESET_TOPIC
+import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.Producer
@@ -8,8 +12,10 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaAdmin
 
 @Configuration
 class TestKafkaConfig(
@@ -21,6 +27,28 @@ class TestKafkaConfig(
             ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
         )
+
+    @Bean
+    fun createKafkaAdmin(): KafkaAdmin = KafkaAdmin(kafkaConfig.brokerConfig)
+
+    // Fjerner feilmelding UNKNOWN_TOPIC_OR_PARTITION når tester som lytter på Kafka starter før Testcontainers.
+    @Bean
+    fun lagSykepengesoknadTopic(): NewTopic =
+        TopicBuilder
+            .name(SYKEPENGESOKNAD_TOPIC)
+            .build()
+
+    @Bean
+    fun lagTestDataResetTopic(): NewTopic =
+        TopicBuilder
+            .name(TESTDATA_RESET_TOPIC)
+            .build()
+
+    @Bean
+    fun lagArbeidssokerregisterStoppTopic(): NewTopic =
+        TopicBuilder
+            .name(ARBEIDSSOKERREGISTER_STOPP_TOPIC)
+            .build()
 
     @Bean
     fun testdataResetTestConsumer(): Consumer<String, String> = lagConsumer("testdatareset-consumer")
