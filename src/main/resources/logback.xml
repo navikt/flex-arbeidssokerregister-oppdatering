@@ -4,8 +4,11 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="Logstash"/>
     </root>
 
-</configuration>
+    <logger name="no.nav.helse.flex" level="INFO"/>
+    <logger name="org.springframework" level="INFO"/>
+
+@</configuration>
