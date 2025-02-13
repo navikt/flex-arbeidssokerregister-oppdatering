@@ -22,6 +22,10 @@ spec:
     initialDelay: 60
   kafka:
     pool: {{kafkaPool}}
+  azure:
+    application:
+      enabled: true
+      tenant: {{azureTenant}}
   prometheus:
     enabled: true
     path: /internal/prometheus
@@ -52,6 +56,11 @@ spec:
         maintenance:
           day: 2
           hour: 2
+  accessPolicy:
+    outbound:
+      rules:
+        - application: paw-kafka-key-generator
+          namespace: paw
   env:
   {{#each env}}
      - name: {{@key}}

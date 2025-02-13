@@ -3,7 +3,10 @@ db_highAvailability: false
 db_pointInTimeRecovery: false
 db_type: POSTGRES_16
 kafkaPool: nav-dev
+azureTenant: trygdeetaten.no
 cpu: 100m
 memory: 500Mi
 env:
   SPRING_PROFILES_ACTIVE: default,testdatareset
+  KAFKA_KEY_GENERATOR_AAD_CLIENT_ID: dev-gcp.paw.paw-kafka-key-generator
+  KAFKA_KEY_GENERATOR_URL: http://paw-kafka-key-generator.paw

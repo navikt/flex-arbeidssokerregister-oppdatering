@@ -38,3 +38,20 @@ aiven-kafka:
 KAFKA_TRUSTSTORE_PATH: /
 KAFKA_CREDSTORE_PASSWORD: /
 KAFKA_KEYSTORE_PATH: /
+
+no.nav.security.jwt:
+  issuer:
+    azureator:
+      discoveryurl: http://localhost:${mock-oauth2-server.port}/azureator/.well-known/openid-configuration
+      accepted_audience: flex-arbeidssokerregister-oppdatering-client-id
+  client:
+    registration:
+      kafka-key-generator-client-credentials:
+        token-endpoint-url: http://localhost:${mock-oauth2-server.port}/azureator/token
+        grant-type: client_credentials
+        scope: kafka-key-generator-client
+        authentication:
+          client-id: client-id
+          client-secret: client-secret
+          client-auth-method: client_secret_basic
+
