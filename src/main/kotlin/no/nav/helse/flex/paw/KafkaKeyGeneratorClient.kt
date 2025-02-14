@@ -9,10 +9,10 @@ import org.springframework.web.client.RestClient
 class KafkaKeyGeneratorClient(
     @Value("\${KAFKA_KEY_GENERATOR_URL}")
     private val url: String,
-    private val keyGeneratorRestClient: RestClient,
+    private val kafkaKeyRestClient: RestClient,
 ) {
     fun hentKafkaKey(request: KafkaKeyGeneratorRequest) =
-        keyGeneratorRestClient
+        kafkaKeyRestClient
             .post()
             .uri("$url/api/v1/record-key")
             .contentType(APPLICATION_JSON)
