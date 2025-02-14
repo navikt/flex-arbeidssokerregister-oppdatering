@@ -56,16 +56,16 @@ class RestClientConfiguration {
         return lagRestClient(restClientBuilder, oAuth2AccessTokenService, clientProperties)
     }
 
-    @Bean("to")
-    fun arbeidssoekerregisteretRestClient(
-        restClientBuilder: RestClient.Builder,
-        oAuth2AccessTokenService: OAuth2AccessTokenService,
-        clientConfigurationProperties: ClientConfigurationProperties,
-    ): RestClient {
-        val clientProperties =
-            clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!
-        return lagRestClient(restClientBuilder, oAuth2AccessTokenService, clientProperties)
-    }
+//    @Bean("to")
+//    fun arbeidssoekerregisteretRestClient(
+//        restClientBuilder: RestClient.Builder,
+//        oAuth2AccessTokenService: OAuth2AccessTokenService,
+//        clientConfigurationProperties: ClientConfigurationProperties,
+//    ): RestClient {
+//        val clientProperties =
+//            clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!
+//        return lagRestClient(restClientBuilder, oAuth2AccessTokenService, clientProperties)
+//    }
 
     private fun lagRestClient(
         restClientBuilder: RestClient.Builder,
