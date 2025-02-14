@@ -23,12 +23,6 @@ import java.time.Duration
 @EnableMockOAuth2Server
 abstract class FellesTestOppsett {
     companion object {
-        val kafkaKeyGeneratorMockWebServer =
-            MockWebServer().apply {
-                System.setProperty("KAFKA_KEY_GENERATOR_URL", "http://localhost:$port")
-                dispatcher = KafkaKeyGeneratorMockDispatcher
-            }
-
         init {
             PostgreSQLContainer16().apply {
                 start()
@@ -42,6 +36,18 @@ abstract class FellesTestOppsett {
                 System.setProperty("KAFKA_BROKERS", bootstrapServers)
             }
         }
+
+        val kafkaKeyGeneratorMockWebServer =
+            MockWebServer().apply {
+                System.setProperty("KAFKA_KEY_GENERATOR_URL", "http://localhost:$port")
+                dispatcher = KafkaKeyGeneratorMockDispatcher
+            }
+
+        val arbeidssokerperiodeMockWebServer =
+            MockWebServer().apply {
+                System.setProperty("ARBEIDSSOEKERREGISTERET_API_URL", "http://localhost:$port")
+                dispatcher = ArbeidssokerperiodeMockDispatcher
+            }
     }
 
     fun <K, V> Consumer<K, V>.subscribeToTopics(vararg topics: String) {
@@ -79,6 +85,16 @@ abstract class FellesTestOppsett {
 private class PostgreSQLContainer16 : PostgreSQLContainer<PostgreSQLContainer16>("postgres:16-alpine")
 
 object KafkaKeyGeneratorMockDispatcher : QueueDispatcher() {
+    override fun dispatch(request: RecordedRequest): MockResponse {
+        if (responseQueue.peek() != null) {
+            return withContentTypeApplicationJson { responseQueue.take() }
+        }
+
+        return MockResponse().setResponseCode(404)
+    }
+}
+
+object ArbeidssokerperiodeMockDispatcher : QueueDispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
         if (responseQueue.peek() != null) {
             return withContentTypeApplicationJson { responseQueue.take() }
