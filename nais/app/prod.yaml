@@ -10,3 +10,5 @@ env:
   SPRING_PROFILES_ACTIVE: default
   KAFKA_KEY_GENERATOR_AAD_CLIENT_ID: prod-gcp.paw.paw-kafka-key-generator
   KAFKA_KEY_GENERATOR_URL: http://paw-kafka-key-generator.paw
+  ARBEIDSSOEKERREGISTERET_API_AAD_CLIENT_ID: prod-gcp.paw.paw-arbeidssoekerregisteret-api-oppslag
+  ARBEIDSSOEKERREGISTERET_API_URL: http://paw-arbeidssoekerregisteret-api-oppslag.paw
