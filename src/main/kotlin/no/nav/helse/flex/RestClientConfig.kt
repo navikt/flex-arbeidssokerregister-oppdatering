@@ -46,7 +46,7 @@ class RestClientConfiguration {
             .requestFactory(requestFactory)
     }
 
-    @Bean
+    @Bean("en")
     fun kafkaKeyRestClient(
         restClientBuilder: RestClient.Builder,
         oAuth2AccessTokenService: OAuth2AccessTokenService,
@@ -56,7 +56,7 @@ class RestClientConfiguration {
         return lagRestClient(restClientBuilder, oAuth2AccessTokenService, clientProperties)
     }
 
-    @Bean
+    @Bean("to")
     fun arbeidssoekerregisteretRestClient(
         restClientBuilder: RestClient.Builder,
         oAuth2AccessTokenService: OAuth2AccessTokenService,

@@ -1,5 +1,6 @@
 package no.nav.helse.flex.paw
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.stereotype.Component
@@ -9,10 +10,11 @@ import org.springframework.web.client.RestClient
 class KafkaKeyGeneratorClient(
     @Value("\${KAFKA_KEY_GENERATOR_URL}")
     private val url: String,
-    private val kafkaKeyRestClient: RestClient,
+    @Qualifier("en")
+    private val restClient: RestClient,
 ) {
     fun hentKafkaKey(request: KafkaKeyGeneratorRequest) =
-        kafkaKeyRestClient
+        restClient
             .post()
             .uri("$url/api/v1/record-key")
             .contentType(APPLICATION_JSON)
