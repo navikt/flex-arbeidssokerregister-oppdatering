@@ -59,18 +59,18 @@ class RestClientConfiguration {
             ),
         ).build()
 
-    @Bean
-    fun arbeidssoekerregisteretRestClient(
-        restClientBuilder: RestClient.Builder,
-        oAuth2AccessTokenService: OAuth2AccessTokenService,
-        clientConfigurationProperties: ClientConfigurationProperties,
-    ) = restClientBuilder
-        .requestInterceptor(
-            lagBearerTokenInterceptor(
-                clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!,
-                oAuth2AccessTokenService,
-            ),
-        ).build()
+//    @Bean
+//    fun arbeidssoekerregisteretRestClient(
+//        restClientBuilder: RestClient.Builder,
+//        oAuth2AccessTokenService: OAuth2AccessTokenService,
+//        clientConfigurationProperties: ClientConfigurationProperties,
+//    ) = restClientBuilder
+//        .requestInterceptor(
+//            lagBearerTokenInterceptor(
+//                clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!,
+//                oAuth2AccessTokenService,
+//            ),
+//        ).build()
 
     private fun lagBearerTokenInterceptor(
         clientProperties: ClientProperties,
