@@ -2,8 +2,6 @@ package no.nav.helse.flex.api
 
 import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppMelding
 import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppProducer
-import no.nav.helse.flex.paw.ArbeidssoekerregisteretClient
-import no.nav.helse.flex.paw.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.paw.KafkaKeyGeneratorClient
 import no.nav.helse.flex.paw.KafkaKeyGeneratorRequest
 import no.nav.security.token.support.core.api.Unprotected
@@ -23,7 +21,6 @@ import java.util.*
 class DevelopmentController(
     private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
-    private val arbeidssoekerregisteretClient: ArbeidssoekerregisteretClient,
 ) {
     @PostMapping("/arbeidssokerregister-stopp-melding")
     @ResponseBody
@@ -40,17 +37,6 @@ class DevelopmentController(
     ): DevelopmentResponse {
         kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(fnr))!!.let {
             return DevelopmentResponse("$it")
-        }
-    }
-
-    @GetMapping("/arbeidssoekerperiode/{fnr}")
-    @ResponseBody
-    fun hentArbeidssokerperiode(
-        @PathVariable fnr: String,
-    ): DevelopmentResponse {
-        arbeidssoekerregisteretClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr))!!.let {
-            // Blir foreløpig returnert som String for å unngå å måtte lage en hel del klasser ved testing.
-            return DevelopmentResponse(it)
         }
     }
 }
