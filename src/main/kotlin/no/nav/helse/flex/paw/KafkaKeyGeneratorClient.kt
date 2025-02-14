@@ -1,6 +1,6 @@
 package no.nav.helse.flex.paw
 
-import no.nav.helse.flex.bearerTokenInterceptor
+import no.nav.helse.flex.lagBearerTokenInterceptor
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import org.springframework.beans.factory.annotation.Value
@@ -20,7 +20,7 @@ class KafkaKeyGeneratorClient(
         restClientBuilder
             .baseUrl(url)
             .requestInterceptor(
-                bearerTokenInterceptor(
+                lagBearerTokenInterceptor(
                     clientConfigurationProperties.registration["kafka-key-generator-client-credentials"]!!,
                     oAuth2AccessTokenService,
                 ),

@@ -14,8 +14,8 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestClient
 import java.time.Duration
 
-const val CLIENT_API_CONNECT_TIMEOUT = 5L
-const val CLIENT_API_READ_TIMEOUT = 10L
+const val REST_CLIENT_CONNECT_TIMEOUT = 5L
+const val REST_CLIENT_API_READ_TIMEOUT = 10L
 
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
@@ -36,8 +36,8 @@ class RestClientConfiguration {
 
         val requestFactory =
             HttpComponentsClientHttpRequestFactory(httpClient).apply {
-                setConnectTimeout(Duration.ofSeconds(CLIENT_API_CONNECT_TIMEOUT))
-                setReadTimeout(Duration.ofSeconds(CLIENT_API_READ_TIMEOUT))
+                setConnectTimeout(Duration.ofSeconds(REST_CLIENT_CONNECT_TIMEOUT))
+                setReadTimeout(Duration.ofSeconds(REST_CLIENT_API_READ_TIMEOUT))
             }
 
         return RestClient
@@ -49,7 +49,7 @@ class RestClientConfiguration {
     fun restClient(restClientBuilder: RestClient.Builder): RestClient = restClientBuilder.build()
 }
 
-internal fun bearerTokenInterceptor(
+internal fun lagBearerTokenInterceptor(
     clientProperties: ClientProperties,
     oAuth2AccessTokenService: OAuth2AccessTokenService,
 ): ClientHttpRequestInterceptor =
