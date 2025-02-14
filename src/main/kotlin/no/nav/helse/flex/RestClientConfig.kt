@@ -2,6 +2,7 @@ package no.nav.helse.flex
 
 import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
+import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager
@@ -46,15 +47,38 @@ class RestClientConfiguration {
     }
 
     @Bean
-    fun restClient(restClientBuilder: RestClient.Builder): RestClient = restClientBuilder.build()
-}
+    fun keyGeneratorRestClient(
+        restClientBuilder: RestClient.Builder,
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
+        clientConfigurationProperties: ClientConfigurationProperties,
+    ) = restClientBuilder
+        .requestInterceptor(
+            lagBearerTokenInterceptor(
+                clientConfigurationProperties.registration["kafka-key-generator-client-credentials"]!!,
+                oAuth2AccessTokenService,
+            ),
+        ).build()
 
-internal fun lagBearerTokenInterceptor(
-    clientProperties: ClientProperties,
-    oAuth2AccessTokenService: OAuth2AccessTokenService,
-): ClientHttpRequestInterceptor =
-    ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray, execution: ClientHttpRequestExecution ->
-        val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
-        response.access_token?.let { request.headers.setBearerAuth(it) }
-        execution.execute(request, body)
-    }
+    @Bean
+    fun arbeidssoekerregisteretRestClient(
+        restClientBuilder: RestClient.Builder,
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
+        clientConfigurationProperties: ClientConfigurationProperties,
+    ) = restClientBuilder
+        .requestInterceptor(
+            lagBearerTokenInterceptor(
+                clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!,
+                oAuth2AccessTokenService,
+            ),
+        ).build()
+
+    private fun lagBearerTokenInterceptor(
+        clientProperties: ClientProperties,
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
+    ): ClientHttpRequestInterceptor =
+        ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray, execution: ClientHttpRequestExecution ->
+            val response = oAuth2AccessTokenService.getAccessToken(clientProperties)
+            response.access_token?.let { request.headers.setBearerAuth(it) }
+            execution.execute(request, body)
+        }
+}
