@@ -101,7 +101,7 @@ class KafkaConfig(
         }
 
     @Bean
-    fun avroKafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler) =
+    fun arbeidssokerregisterPeriodeListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler) =
         ConcurrentKafkaListenerContainerFactory<Long, Periode>().also {
             val consumerConfig =
                 mapOf(
