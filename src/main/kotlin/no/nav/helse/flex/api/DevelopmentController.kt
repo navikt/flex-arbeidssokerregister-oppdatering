@@ -2,6 +2,7 @@ package no.nav.helse.flex.api
 
 import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppMelding
 import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppProducer
+import no.nav.helse.flex.arbeidssoker.AvroProducer
 import no.nav.helse.flex.paw.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.paw.ArbeidssokerregisterClient
 import no.nav.helse.flex.paw.KafkaKeyGeneratorClient
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
-import java.time.OffsetDateTime
 import java.util.*
 
 @Profile("testdatareset")
@@ -25,6 +25,7 @@ class DevelopmentController(
     private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
+    private val avroProducer: AvroProducer,
 ) {
     @PostMapping("/arbeidssokerregister-stopp-melding")
     @ResponseBody
@@ -51,19 +52,21 @@ class DevelopmentController(
     ): DevelopmentResponse {
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr)).let {
             it.first().also {
+                it.startet.utfoertAv
                 val response =
-                    "periodeId: ${it.periodeId}, startet: ${it.startet.tidspunkt}, avsluttet: ${it.avsluttet != null}"
+                    "periodeId: ${it.periodeId}, utfoertAv: ${it.startet.utfoertAv}, avsluttet: ${it.avsluttet != null}"
                 return DevelopmentResponse(response)
             }
         }
     }
-}
 
-data class PeriodeResponse(
-    val id: String,
-    val startet: OffsetDateTime,
-    val avsluttet: Boolean,
-)
+    @PostMapping("/arbeidssokerregister-paa-vegne-av")
+    @ResponseBody
+    fun sendArbeidssokerregisterPaaVegneAv(): DevelopmentResponse {
+        val pair = avroProducer.send()
+        return DevelopmentResponse("kafkaKey=${pair.first}, periodeId=${pair.second}")
+    }
+}
 
 data class DevelopmentResponse(
     val message: String,

@@ -125,7 +125,7 @@ class KafkaConfig(
         )
 
     @Bean
-    fun arbeidssokerregisterBekrefelseProducer(): KafkaProducer<Long, Bekreftelse> =
+    fun arbeidssokerregisterBekrefelseProducer(): Producer<Long, Bekreftelse> =
         KafkaProducer<Long, Bekreftelse>(
             mapOf(
                 KEY_SERIALIZER_CLASS_CONFIG to LongSerializer::class.java,
@@ -134,7 +134,7 @@ class KafkaConfig(
         )
 
     @Bean
-    fun arbeidssokerregisterPaaVegneAvProducer(): KafkaProducer<Long, PaaVegneAv> =
+    fun arbeidssokerregisterPaaVegneAvProducer(): Producer<Long, PaaVegneAv> =
         KafkaProducer<Long, PaaVegneAv>(
             mapOf(
                 KEY_SERIALIZER_CLASS_CONFIG to LongSerializer::class.java,
