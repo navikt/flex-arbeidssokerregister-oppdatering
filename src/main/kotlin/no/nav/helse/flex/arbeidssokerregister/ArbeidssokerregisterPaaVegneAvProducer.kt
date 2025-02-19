@@ -5,6 +5,7 @@ import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -14,7 +15,8 @@ private const val FIRE_UKER = EN_UKE * 4L
 
 @Component
 class ArbeidssokerregisterPaaVegneAvProducer(
-    val arbeidssokerregisterPaaVegneAvKafkaProducer: Producer<Long, PaaVegneAv>,
+    @Qualifier("avroKafkaProducer")
+    val kafkaProducer: Producer<Long, PaaVegneAv>,
 ) {
     fun send(paaVegneAvMelding: PaaVegneAvMelding) {
         val paaVegneAv =
@@ -23,7 +25,7 @@ class ArbeidssokerregisterPaaVegneAvProducer(
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 Start(TO_UKER, FIRE_UKER),
             )
-        arbeidssokerregisterPaaVegneAvKafkaProducer
+        kafkaProducer
             .send(
                 ProducerRecord(
                     ARBEIDSSOKERREGISTER_PAA_VEGNE_AV_TOPIC,

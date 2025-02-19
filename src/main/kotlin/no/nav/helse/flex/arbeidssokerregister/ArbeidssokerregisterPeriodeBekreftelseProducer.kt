@@ -8,6 +8,7 @@ import no.nav.paw.bekreftelse.melding.v1.vo.Metadata
 import no.nav.paw.bekreftelse.melding.v1.vo.Svar
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
@@ -18,10 +19,11 @@ private const val UTFOERT_AV = "flex-arbeidssokerregister-oppdatering"
 
 @Component
 class ArbeidssokerregisterPeriodeBekreftelseProducer(
-    val arbeidssokerregisterBekrefelseKafkaProducer: Producer<Long, Bekreftelse>,
+    @Qualifier("avroKafkaProducer")
+    val kafkaProducer: Producer<Long, Bekreftelse>,
 ) {
     fun send(periodeBekreftelse: PeriodeBekreftelse) {
-        arbeidssokerregisterBekrefelseKafkaProducer
+        kafkaProducer
             .send(
                 ProducerRecord(
                     ARBEIDSSOKERREGISTER_PERIODE_BEKREFELSE_TOPIC,
