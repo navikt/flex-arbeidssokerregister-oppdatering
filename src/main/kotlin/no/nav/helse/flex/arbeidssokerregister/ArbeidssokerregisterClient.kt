@@ -1,4 +1,4 @@
-package no.nav.helse.flex.paw
+package no.nav.helse.flex.arbeidssokerregister
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.objectMapper

@@ -1,4 +1,4 @@
-package no.nav.helse.flex.paw
+package no.nav.helse.flex.arbeidssokerregister
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value

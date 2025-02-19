@@ -1,4 +1,4 @@
-package no.nav.helse.flex.paw
+package no.nav.helse.flex.arbeidssokerregister
 
 import no.nav.helse.flex.FellesTestOppsett
 import okhttp3.mockwebserver.MockResponse

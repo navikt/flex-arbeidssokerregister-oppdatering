@@ -1,68 +1,77 @@
 package no.nav.helse.flex.api
 
-import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppMelding
-import no.nav.helse.flex.arbeidssoker.ArbeidssokerregisterStoppProducer
-import no.nav.helse.flex.paw.ArbeidssokerperiodeRequest
-import no.nav.helse.flex.paw.ArbeidssokerregisterClient
-import no.nav.helse.flex.paw.KafkaKeyGeneratorClient
-import no.nav.helse.flex.paw.KafkaKeyGeneratorRequest
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
+import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
+import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
+import no.nav.helse.flex.logger
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppMelding
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppProducer
 import no.nav.security.token.support.core.api.Unprotected
 import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Controller
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
-import java.time.OffsetDateTime
-import java.util.*
+import org.springframework.web.bind.annotation.RestController
 
 @Profile("testdatareset")
 @Unprotected
-@Controller
+@RestController
 @RequestMapping("/api/v1")
 class DevelopmentController(
-    private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterStoppProducer,
+    private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterPeriodeStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
 ) {
-    @PostMapping("/arbeidssokerregister-stopp-melding")
-    @ResponseBody
-    fun sendArbeidssokerregisterStoppMelding(fnr: String): DevelopmentResponse {
-        val id = UUID.randomUUID().toString()
-        arbeidssokerregisterStoppProducer.send(ArbeidssokerregisterStoppMelding(id = id, fnr = fnr))
-        return DevelopmentResponse("id=$id")
-    }
+    private val log = logger()
 
-    @GetMapping("/kafka-key/{fnr}")
-    @ResponseBody
+    @GetMapping("/arbeidssokerregisteret/kafka-key/{fnr}")
     fun hentKafkaKey(
         @PathVariable fnr: String,
-    ): DevelopmentResponse {
+    ): ResponseEntity<DevelopmentResponse?> {
         kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(fnr))!!.let {
-            return DevelopmentResponse("$it")
+            return ResponseEntity.ok(DevelopmentResponse("kafkaKey=$it"))
         }
     }
 
-    @GetMapping("/arbeidssokerperiode/{fnr}")
-    @ResponseBody
+    @GetMapping("/arbeidssokerregisteret/periode/{fnr}")
     fun hentArbeidssokerperiode(
         @PathVariable fnr: String,
-    ): DevelopmentResponse {
+    ): ResponseEntity<DevelopmentResponse> {
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr)).let {
             it.first().also {
-                val response =
-                    "periodeId: ${it.periodeId}, startet: ${it.startet.tidspunkt}, avsluttet: ${it.avsluttet != null}"
-                return DevelopmentResponse(response)
+                val erAvsluttet = it.avsluttet != null
+                val type = it.startet.utfoertAv.type
+                return ResponseEntity.ok(
+                    DevelopmentResponse("periodeId: ${it.periodeId}, utfoertAv: $type, erAvsluttet: $erAvsluttet"),
+                )
             }
         }
     }
+
+    @PostMapping("/sykepengesoknad/stopp-melding")
+    fun sendArbeidssokerregisterStoppMelding(
+        @RequestBody request: StoppRequest,
+    ): ResponseEntity<Void> {
+        arbeidssokerregisterStoppProducer.send(request.tilStoppMelding())
+
+        log.info("Sendt ArbeidssokerregisterStoppMelding med id: ${request.id}")
+        return ResponseEntity.ok().build()
+    }
 }
 
-data class PeriodeResponse(
+private fun StoppRequest.tilStoppMelding() =
+    ArbeidssokerregisterPeriodeStoppMelding(
+        id = this.id,
+        fnr = this.fnr,
+    )
+
+data class StoppRequest(
     val id: String,
-    val startet: OffsetDateTime,
-    val avsluttet: Boolean,
+    val fnr: String,
 )
 
 data class DevelopmentResponse(
