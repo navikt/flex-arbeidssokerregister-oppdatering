@@ -1,16 +1,16 @@
 package no.nav.helse.flex.api
 
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
-import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterPaaVegneAvProducer
-import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterPeriodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
 import no.nav.helse.flex.arbeidssokerregister.PeriodeBekreftelse
 import no.nav.helse.flex.logger
-import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppMelding
-import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppProducer
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
+import no.nav.helse.flex.sykepengesoknad.StoppMelding
 import no.nav.security.token.support.core.api.Unprotected
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
@@ -29,11 +29,11 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1")
 class DevelopmentController(
-    private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterPeriodeStoppProducer,
+    private val arbeidssokerregisterStoppProducer: ArbeidssokerperiodeStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
-    private val paaVegneAvProducer: ArbeidssokerregisterPaaVegneAvProducer,
-    private val bekrefelseProducer: ArbeidssokerregisterPeriodeBekreftelseProducer,
+    private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
+    private val bekrefelseProducer: ArbeidssokerperiodeBekreftelseProducer,
 ) {
     private val log = logger()
 
@@ -108,8 +108,8 @@ private fun PeriodeBekrefelseRequest.tilPeriodeBekreftelse() =
     )
 
 private fun StoppRequest.tilStoppMelding() =
-    ArbeidssokerregisterPeriodeStoppMelding(
-        id = this.id,
+    StoppMelding(
+        vedtaksperiodeId = this.id,
         fnr = this.fnr,
     )
 

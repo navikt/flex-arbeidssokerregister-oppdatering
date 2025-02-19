@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class ArbeidssokerregisterPeriodeStoppProducer(
+class ArbeidssokerperiodeStoppProducer(
     private val kafkaProducer: Producer<String, String>,
 ) {
-    fun send(stoppMelding: ArbeidssokerregisterPeriodeStoppMelding) {
+    fun send(stoppMelding: StoppMelding) {
         kafkaProducer.send(
             ProducerRecord(
-                ARBEIDSSOKERREGISTER_PERIODE_STOPP_TOPIC,
+                ARBEIDSSOKERPERIODE_STOPP_TOPIC,
                 stoppMelding.fnr.asProducerRecordKey(),
                 stoppMelding.serialisertTilString(),
             ),
@@ -23,13 +23,13 @@ class ArbeidssokerregisterPeriodeStoppProducer(
     }
 }
 
-data class ArbeidssokerregisterPeriodeStoppMelding(
-    val id: String,
+data class StoppMelding(
+    val vedtaksperiodeId: String,
     val fnr: String,
 )
 
 internal fun String.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(this.toByteArray()).toString()
 
-internal fun String.tilArbeidssokerregisterPeriodeStoppMelding(): ArbeidssokerregisterPeriodeStoppMelding = objectMapper.readValue(this)
+internal fun String.tilArbeidssokerperiodeStoppMelding(): StoppMelding = objectMapper.readValue(this)
 
-const val ARBEIDSSOKERREGISTER_PERIODE_STOPP_TOPIC = "flex.arbeidssokerregister-stopp-topic"
+const val ARBEIDSSOKERPERIODE_STOPP_TOPIC = "flex.arbeidssokerregister-stopp-topic"

@@ -1,6 +1,6 @@
 package no.nav.helse.flex.kafka
 
-import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERREGISTER_PERIODE_STOPP_TOPIC
+import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
 import no.nav.helse.flex.sykepengesoknad.SYKEPENGESOKNAD_TOPIC
 import no.nav.helse.flex.testdata.TESTDATA_RESET_TOPIC
 import org.apache.kafka.clients.admin.NewTopic
@@ -47,7 +47,7 @@ class TestKafkaConfig(
     @Bean
     fun lagArbeidssokerregisterStoppTopic(): NewTopic =
         TopicBuilder
-            .name(ARBEIDSSOKERREGISTER_PERIODE_STOPP_TOPIC)
+            .name(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
             .build()
 
     @Bean

@@ -8,11 +8,11 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-class ArbeidssokerregisterPeriodeConsumer {
+class ArbeidssokerperiodeConsumer {
     private val log = logger()
 
     @KafkaListener(
-        topics = [ARBEIDSSOKERREGISTER_PERIODE_TOPIC],
+        topics = [ARBEIDSSOKERPERIODE_TOPIC],
         id = "flex-arbeidssokerregister-periode-v1",
         containerFactory = "avroKafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
@@ -28,4 +28,4 @@ class ArbeidssokerregisterPeriodeConsumer {
     }
 }
 
-const val ARBEIDSSOKERREGISTER_PERIODE_TOPIC = "paw.arbeidssokerperioder-v1"
+const val ARBEIDSSOKERPERIODE_TOPIC = "paw.arbeidssokerperioder-v1"
