@@ -28,5 +28,5 @@ data class KafkaKeyGeneratorRequest(
 )
 
 data class KafkaKeyGeneratorResponse(
-    val key: Int,
+    val key: Long,
 )
