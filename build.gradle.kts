@@ -5,6 +5,7 @@ plugins {
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     kotlin("plugin.spring") version "2.1.10"
     kotlin("jvm") version "2.1.10"
 }
@@ -19,6 +20,13 @@ repositories {
     maven {
         url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
+    maven {
+        url = uri("https://packages.confluent.io/maven/")
+    }
+}
+
+val schema: Configuration by configurations.creating {
+    isTransitive = false
 }
 
 ext["okhttp3"] = "4.12" // Token-support tester trenger MockWebServer.
@@ -27,9 +35,18 @@ val tokenSupportVersion = "5.0.16"
 val testContainersVersion = "1.20.4"
 val logstashLogbackEncoderVersion = "8.0"
 val kluentVersion = "1.73"
+val confluentVersion = "7.8.0"
+val avroVersion = "1.12.0"
 val sykepengesoknadKafkaVersion = "2025.02.07-14.12-e9fa8e2c"
+val arbeidssokerregisteretSchemaVersion = "1.11931397294.51-1"
+val bekreftelsesmeldingSchemaVersion = "1.25.02.10.17-1"
+val bekreftelsePaaVegneAvSchemaVersion = "1.25.02.10.17-1"
 
 dependencies {
+    schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
+    schema("no.nav.paw.arbeidssokerregisteret.api:bekreftelsesmelding-schema:$bekreftelsesmeldingSchemaVersion")
+    schema("no.nav.paw.arbeidssokerregisteret.api:bekreftelse-paavegneav-schema:$bekreftelsePaaVegneAvSchemaVersion")
+
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
@@ -45,6 +62,12 @@ dependencies {
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
     implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
+    implementation("org.apache.avro:avro:$avroVersion")
+    implementation("io.confluent:kafka-connect-avro-converter:$confluentVersion")
+    implementation("io.confluent:kafka-schema-registry-client:$confluentVersion")
+    implementation("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
+    implementation("no.nav.paw.arbeidssokerregisteret.api:bekreftelsesmelding-schema:$bekreftelsesmeldingSchemaVersion")
+    implementation("no.nav.paw.arbeidssokerregisteret.api:bekreftelse-paavegneav-schema:$bekreftelsePaaVegneAvSchemaVersion")
 
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainersVersion"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -84,5 +107,19 @@ tasks {
 tasks {
     bootJar {
         archiveFileName = "app.jar"
+    }
+}
+
+tasks {
+    generateAvroProtocol {
+        schema.forEach {
+            source(zipTree(it))
+        }
+    }
+}
+
+tasks {
+    runKtlintCheckOverTestSourceSet {
+        dependsOn(generateTestAvroJava)
     }
 }
