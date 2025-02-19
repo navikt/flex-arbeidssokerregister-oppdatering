@@ -40,22 +40,24 @@ class DevelopmentController(
     @GetMapping("/arbeidssokerregisteret/kafka-key/{fnr}")
     fun hentKafkaKey(
         @PathVariable fnr: String,
-    ): ResponseEntity<String?> {
+    ): ResponseEntity<KafkaKeyResponse?> {
         kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(fnr))!!.let {
-            return ResponseEntity.ok("{\"kafkaKey\": ${it.key}}")
+            return ResponseEntity.ok(KafkaKeyResponse(it.key))
         }
     }
 
     @GetMapping("/arbeidssokerregisteret/periode/{fnr}")
     fun hentArbeidssokerperiode(
         @PathVariable fnr: String,
-    ): ResponseEntity<String> {
+    ): ResponseEntity<ArbeidssokerperiodeResponse> {
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr)).let {
             it.first().also {
-                val erAvsluttet = it.avsluttet != null
-                val type = it.startet.utfoertAv.type
                 return ResponseEntity.ok(
-                    "{\"periodeId\": \"${it.periodeId}\", \"utfoertAv\": \"$type\", \"erAvsluttet\": $erAvsluttet}",
+                    ArbeidssokerperiodeResponse(
+                        it.periodeId.toString(),
+                        it.startet.utfoertAv.type,
+                        it.avsluttet != null,
+                    ),
                 )
             }
         }
@@ -128,4 +130,14 @@ data class PeriodeBekrefelseRequest(
     val fnr: String,
     val harJobbet: Boolean,
     val vilFortsette: Boolean,
+)
+
+data class KafkaKeyResponse(
+    val kafkaKey: Long,
+)
+
+data class ArbeidssokerperiodeResponse(
+    val periodeId: String,
+    val utfoertAv: String,
+    val erAvsluttet: Boolean,
 )
