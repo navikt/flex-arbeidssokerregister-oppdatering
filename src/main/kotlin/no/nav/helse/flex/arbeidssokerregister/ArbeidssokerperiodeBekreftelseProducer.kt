@@ -18,7 +18,7 @@ private const val AARSAK = "Innsending av sykepengesoknad"
 private const val UTFOERT_AV = "flex-arbeidssokerregister-oppdatering"
 
 @Component
-class ArbeidssokerregisterPeriodeBekreftelseProducer(
+class ArbeidssokerperiodeBekreftelseProducer(
     @Qualifier("avroKafkaProducer")
     val kafkaProducer: Producer<Long, Bekreftelse>,
 ) {
@@ -26,7 +26,7 @@ class ArbeidssokerregisterPeriodeBekreftelseProducer(
         kafkaProducer
             .send(
                 ProducerRecord(
-                    ARBEIDSSOKERREGISTER_PERIODE_BEKREFELSE_TOPIC,
+                    ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC,
                     periodeBekreftelse.kafkaKey,
                     lagBekreftelse(periodeBekreftelse),
                 ),
@@ -64,5 +64,5 @@ data class PeriodeBekreftelse(
     val vilFortsetteSomArbeidssoeker: Boolean,
 )
 
-const val ARBEIDSSOKERREGISTER_PERIODE_BEKREFELSE_TOPIC =
+const val ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC =
     "paw.arbeidssoker-bekreftelse-friskmeldt-til-arbeidsformidling-beta-v1"

@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.UUID
 
-class ArbeidssokerregisterStoppProducerTest : FellesTestOppsett() {
+class ArbeidssokerperiodeStoppProducerTest : FellesTestOppsett() {
     @Autowired
-    private lateinit var arbeidssokerregisterStoppProducer: ArbeidssokerregisterPeriodeStoppProducer
+    private lateinit var arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer
 
     @Autowired
     private lateinit var arbeidssokerregisterStoppTestConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
-        arbeidssokerregisterStoppTestConsumer.subscribeToTopics(ARBEIDSSOKERREGISTER_PERIODE_STOPP_TOPIC)
+        arbeidssokerregisterStoppTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
     }
 
     @Test
@@ -25,13 +25,13 @@ class ArbeidssokerregisterStoppProducerTest : FellesTestOppsett() {
         val id = UUID.randomUUID().toString()
         val fnr = "11111111111"
 
-        arbeidssokerregisterStoppProducer.send(ArbeidssokerregisterPeriodeStoppMelding(id = id, fnr = fnr))
+        arbeidssokerperiodeStoppProducer.send(StoppMelding(vedtaksperiodeId = id, fnr = fnr))
 
         arbeidssokerregisterStoppTestConsumer.waitForRecords(1).also {
             it.first().key() `should be equal to` fnr.asProducerRecordKey()
 
-            val arbeidssokerregisterStoppMelding = it.first().value().tilArbeidssokerregisterPeriodeStoppMelding()
-            arbeidssokerregisterStoppMelding.id `should be equal to` id
+            val arbeidssokerregisterStoppMelding = it.first().value().tilArbeidssokerperiodeStoppMelding()
+            arbeidssokerregisterStoppMelding.vedtaksperiodeId `should be equal to` id
             arbeidssokerregisterStoppMelding.fnr `should be equal to` fnr
         }
     }

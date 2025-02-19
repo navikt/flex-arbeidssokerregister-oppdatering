@@ -14,7 +14,7 @@ private const val TO_UKER = EN_UKE * 2L
 private const val FIRE_UKER = EN_UKE * 4L
 
 @Component
-class ArbeidssokerregisterPaaVegneAvProducer(
+class ArbeidssokerperiodePaaVegneAvProducer(
     @Qualifier("avroKafkaProducer")
     val kafkaProducer: Producer<Long, PaaVegneAv>,
 ) {
@@ -28,7 +28,7 @@ class ArbeidssokerregisterPaaVegneAvProducer(
         kafkaProducer
             .send(
                 ProducerRecord(
-                    ARBEIDSSOKERREGISTER_PAA_VEGNE_AV_TOPIC,
+                    ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC,
                     paaVegneAvMelding.kafkaKey,
                     paaVegneAv,
                 ),
@@ -41,5 +41,5 @@ data class PaaVegneAvMelding(
     val periodeId: UUID,
 )
 
-const val ARBEIDSSOKERREGISTER_PAA_VEGNE_AV_TOPIC =
+const val ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC =
     "paw.arbeidssoker-bekreftelse-paavegneav-friskmeldt-til-arbeidsformidling-beta-v1"
