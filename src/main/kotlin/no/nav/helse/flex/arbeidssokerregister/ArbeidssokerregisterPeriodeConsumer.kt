@@ -14,7 +14,7 @@ class ArbeidssokerregisterPeriodeConsumer {
     @KafkaListener(
         topics = [ARBEIDSSOKERREGISTER_PERIODE_TOPIC],
         id = "flex-arbeidssokerregister-periode-v1",
-        containerFactory = "arbeidssokerregisterPeriodeListenerContainerFactory",
+        containerFactory = "avroKafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
     )
     fun listen(
