@@ -2,8 +2,10 @@ package no.nav.helse.flex.api
 
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterPaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
+import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppMelding
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppProducer
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
 @Profile("testdatareset")
 @Unprotected
@@ -25,6 +28,7 @@ class DevelopmentController(
     private val arbeidssokerregisterStoppProducer: ArbeidssokerregisterPeriodeStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
+    private val paaVegneAvProducer: ArbeidssokerregisterPaaVegneAvProducer,
 ) {
     private val log = logger()
 
@@ -52,6 +56,16 @@ class DevelopmentController(
         }
     }
 
+    @PostMapping("/arbeidssokerregisteret/paa-vegne-av")
+    fun sendArbeidssokerregisterPaaVegneAv(
+        @RequestBody request: PaaVegneAvRequest,
+    ): ResponseEntity<Void> {
+        paaVegneAvProducer.send(request.tilPaaVegneAvmelding())
+
+        log.info("Sendt PaaVegneAvMelding for periodeId=${request.periodeId}")
+        return ResponseEntity.ok().build()
+    }
+
     @PostMapping("/sykepengesoknad/stopp-melding")
     fun sendArbeidssokerregisterStoppMelding(
         @RequestBody request: StoppRequest,
@@ -63,6 +77,8 @@ class DevelopmentController(
     }
 }
 
+private fun PaaVegneAvRequest.tilPaaVegneAvmelding() = PaaVegneAvMelding(this.kafkaKey, UUID.fromString(this.periodeId))
+
 private fun StoppRequest.tilStoppMelding() =
     ArbeidssokerregisterPeriodeStoppMelding(
         id = this.id,
@@ -72,6 +88,20 @@ private fun StoppRequest.tilStoppMelding() =
 data class StoppRequest(
     val id: String,
     val fnr: String,
+)
+
+data class PaaVegneAvRequest(
+    val kafkaKey: Long,
+    val periodeId: String,
+    val fnr: String,
+)
+
+data class PeriodeBekrefelseRequest(
+    val kafkaKey: Long,
+    val periodeId: String,
+    val fnr: String,
+    val harJobbet: Boolean,
+    val vilFortsette: Boolean,
 )
 
 data class DevelopmentResponse(
