@@ -3,9 +3,11 @@ package no.nav.helse.flex.api
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterPaaVegneAvProducer
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterPeriodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
+import no.nav.helse.flex.arbeidssokerregister.PeriodeBekreftelse
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppMelding
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerregisterPeriodeStoppProducer
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Profile("testdatareset")
@@ -29,6 +33,7 @@ class DevelopmentController(
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
     private val paaVegneAvProducer: ArbeidssokerregisterPaaVegneAvProducer,
+    private val bekrefelseProducer: ArbeidssokerregisterPeriodeBekreftelseProducer,
 ) {
     private val log = logger()
 
@@ -66,6 +71,16 @@ class DevelopmentController(
         return ResponseEntity.ok().build()
     }
 
+    @PostMapping("/arbeidssokerregisteret/bekreftelse")
+    fun sendArbeidssokerregisterBekreftelse(
+        @RequestBody request: PeriodeBekrefelseRequest,
+    ): ResponseEntity<Void> {
+        bekrefelseProducer.send(request.tilPeriodeBekreftelse())
+
+        log.info("Sendt PeriodeBekreftelse for periodeId: ${request.periodeId}")
+        return ResponseEntity.ok().build()
+    }
+
     @PostMapping("/sykepengesoknad/stopp-melding")
     fun sendArbeidssokerregisterStoppMelding(
         @RequestBody request: StoppRequest,
@@ -78,6 +93,17 @@ class DevelopmentController(
 }
 
 private fun PaaVegneAvRequest.tilPaaVegneAvmelding() = PaaVegneAvMelding(this.kafkaKey, UUID.fromString(this.periodeId))
+
+private fun PeriodeBekrefelseRequest.tilPeriodeBekreftelse() =
+    PeriodeBekreftelse(
+        kafkaKey = this.kafkaKey,
+        periodeId = UUID.fromString(this.periodeId),
+        fnr = this.fnr,
+        periodeStart = Instant.now(),
+        periodeSlutt = Instant.now().plus(14, ChronoUnit.DAYS),
+        harJobbetIDennePerioden = this.harJobbet,
+        vilFortsetteSomArbeidssoeker = this.vilFortsette,
+    )
 
 private fun StoppRequest.tilStoppMelding() =
     ArbeidssokerregisterPeriodeStoppMelding(
