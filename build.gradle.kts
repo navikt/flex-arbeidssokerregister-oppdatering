@@ -39,7 +39,7 @@ val confluentVersion = "7.8.0"
 val avroVersion = "1.12.0"
 val sykepengesoknadKafkaVersion = "2025.02.19-11.22-029ac1f1"
 val arbeidssokerregisteretSchemaVersion = "1.11931397294.51-1"
-val bekreftelsesmeldingSchemaVersion = "1.25.02.10.17-1"
+val bekreftelsesmeldingSchemaVersion = "25.02.07.15-1"
 val bekreftelsePaaVegneAvSchemaVersion = "1.25.02.10.17-1"
 
 dependencies {
