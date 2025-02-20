@@ -13,26 +13,27 @@ class ArbeidssokerperiodeStoppProducerTest : FellesTestOppsett() {
     private lateinit var arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer
 
     @Autowired
-    private lateinit var arbeidssokerregisterStoppTestConsumer: Consumer<String, String>
+    private lateinit var arbeidssokerperiodeStoppTestConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
-        arbeidssokerregisterStoppTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
+        arbeidssokerperiodeStoppTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
     }
 
     @Test
     fun `Sender og mottar melding om stopp som arbeidsøker`() {
-        val id = UUID.randomUUID().toString()
+        val vedtaksperiodeId = UUID.randomUUID().toString()
         val fnr = "11111111111"
 
-        arbeidssokerperiodeStoppProducer.send(StoppMelding(vedtaksperiodeId = id, fnr = fnr))
+        arbeidssokerperiodeStoppProducer.send(StoppMelding(vedtaksperiodeId, fnr))
 
-        arbeidssokerregisterStoppTestConsumer.waitForRecords(1).also {
-            it.first().key() `should be equal to` fnr.asProducerRecordKey()
+        arbeidssokerperiodeStoppTestConsumer.waitForRecords(1).first().also {
+            it.key() `should be equal to` fnr.asProducerRecordKey()
 
-            val arbeidssokerregisterStoppMelding = it.first().value().tilArbeidssokerperiodeStoppMelding()
-            arbeidssokerregisterStoppMelding.vedtaksperiodeId `should be equal to` id
-            arbeidssokerregisterStoppMelding.fnr `should be equal to` fnr
+            it.value().tilArbeidssokerperiodeStoppMelding().also {
+                it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
+                it.fnr `should be equal to` fnr
+            }
         }
     }
 }

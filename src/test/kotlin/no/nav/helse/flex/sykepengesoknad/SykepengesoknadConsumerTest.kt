@@ -6,16 +6,22 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.amshove.kluent.`should be equal to`
+import org.amshove.kluent.`should not be`
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class SykepengesoknadConsumerTest : FellesTestOppsett() {
+    @Autowired
+    private lateinit var sykepengesoknadConsumer: SykepengesoknadConsumer
+
     @Autowired
     private lateinit var kafkaProducer: Producer<String, String>
 
@@ -42,24 +48,21 @@ class SykepengesoknadConsumerTest : FellesTestOppsett() {
                 tom = LocalDate.now().plusDays(13),
             )
 
-        kafkaProducer
-            .send(
-                ProducerRecord(
-                    SYKEPENGESOKNAD_TOPIC,
-                    key,
-                    soknad.serialisertTilString(),
-                ),
-            ).get()
+        kafkaProducer.send(ProducerRecord(SYKEPENGESOKNAD_TOPIC, key, soknad.serialisertTilString())).get()
 
-        sykepengesoknadTestConsumer.waitForRecords(1).also {
-            it.first().key() `should be equal to` key
+        await().atMost(1, TimeUnit.SECONDS).untilAsserted {
+            sykepengesoknadConsumer.hentSoknad(key) `should not be` null
+        }
 
-            val soknad = it.first().value().tilSykepengesoknadDTO()
+        sykepengesoknadTestConsumer.waitForRecords(1).first().also {
+            it.key() `should be equal to` key
 
-            soknad.type `should be equal to` SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING
-            soknad.id `should be equal to` key
-            soknad.status `should be equal to` SoknadsstatusDTO.FREMTIDIG
-            soknad.fnr `should be equal to` fnr
+            it.value().tilSykepengesoknadDTO().also {
+                it.type `should be equal to` SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING
+                it.id `should be equal to` key
+                it.status `should be equal to` SoknadsstatusDTO.FREMTIDIG
+                it.fnr `should be equal to` fnr
+            }
         }
     }
 }

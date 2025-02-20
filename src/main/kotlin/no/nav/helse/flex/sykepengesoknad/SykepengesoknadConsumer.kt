@@ -26,11 +26,17 @@ class SykepengesoknadConsumer {
     ) {
         cr.value().tilSykepengesoknadDTO().also {
             if (it.type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
+                soknader[it.id] = it
                 log.info("Mottok ${it.status} søknad av type FRISKMELDT_TIL_ARBEIDSFORMIDLING med id: ${it.id}.")
             }
         }
         acknowledgment.acknowledge()
     }
+
+    // TODO: Erstatt med @Repository og TestContainers.
+    private val soknader = mutableMapOf<String, SykepengesoknadDTO>()
+
+    fun hentSoknad(id: String): SykepengesoknadDTO? = soknader[id]
 }
 
 const val SYKEPENGESOKNAD_TOPIC = "flex.sykepengesoknad"
