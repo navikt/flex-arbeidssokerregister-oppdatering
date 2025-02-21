@@ -13,11 +13,11 @@ class ArbeidssokerperiodeStoppProducerTest : FellesTestOppsett() {
     private lateinit var arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer
 
     @Autowired
-    private lateinit var arbeidssokerperiodeStoppTestConsumer: Consumer<String, String>
+    private lateinit var arbeidssokerperiodeStoppConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
-        arbeidssokerperiodeStoppTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
+        arbeidssokerperiodeStoppConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
     }
 
     @Test
@@ -27,7 +27,7 @@ class ArbeidssokerperiodeStoppProducerTest : FellesTestOppsett() {
 
         arbeidssokerperiodeStoppProducer.send(StoppMelding(vedtaksperiodeId, fnr))
 
-        arbeidssokerperiodeStoppTestConsumer.waitForRecords(1).first().also {
+        arbeidssokerperiodeStoppConsumer.waitForRecords(1).first().also {
             it.key() `should be equal to` fnr.asProducerRecordKey()
 
             it.value().tilArbeidssokerperiodeStoppMelding().also {

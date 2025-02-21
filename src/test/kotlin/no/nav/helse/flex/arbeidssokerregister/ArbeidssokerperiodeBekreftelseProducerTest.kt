@@ -12,14 +12,14 @@ import java.util.*
 
 class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
     @Autowired
-    private lateinit var arbeidssokerperiodeBekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer
+    private lateinit var bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer
 
     @Autowired
-    private lateinit var bekreftelseTestConsumer: Consumer<Long, Bekreftelse>
+    private lateinit var bekreftelseConsumer: Consumer<Long, Bekreftelse>
 
     @BeforeAll
     fun subscribeToTopics() {
-        bekreftelseTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC)
+        bekreftelseConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC)
     }
 
     @Test
@@ -27,9 +27,9 @@ class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
         val periodeBekreftelse =
             PeriodeBekreftelse(1, UUID.randomUUID(), "11111111111", Instant.now(), Instant.now(), true, true)
 
-        arbeidssokerperiodeBekreftelseProducer.send(periodeBekreftelse)
+        bekreftelseProducer.send(periodeBekreftelse)
 
-        bekreftelseTestConsumer.waitForRecords(1).first().also {
+        bekreftelseConsumer.waitForRecords(1).first().also {
             it.key() `should be equal to` periodeBekreftelse.kafkaKey
             it.value().periodeId `should be equal to` periodeBekreftelse.periodeId
         }

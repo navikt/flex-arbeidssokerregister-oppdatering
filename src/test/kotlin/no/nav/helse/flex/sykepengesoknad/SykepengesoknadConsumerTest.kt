@@ -20,17 +20,17 @@ import java.util.concurrent.TimeUnit
 
 class SykepengesoknadConsumerTest : FellesTestOppsett() {
     @Autowired
-    private lateinit var sykepengesoknadConsumer: SykepengesoknadConsumer
+    private lateinit var sykepengesoknadListener: SykepengesoknadListener
 
     @Autowired
     private lateinit var kafkaProducer: Producer<String, String>
 
     @Autowired
-    private lateinit var sykepengesoknadTestConsumer: Consumer<String, String>
+    private lateinit var sykepengesoknadConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
-        sykepengesoknadTestConsumer.subscribeToTopics(SYKEPENGESOKNAD_TOPIC)
+        sykepengesoknadConsumer.subscribeToTopics(SYKEPENGESOKNAD_TOPIC)
     }
 
     @Test
@@ -51,10 +51,10 @@ class SykepengesoknadConsumerTest : FellesTestOppsett() {
         kafkaProducer.send(ProducerRecord(SYKEPENGESOKNAD_TOPIC, key, soknad.serialisertTilString())).get()
 
         await().atMost(1, TimeUnit.SECONDS).untilAsserted {
-            sykepengesoknadConsumer.hentSoknad(key) `should not be` null
+            sykepengesoknadListener.hentSoknad(key) `should not be` null
         }
 
-        sykepengesoknadTestConsumer.waitForRecords(1).first().also {
+        sykepengesoknadConsumer.waitForRecords(1).first().also {
             it.key() `should be equal to` key
 
             it.value().tilSykepengesoknadDTO().also {

@@ -15,17 +15,17 @@ import java.util.concurrent.TimeUnit
 
 class TestdataResetConsumerTest : FellesTestOppsett() {
     @Autowired
-    private lateinit var testdataResetConsumer: TestdataResetConsumer
+    private lateinit var testdataResetListener: TestdataResetListener
 
     @Autowired
     private lateinit var kafkaProducer: Producer<String, String>
 
     @Autowired
-    private lateinit var testdataResetTestConsumer: Consumer<String, String>
+    private lateinit var testdataResetConsumer: Consumer<String, String>
 
     @BeforeAll
     fun subscribeToTopics() {
-        testdataResetTestConsumer.subscribeToTopics(TESTDATA_RESET_TOPIC)
+        testdataResetConsumer.subscribeToTopics(TESTDATA_RESET_TOPIC)
     }
 
     @Test
@@ -36,10 +36,10 @@ class TestdataResetConsumerTest : FellesTestOppsett() {
         kafkaProducer.send(ProducerRecord(TESTDATA_RESET_TOPIC, key, fnr)).get()
 
         await().atMost(1, TimeUnit.SECONDS).untilAsserted {
-            testdataResetConsumer.hentMelding(key) `should not be` null
+            testdataResetListener.hentMelding(key) `should not be` null
         }
 
-        testdataResetTestConsumer.waitForRecords(1).also {
+        testdataResetConsumer.waitForRecords(1).also {
             it.first().key() `should be equal to` key
             it.first().value() `should be equal to` fnr
         }
