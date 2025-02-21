@@ -20,6 +20,7 @@ import org.apache.kafka.common.serialization.LongSerializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
@@ -106,7 +107,9 @@ class KafkaConfig(
             ) + producerConfig + brokerConfig + securityConfig,
         ).createProducer()
 
-    @Bean
+    // Navngir for å hjelpe Spring med mathcing siden vi bruker Generics.
+    @Bean("avroKafkaListenerContainerFactory")
+    @ConditionalOnMissingBean(name = ["avroKafkaListenerContainerFactory"])
     fun <T> avroKafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler) =
         ConcurrentKafkaListenerContainerFactory<Long, T>().also {
             val consumerConfig =
@@ -121,7 +124,9 @@ class KafkaConfig(
             it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
         }
 
-    @Bean
+    // Navngir for å hjelpe Spring med mathcing siden vi bruker generiske parametere.
+    @Bean("avroKafkaProducer")
+    @ConditionalOnMissingBean(name = ["avroKafkaProducer"])
     fun <T> avroKafkaProducer(): Producer<Long, T> =
         DefaultKafkaProducerFactory<Long, T>(
             mapOf(

@@ -22,10 +22,16 @@ class ArbeidssokerperiodeConsumer {
         acknowledgment: Acknowledgment,
     ) {
         cr.value().also {
+            perioder[it.id.toString()] = it
             log.info("Mottok periode med id: ${it.id}.")
         }
         acknowledgment.acknowledge()
     }
+
+    // TODO: Erstatt med @Repository og TestContainers.
+    private val perioder = mutableMapOf<String, Periode>()
+
+    fun hentPeriode(id: String): Periode? = perioder[id]
 }
 
 const val ARBEIDSSOKERPERIODE_TOPIC = "paw.arbeidssokerperioder-v1"
