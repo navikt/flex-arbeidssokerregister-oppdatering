@@ -35,25 +35,25 @@ data class ArbeidssokerperiodeRequest(
 
 data class ArbeidssokerperiodeResponse(
     val periodeId: String,
-    val startet: Metadata,
-    val avsluttet: Metadata?,
+    val startet: MetadataResponse,
+    val avsluttet: MetadataResponse?,
 )
 
-data class Metadata(
+data class MetadataResponse(
     val tidspunkt: OffsetDateTime,
-    val utfoertAv: Bruker,
+    val utfoertAv: BrukerResponse,
     val kilde: String,
     val aarsak: String,
-    val tidspunktFraKilde: TidspunktFraKilde?,
+    val tidspunktFraKilde: TidspunktFraKildeResponse?,
 )
 
-data class Bruker(
+data class BrukerResponse(
     val type: String,
     // UKJENT_VERDI, UDEFINERT, VEILEDER, SYSTEM, SLUTTBRUKER
     val id: String,
 )
 
-data class TidspunktFraKilde(
+data class TidspunktFraKildeResponse(
     val tidspunkt: OffsetDateTime,
     // UKJENT_VERDI, FORSINKELSE, RETTING, SLETTET, TIDSPUNKT_KORRIGERT
     val avviksType: String,

@@ -1,8 +1,11 @@
 package no.nav.helse.flex.arbeidssokerregister
 
 import no.nav.helse.flex.FellesTestOppsett
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
+import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
+import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be`
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.Producer
@@ -34,16 +37,8 @@ class ArbeidssokerperiodeConsumerTest : FellesTestOppsett() {
 
     @Test
     fun `Kan motta og deserialisere Periode`() {
-        val bruker =
-            no.nav.paw.arbeidssokerregisteret.api.v1
-                .Bruker(no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType.UDEFINERT, "123")
-        val tidspunktFraKilde =
-            no.nav.paw.arbeidssokerregisteret.api.v1
-                .TidspunktFraKilde(Instant.now(), AvviksType.FORSINKELSE)
-        val startet =
-            no.nav.paw.arbeidssokerregisteret.api.v1
-                .Metadata(Instant.now(), bruker, "", "", tidspunktFraKilde)
-        val periode = Periode(UUID.randomUUID(), "123", startet, null)
+        val startet = Metadata(Instant.now(), Bruker(BrukerType.SYSTEM, "TEST"), "Test", "Test", null)
+        val periode = Periode(UUID.randomUUID(), "11111111111", startet, null)
 
         kafkaProducer.send(ProducerRecord(ARBEIDSSOKERPERIODE_TOPIC, 10L, periode)).get()
 
@@ -51,9 +46,9 @@ class ArbeidssokerperiodeConsumerTest : FellesTestOppsett() {
             arbeidssokerperiodeListener.hentPeriode(periode.id.toString()) `should not be` null
         }
 
-        arbeidssokerperiodeConsumer.waitForRecords(1).also {
-            it.first().key() `should not be` null
-            it.first().value() `should not be` null
+        arbeidssokerperiodeConsumer.waitForRecords(1).first().also {
+            it.key() `should be equal to` 10L
+            it.value().id `should be equal to` periode.id
         }
     }
 }
