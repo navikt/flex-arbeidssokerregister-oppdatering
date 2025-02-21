@@ -11,7 +11,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-class SykepengesoknadConsumer {
+class SykepengesoknadListener {
     private val log = logger()
 
     @KafkaListener(

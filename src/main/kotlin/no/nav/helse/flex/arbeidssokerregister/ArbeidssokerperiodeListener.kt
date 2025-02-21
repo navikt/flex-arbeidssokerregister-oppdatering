@@ -8,7 +8,7 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-class ArbeidssokerperiodeConsumer {
+class ArbeidssokerperiodeListener {
     private val log = logger()
 
     @KafkaListener(

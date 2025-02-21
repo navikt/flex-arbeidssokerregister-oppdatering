@@ -18,18 +18,18 @@ import java.util.concurrent.TimeUnit
 
 class ArbeidssokerperiodeConsumerTest : FellesTestOppsett() {
     @Autowired
-    private val arbeidssokerperiodeConsumer = ArbeidssokerperiodeConsumer()
+    private val arbeidssokerperiodeListener = ArbeidssokerperiodeListener()
 
     @Autowired
     @Qualifier("avroKafkaProducer")
     private lateinit var kafkaProducer: Producer<Long, Periode>
 
     @Autowired
-    private lateinit var arbeidssokerperiodeTestConsumer: Consumer<Long, Periode>
+    private lateinit var arbeidssokerperiodeConsumer: Consumer<Long, Periode>
 
     @BeforeAll
     fun subscribeToTopics() {
-        arbeidssokerperiodeTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_TOPIC)
+        arbeidssokerperiodeConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_TOPIC)
     }
 
     @Test
@@ -48,10 +48,10 @@ class ArbeidssokerperiodeConsumerTest : FellesTestOppsett() {
         kafkaProducer.send(ProducerRecord(ARBEIDSSOKERPERIODE_TOPIC, 10L, periode)).get()
 
         await().atMost(1, TimeUnit.SECONDS).untilAsserted {
-            arbeidssokerperiodeConsumer.hentPeriode(periode.id.toString()) `should not be` null
+            arbeidssokerperiodeListener.hentPeriode(periode.id.toString()) `should not be` null
         }
 
-        arbeidssokerperiodeTestConsumer.waitForRecords(1).also {
+        arbeidssokerperiodeConsumer.waitForRecords(1).also {
             it.first().key() `should not be` null
             it.first().value() `should not be` null
         }

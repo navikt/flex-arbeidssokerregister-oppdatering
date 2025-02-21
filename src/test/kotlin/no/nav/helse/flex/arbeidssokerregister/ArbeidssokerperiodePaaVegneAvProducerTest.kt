@@ -11,23 +11,23 @@ import java.util.*
 
 class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
     @Autowired
-    private lateinit var arbeidssokerperiodePaaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer
+    private lateinit var paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer
 
     @Autowired
-    private lateinit var paaVegneAvTestConsumer: Consumer<Long, PaaVegneAv>
+    private lateinit var paaVegneAvConsumer: Consumer<Long, PaaVegneAv>
 
     @BeforeAll
     fun subscribeToTopics() {
-        paaVegneAvTestConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
+        paaVegneAvConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
     }
 
     @Test
     fun `Kan serialisere og sende PaaVegneAv`() {
         val paaVegneAvMelding = PaaVegneAvMelding(-1111, UUID.randomUUID())
 
-        arbeidssokerperiodePaaVegneAvProducer.send(paaVegneAvMelding)
+        paaVegneAvProducer.send(paaVegneAvMelding)
 
-        paaVegneAvTestConsumer.waitForRecords(1).first().also {
+        paaVegneAvConsumer.waitForRecords(1).first().also {
             it.key() `should be equal to` paaVegneAvMelding.kafkaKey
             it.value().periodeId `should be equal to` paaVegneAvMelding.periodeId
         }

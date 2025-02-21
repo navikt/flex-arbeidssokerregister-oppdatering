@@ -89,24 +89,24 @@ class TestKafkaConfig(
         }
 
     @Bean
-    fun testdataResetTestConsumer() = lagConsumer("testdatareset-consumer")
+    fun testdataResetConsumer() = lagConsumer("testdatareset-consumer")
 
     @Bean
-    fun sykepengesoknadTestConsumer() = lagConsumer("sykepengesoknad-consumer")
+    fun sykepengesoknadConsumer() = lagConsumer("sykepengesoknad-consumer")
 
     @Bean
-    fun arbeidssokerperiodeStoppTestConsumer() = lagConsumer("arbeidssokerperiodestopp-consumer")
+    fun arbeidssokerperiodeStoppConsumer() = lagConsumer("arbeidssokerperiodestopp-consumer")
 
     @Bean
-    fun <T> arbeidssokerperiodeTestConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
+    fun <T> arbeidssokerperiodeConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
         lagAvroConsumer(mockSchemaRegistryClient, "arbeidssokerperiode-consumer")
 
     @Bean
-    fun <T> bekreftelseTestConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
+    fun <T> bekreftelseConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
         lagAvroConsumer(mockSchemaRegistryClient, "bekreftelse-consumer")
 
     @Bean
-    fun <T> paaVegneAvTestConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
+    fun <T> paaVegneAvConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
         lagAvroConsumer(mockSchemaRegistryClient, "paavegneav-consumer")
 
     @Bean
