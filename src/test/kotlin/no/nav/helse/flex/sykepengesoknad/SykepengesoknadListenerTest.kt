@@ -18,7 +18,7 @@ import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class SykepengesoknadConsumerTest : FellesTestOppsett() {
+class SykepengesoknadListenerTest : FellesTestOppsett() {
     @Autowired
     private lateinit var sykepengesoknadListener: SykepengesoknadListener
 
