@@ -62,9 +62,15 @@ class TestKafkaConfig(
             .build()
 
     @Bean
-    fun lagArbeidsokerperiodeStoppTopic(): NewTopic =
+    fun lagArbeidsokerperiodeTopic(): NewTopic =
         TopicBuilder
-            .name(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
+            .name(ARBEIDSSOKERPERIODE_TOPIC)
+            .build()
+
+    @Bean
+    fun lagArbeidsokerperiodePaaVegneTopic(): NewTopic =
+        TopicBuilder
+            .name(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
             .build()
 
     @Bean
@@ -74,9 +80,9 @@ class TestKafkaConfig(
             .build()
 
     @Bean
-    fun lagArbeidsokerperiodePaaVegneTopic(): NewTopic =
+    fun lagArbeidsokerperiodeStoppTopic(): NewTopic =
         TopicBuilder
-            .name(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
+            .name(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
             .build()
 
     @Bean

@@ -1,5 +1,8 @@
 package no.nav.helse.flex
 
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -16,6 +19,11 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.Duration
+import java.time.LocalDate
+import java.util.UUID
+
+const val FNR = "11111111111"
+const val VEDTAKSPERIODE_ID = "52198b00-c980-4a68-832f-42b2c21316a2"
 
 @SpringBootTest(classes = [Application::class])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -106,3 +114,19 @@ object ArbeidssokerperiodeMockDispatcher : QueueDispatcher() {
 
 private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
     createMockResponse().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+
+fun lagFremtidigFriskTilArbeidSoknad(): SykepengesoknadDTO =
+    SykepengesoknadDTO(
+        fnr = FNR,
+        id = UUID.randomUUID().toString(),
+        type = SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
+        status = SoknadsstatusDTO.FREMTIDIG,
+        fom = LocalDate.of(2025, 1, 1),
+        tom = LocalDate.of(2025, 1, 31),
+        friskTilArbeidVedtakPeriode =
+            Periode(
+                LocalDate.of(2025, 1, 1),
+                LocalDate.of(2025, 3, 31),
+            ).serialisertTilString(),
+        friskTilArbeidVedtakId = VEDTAKSPERIODE_ID,
+    )

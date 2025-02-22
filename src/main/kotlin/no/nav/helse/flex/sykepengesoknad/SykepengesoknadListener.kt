@@ -1,9 +1,9 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.ArbeidssokerperiodeService
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
@@ -11,7 +11,9 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-class SykepengesoknadListener {
+class SykepengesoknadListener(
+    private val arbeidssokerperiodeService: ArbeidssokerperiodeService,
+) {
     private val log = logger()
 
     @KafkaListener(
@@ -25,18 +27,10 @@ class SykepengesoknadListener {
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
-            if (it.type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
-                soknader[it.id] = it
-                log.info("Mottok ${it.status} søknad av type FRISKMELDT_TIL_ARBEIDSFORMIDLING med id: ${it.id}.")
-            }
+            arbeidssokerperiodeService.behandleSoknad(it)
         }
         acknowledgment.acknowledge()
     }
-
-    // TODO: Erstatt med @Repository og TestContainers.
-    private val soknader = mutableMapOf<String, SykepengesoknadDTO>()
-
-    fun hentSoknad(id: String): SykepengesoknadDTO? = soknader[id]
 }
 
 const val SYKEPENGESOKNAD_TOPIC = "flex.sykepengesoknad"
