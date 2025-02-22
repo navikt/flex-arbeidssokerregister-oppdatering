@@ -1,8 +1,10 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.ArbeidssokerregisterService
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -11,7 +13,9 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-class SykepengesoknadListener {
+class SykepengesoknadListener(
+    private val arbeidssokerregisterService: ArbeidssokerregisterService,
+) {
     private val log = logger()
 
     @KafkaListener(
@@ -25,18 +29,21 @@ class SykepengesoknadListener {
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
-            if (it.type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
-                soknader[it.id] = it
-                log.info("Mottok ${it.status} søknad av type FRISKMELDT_TIL_ARBEIDSFORMIDLING med id: ${it.id}.")
+            if (it.skalProsesseres()) {
+                log.info("Behandler søknad av type ${it.type} med id: ${it.id} og status: ${it.status}.")
+                log.info(
+                    "friskTilArbeidVedtakId: ${it.friskTilArbeidVedtakId}, friskTilArbeidVedtakPeriode: ${it.friskTilArbeidVedtakPeriode}, fortsattArbeidssoker: ${it.fortsattArbeidssoker}",
+                )
+                // TODO: Hent data fra DTO.
+                // TODO: Opprett Domene-objekt for ArbeidssokrregisterService.prosesserSoknad.
+                arbeidssokerregisterService.prosesserSoknad(it)
             }
         }
         acknowledgment.acknowledge()
     }
 
-    // TODO: Erstatt med @Repository og TestContainers.
-    private val soknader = mutableMapOf<String, SykepengesoknadDTO>()
-
-    fun hentSoknad(id: String): SykepengesoknadDTO? = soknader[id]
+    private fun SykepengesoknadDTO.skalProsesseres() =
+        type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.FREMTIDIG
 }
 
 const val SYKEPENGESOKNAD_TOPIC = "flex.sykepengesoknad"

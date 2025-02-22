@@ -6,22 +6,16 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be`
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class SykepengesoknadListenerTest : FellesTestOppsett() {
-    @Autowired
-    private lateinit var sykepengesoknadListener: SykepengesoknadListener
-
     @Autowired
     private lateinit var kafkaProducer: Producer<String, String>
 
@@ -49,10 +43,6 @@ class SykepengesoknadListenerTest : FellesTestOppsett() {
             )
 
         kafkaProducer.send(ProducerRecord(SYKEPENGESOKNAD_TOPIC, key, soknad.serialisertTilString())).get()
-
-        await().atMost(1, TimeUnit.SECONDS).untilAsserted {
-            sykepengesoknadListener.hentSoknad(key) `should not be` null
-        }
 
         sykepengesoknadConsumer.waitForRecords(1).first().also {
             it.key() `should be equal to` key
