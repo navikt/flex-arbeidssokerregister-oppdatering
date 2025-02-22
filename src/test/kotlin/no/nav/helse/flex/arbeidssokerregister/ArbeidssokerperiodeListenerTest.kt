@@ -19,7 +19,7 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class ArbeidssokerperiodeConsumerTest : FellesTestOppsett() {
+class ArbeidssokerperiodeListenerTest : FellesTestOppsett() {
     @Autowired
     private val arbeidssokerperiodeListener = ArbeidssokerperiodeListener()
 

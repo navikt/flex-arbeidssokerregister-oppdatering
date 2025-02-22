@@ -131,7 +131,7 @@ class TestKafkaConfig(
         ).createProducer()
     }
 
-    // Ersatter ConcurrentKafkaListenerContainerFactory i klassene som testes sånn at MockSchemaRegistryClient brukes.
+    // Erstatter ConcurrentKafkaListenerContainerFactory i klassene som testes sånn at MockSchemaRegistryClient brukes.
     @Bean("avroKafkaListenerContainerFactory")
     fun <T> avroKafkaListenerContainerFactory(
         kafkaErrorHandler: KafkaErrorHandler,

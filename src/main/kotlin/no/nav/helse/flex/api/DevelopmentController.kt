@@ -29,7 +29,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1")
 class DevelopmentController(
-    private val arbeidssokerregisterStoppProducer: ArbeidssokerperiodeStoppProducer,
+    private val arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
     private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
@@ -84,12 +84,12 @@ class DevelopmentController(
     }
 
     @PostMapping("/sykepengesoknad/stopp-melding")
-    fun sendArbeidssokerregisterStoppMelding(
+    fun sendArbeidssokerperiodeStoppMelding(
         @RequestBody request: StoppRequest,
     ): ResponseEntity<Void> {
-        arbeidssokerregisterStoppProducer.send(request.tilStoppMelding())
+        arbeidssokerperiodeStoppProducer.send(request.tilStoppMelding())
 
-        log.info("Sendt ArbeidssokerregisterStoppMelding med id: ${request.id}")
+        log.info("Sendt StoppMelding med id: ${request.id}")
         return ResponseEntity.ok().build()
     }
 }

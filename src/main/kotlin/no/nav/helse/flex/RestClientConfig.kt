@@ -20,7 +20,7 @@ const val REST_CLIENT_API_READ_TIMEOUT = 10L
 
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
-class RestClientConfiguration {
+class RestClientConfig {
     @Bean
     fun restClientBuilder(): RestClient.Builder {
         val connectionManager =
