@@ -27,7 +27,7 @@ class TestdataResetListener(
     ) {
         val fnr = cr.value()
         val antallSlettet = arbeidssokerperiodeRepository.deleteByFnr(fnr)
-        log.info("Slettet $antallSlettet vedtaksperiode(r) for for fnr: $fnr.")
+        log.info("Slettet: $antallSlettet arbeidssokerperioder for fnr: $fnr.")
         acknowledgment.acknowledge()
     }
 }

@@ -24,4 +24,6 @@ data class Arbeidssokerperiode(
     val fnr: String,
     val vedtaksperiodeId: String,
     val opprettet: OffsetDateTime,
+    val kafkaRecordKey: Long? = null,
+    val arbeidssokerperiodeId: String? = null,
 )
