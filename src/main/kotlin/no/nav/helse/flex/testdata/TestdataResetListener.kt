@@ -1,5 +1,6 @@
 package no.nav.helse.flex.testdata
 
+import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.logger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.context.annotation.Profile
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("test", "testdatareset")
-class TestdataResetListener {
+class TestdataResetListener(
+    private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
+) {
     private val log = logger()
 
     @KafkaListener(
@@ -23,15 +26,10 @@ class TestdataResetListener {
         acknowledgment: Acknowledgment,
     ) {
         val fnr = cr.value()
-        meldinger[cr.key()] = fnr
-        log.info("Slettet testdata for for fnr: $fnr.")
+        val antallSlettet = arbeidssokerperiodeRepository.deleteByFnr(fnr)
+        log.info("Slettet $antallSlettet vedtaksperiode(r) for for fnr: $fnr.")
         acknowledgment.acknowledge()
     }
-
-    // TODO: Erstatt med @Repository og TestContainers.
-    private val meldinger = mutableMapOf<String, String>()
-
-    fun hentMelding(id: String): String? = meldinger[id]
 }
 
 const val TESTDATA_RESET_TOPIC = "flex.testdata-reset"
