@@ -7,7 +7,6 @@ import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 
@@ -17,11 +16,9 @@ class KafkaKeyGeneratorClientTest : FellesTestOppsett() {
 
     @Test
     fun `Hent Kafka Record Key`() {
-        val mockResponse =
-            MockResponse()
-                .setBody(KafkaKeyGeneratorResponse(1000).serialisertTilString())
-                .setHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-        kafkaKeyGeneratorMockWebServer.enqueue(mockResponse)
+        kafkaKeyGeneratorMockWebServer.enqueue(
+            MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
+        )
 
         kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest("11111111111"))!!.key `should be equal to` 1000
 
@@ -33,7 +30,7 @@ class KafkaKeyGeneratorClientTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Kaster HttpClientErrorException npår ressurs ikke finne`() {
+    fun `Kaster HttpClientErrorException når ressurs ikke finnes`() {
         kafkaKeyGeneratorMockWebServer.enqueue(MockResponse().setResponseCode(404))
 
         assertThrows<HttpClientErrorException> {
