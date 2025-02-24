@@ -1,5 +1,6 @@
 package no.nav.helse.flex
 
+import no.nav.helse.flex.arbeidssokerperiode.Periode
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO

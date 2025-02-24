@@ -23,7 +23,7 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
 
     @Test
     fun `Kan serialisere og sende PaaVegneAv`() {
-        val paaVegneAvMelding = PaaVegneAvMelding(-1111, UUID.randomUUID())
+        val paaVegneAvMelding = PaaVegneAvMelding(-1111, UUID.randomUUID(), 86400)
 
         paaVegneAvProducer.send(paaVegneAvMelding)
 

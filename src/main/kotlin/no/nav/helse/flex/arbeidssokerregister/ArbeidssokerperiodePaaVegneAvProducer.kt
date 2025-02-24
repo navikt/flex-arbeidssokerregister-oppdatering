@@ -12,7 +12,6 @@ import java.util.*
 
 private const val EN_DAG_I_MS = 86_400_000L
 const val FJORDEN_DAGER = EN_DAG_I_MS * 14
-const val FIRE_MAANEDER = EN_DAG_I_MS * 123
 
 @Component
 class ArbeidssokerperiodePaaVegneAvProducer(
@@ -29,7 +28,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
             PaaVegneAv(
                 periodeId,
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
-                Start(FJORDEN_DAGER, FIRE_MAANEDER),
+                Start(FJORDEN_DAGER, paaVegneAvMelding.graceMS),
             )
         kafkaProducer
             .send(
@@ -47,6 +46,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 data class PaaVegneAvMelding(
     val kafkaKey: Long,
     val periodeId: UUID,
+    val graceMS: Long,
 )
 
 const val ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC =

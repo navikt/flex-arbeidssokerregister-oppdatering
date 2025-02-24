@@ -1,5 +1,7 @@
 package no.nav.helse.flex.api
 
+import no.nav.helse.flex.arbeidssokerperiode.SOKNAR_DEAKTIVERES_ETTER_MAANEDER
+import no.nav.helse.flex.arbeidssokerperiode.beregnGraceMS
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -94,7 +97,12 @@ class DevelopmentController(
     }
 }
 
-private fun PaaVegneAvRequest.tilPaaVegneAvmelding() = PaaVegneAvMelding(this.kafkaKey, UUID.fromString(this.periodeId))
+private fun PaaVegneAvRequest.tilPaaVegneAvmelding() =
+    PaaVegneAvMelding(
+        this.kafkaKey,
+        UUID.fromString(this.periodeId),
+        beregnGraceMS(LocalDate.now(), SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
+    )
 
 private fun PeriodeBekrefelseRequest.tilPeriodeBekreftelse() =
     PeriodeBekreftelse(
