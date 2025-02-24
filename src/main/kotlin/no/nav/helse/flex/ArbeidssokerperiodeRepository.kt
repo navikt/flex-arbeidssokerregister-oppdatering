@@ -3,6 +3,7 @@ package no.nav.helse.flex
 import org.springframework.data.annotation.Id
 import org.springframework.data.jdbc.repository.query.Modifying
 import org.springframework.data.jdbc.repository.query.Query
+import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
@@ -26,4 +27,6 @@ data class Arbeidssokerperiode(
     val opprettet: OffsetDateTime,
     val kafkaRecordKey: Long? = null,
     val arbeidssokerperiodeId: String? = null,
+    @Column("sendt_paavegneav")
+    val sendtPaaVegneAv: OffsetDateTime? = null,
 )

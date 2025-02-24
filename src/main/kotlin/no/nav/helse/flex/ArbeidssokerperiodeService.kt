@@ -1,10 +1,12 @@
 package no.nav.helse.flex
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
+import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
@@ -12,12 +14,14 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 
 @Service
 class ArbeidssokerperiodeService(
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
+    private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
 ) {
     private val log = logger()
 
@@ -29,15 +33,23 @@ class ArbeidssokerperiodeService(
     }
 
     private fun behandleVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) {
-        if (erNyVedtaksperiode(vedtaksperiode)) {
-            arbeidssokerperiodeRepository.save(
-                vedtaksperiode.toArbeidssokerperiode(
-                    hentKafkaRecordKey(vedtaksperiode.fnr),
-                    hentArbeidssokerperiodeId(vedtaksperiode.fnr),
-                ),
-            )
-            log.info("Lagret vedtaksperiode med id: ${vedtaksperiode.vedtaksperiodeId}.")
+        if (!erNyVedtaksperiode(vedtaksperiode)) {
+            return
         }
+
+        val kafkaRecordKey = hentKafkaRecordKey(vedtaksperiode.fnr)
+        val arbeidssokerperiodeId = hentArbeidssokerperiodeId(vedtaksperiode.fnr)
+
+        paaVegneAvProducer.send(PaaVegneAvMelding(kafkaRecordKey, UUID.fromString(arbeidssokerperiodeId)))
+
+        arbeidssokerperiodeRepository.save(
+            vedtaksperiode.toArbeidssokerperiode(
+                kafkaRecordKey,
+                arbeidssokerperiodeId,
+                OffsetDateTime.now(),
+            ),
+        )
+        log.info("Lagret vedtaksperiode med id: ${vedtaksperiode.vedtaksperiodeId}.")
     }
 
     private fun erNyVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) =
@@ -54,12 +66,14 @@ class ArbeidssokerperiodeService(
     fun FriskTilArbeidVedtaksperiode.toArbeidssokerperiode(
         kafkaRecordKey: Long,
         arbeidssokerperiodeId: String,
+        sendtPaaVegneAv: OffsetDateTime,
     ) = Arbeidssokerperiode(
         fnr = this.fnr,
         vedtaksperiodeId = this.vedtaksperiodeId,
         opprettet = OffsetDateTime.now(),
         kafkaRecordKey = kafkaRecordKey,
         arbeidssokerperiodeId = arbeidssokerperiodeId,
+        sendtPaaVegneAv = sendtPaaVegneAv,
     )
 
     fun SykepengesoknadDTO.tilVedtaksperiode(): FriskTilArbeidVedtaksperiode {
