@@ -50,19 +50,18 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
     @Test
     @Order(1)
-    fun `Søknad med ukjent FriskTilArbeid vedtaksperiode blir lagret`() {
+    fun `Søknad med ny FriskTilArbeid vedtaksperiode blir lagret`() {
+        val arbeidssokerperiodeId = UUID.randomUUID().toString()
+
         kafkaKeyGeneratorMockWebServer.enqueue(
             MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
         )
 
-        val arbeidssokerperiodeId = UUID.randomUUID().toString()
         arbeidssokerperiodeMockWebServer.enqueue(
             MockResponse().setBody(lagArbeidsokerperiodeResponse(arbeidssokerperiodeId).serialisertTilString()),
         )
 
-        soknad.also {
-            arbeidssokerperiodeService.behandleSoknad(it)
-        }
+        arbeidssokerperiodeService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().also {
             it.size `should be equal to` 1
@@ -92,68 +91,111 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     @Test
     @Order(2)
     fun `Søknad med kjent FriskTilArbeid vedtaksperiode blir ikke lagret`() {
-        soknad.also {
-            arbeidssokerperiodeService.behandleSoknad(it)
-        }
+        arbeidssokerperiodeService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
     }
 
     @Test
+    @Order(3)
+    fun `Søknad med avsluttet arbeidssøkerperiode feiler`() {
+        kafkaKeyGeneratorMockWebServer.enqueue(
+            MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
+        )
+
+        arbeidssokerperiodeMockWebServer.enqueue(
+            MockResponse().setBody(
+                lagArbeidsokerperiodeResponse(
+                    arbeidssokerperiodeId = UUID.randomUUID().toString(),
+                    erAvsluttet = true,
+                ).serialisertTilString(),
+            ),
+        )
+
+        assertThrows<ArbeidssokerperiodeException> {
+            arbeidssokerperiodeService.behandleSoknad(
+                soknad.copy(
+                    fnr = "22222222222",
+                    friskTilArbeidVedtakId = UUID.randomUUID().toString(),
+                ),
+            )
+        }
+
+        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
+
+        kafkaKeyGeneratorMockWebServer.takeRequest() `should not be equal to` null
+        arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
+    }
+
+    @Test
+    @Order(4)
     fun `Kun søknad med status FREMTIDIG blir behandlet`() {
         arbeidssokerperiodeRepository.deleteAll()
 
-        soknad.also {
-            arbeidssokerperiodeService.behandleSoknad(it.copy(status = SoknadsstatusDTO.NY))
-        }
+        arbeidssokerperiodeService.behandleSoknad(soknad.copy(status = SoknadsstatusDTO.NY))
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
     }
 
     @Test
+    @Order(4)
     fun `Kun søknad med type FRISKMELDT_TIL_ARBEIDSFORMIDLING blir behandlet`() {
         arbeidssokerperiodeRepository.deleteAll()
 
-        soknad.also {
-            arbeidssokerperiodeService.behandleSoknad(it.copy(type = SoknadstypeDTO.ARBEIDSTAKERE))
-        }
+        arbeidssokerperiodeService.behandleSoknad(soknad.copy(type = SoknadstypeDTO.ARBEIDSTAKERE))
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
     }
 
     @Test
+    @Order(4)
     fun `Søknad som mangler vedtaksperiodeId feiler`() {
         arbeidssokerperiodeRepository.deleteAll()
 
         assertThrows<Exception> {
-            soknad.also {
-                arbeidssokerperiodeService.behandleSoknad(it.copy(friskTilArbeidVedtakId = null))
-            }
+            arbeidssokerperiodeService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
         }
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
     }
 
     @Test
+    @Order(4)
     fun `Søknad som mangler friskTilArbeidVedtakPeriode feiler`() {
         arbeidssokerperiodeRepository.deleteAll()
 
         assertThrows<Exception> {
-            soknad.also {
-                arbeidssokerperiodeService.behandleSoknad(it.copy(friskTilArbeidVedtakPeriode = null))
-            }
+            arbeidssokerperiodeService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
         }
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
     }
 
-    private fun lagArbeidsokerperiodeResponse(periodeId: String): List<ArbeidssokerperiodeResponse> =
-        listOf(
+    private fun lagArbeidsokerperiodeResponse(
+        arbeidssokerperiodeId: String,
+        erAvsluttet: Boolean = false,
+    ): List<ArbeidssokerperiodeResponse> {
+        val tidspunkt = OffsetDateTime.parse("2025-01-01T00:00:00.000Z")
+
+        val avsluttet =
+            MetadataResponse(
+                tidspunkt = tidspunkt.plusMonths(1),
+                utfoertAv =
+                    BrukerResponse(
+                        type = "SYSTEM",
+                        id = "paw-arbeidssoekerregisteret-bekreftelse-utgang",
+                    ),
+                kilde = "paw-arbeidssoekerregisteret-bekreftelse-utgang",
+                aarsak = "Utløpt",
+                tidspunktFraKilde = null,
+            )
+
+        return listOf(
             ArbeidssokerperiodeResponse(
-                periodeId = periodeId,
+                periodeId = arbeidssokerperiodeId,
                 startet =
                     MetadataResponse(
-                        tidspunkt = OffsetDateTime.parse("2025-01-01T00:00:00.000Z"),
+                        tidspunkt = tidspunkt,
                         utfoertAv =
                             BrukerResponse(
                                 type = "SLUTTBRUKER",
@@ -163,7 +205,8 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
                         aarsak = "Test",
                         tidspunktFraKilde = null,
                     ),
-                avsluttet = null,
+                avsluttet = if (erAvsluttet) avsluttet else null,
             ),
         )
+    }
 }
