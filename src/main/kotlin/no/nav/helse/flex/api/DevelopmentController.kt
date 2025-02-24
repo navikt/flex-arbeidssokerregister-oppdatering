@@ -1,7 +1,5 @@
 package no.nav.helse.flex.api
 
-import no.nav.helse.flex.arbeidssokerperiode.SOKNAR_DEAKTIVERES_ETTER_MAANEDER
-import no.nav.helse.flex.arbeidssokerperiode.beregnGraceMS
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
@@ -12,7 +10,9 @@ import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
 import no.nav.helse.flex.arbeidssokerregister.PeriodeBekreftelse
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
+import no.nav.helse.flex.sykepengesoknad.SOKNAR_DEAKTIVERES_ETTER_MAANEDER
 import no.nav.helse.flex.sykepengesoknad.StoppMelding
+import no.nav.helse.flex.sykepengesoknad.beregnGraceMS
 import no.nav.security.token.support.core.api.Unprotected
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity

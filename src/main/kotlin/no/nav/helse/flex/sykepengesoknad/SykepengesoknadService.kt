@@ -1,4 +1,4 @@
-package no.nav.helse.flex.arbeidssokerperiode
+package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.Arbeidssokerperiode
@@ -25,7 +25,7 @@ import java.util.*
 const val SOKNAR_DEAKTIVERES_ETTER_MAANEDER = 4
 
 @Service
-class ArbeidssokerperiodeService(
+class SykepengesoknadService(
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
