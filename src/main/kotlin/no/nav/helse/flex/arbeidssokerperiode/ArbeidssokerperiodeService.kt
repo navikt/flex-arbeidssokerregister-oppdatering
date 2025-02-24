@@ -1,6 +1,8 @@
-package no.nav.helse.flex
+package no.nav.helse.flex.arbeidssokerperiode
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.Arbeidssokerperiode
+import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeResponse
@@ -8,14 +10,19 @@ import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
+import no.nav.helse.flex.logger
+import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
+
+const val SOKNAR_DEAKTIVERES_ETTER_MAANEDER = 4
 
 @Service
 class ArbeidssokerperiodeService(
@@ -48,7 +55,13 @@ class ArbeidssokerperiodeService(
             )
         }
 
-        paaVegneAvProducer.send(PaaVegneAvMelding(kafkaRecordKey, UUID.fromString(arbeidsokerperiode.periodeId)))
+        paaVegneAvProducer.send(
+            PaaVegneAvMelding(
+                kafkaRecordKey,
+                UUID.fromString(arbeidsokerperiode.periodeId),
+                beregnGraceMS(vedtaksperiode.tom, SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
+            ),
+        )
 
         arbeidssokerperiodeRepository.save(
             vedtaksperiode.toArbeidssokerperiode(
@@ -57,6 +70,7 @@ class ArbeidssokerperiodeService(
                 OffsetDateTime.now(),
             ),
         )
+
         log.info(
             "Lagret vedtaksperiode med id: ${vedtaksperiode.vedtaksperiodeId} for arbeidssokerperiode: ${arbeidsokerperiode.periodeId}",
         )
@@ -114,3 +128,13 @@ data class Periode(
 class ArbeidssokerperiodeException(
     message: String,
 ) : RuntimeException(message)
+
+// Beregner antall millisekunder mellom dagen etter `tom` og `months` måneder senere.
+fun beregnGraceMS(
+    tom: LocalDate,
+    months: Int,
+): Long {
+    val starttidspunkt = tom.plusDays(1).atStartOfDay()
+    val sluttidspunkt = starttidspunkt.plusMonths(months.toLong())
+    return Duration.between(starttidspunkt, sluttidspunkt).toMillis()
+}

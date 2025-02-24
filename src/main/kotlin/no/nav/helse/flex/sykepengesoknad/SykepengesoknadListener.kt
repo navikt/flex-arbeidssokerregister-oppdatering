@@ -1,7 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.helse.flex.ArbeidssokerperiodeService
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO

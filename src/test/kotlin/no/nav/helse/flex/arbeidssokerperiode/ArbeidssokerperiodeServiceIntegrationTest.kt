@@ -1,12 +1,16 @@
-package no.nav.helse.flex
+package no.nav.helse.flex.arbeidssokerperiode
 
+import no.nav.helse.flex.ArbeidssokerperiodeRepository
+import no.nav.helse.flex.FellesTestOppsett
+import no.nav.helse.flex.VEDTAKSPERIODE_ID
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeResponse
 import no.nav.helse.flex.arbeidssokerregister.BrukerResponse
-import no.nav.helse.flex.arbeidssokerregister.FIRE_MAANEDER
 import no.nav.helse.flex.arbeidssokerregister.FJORDEN_DAGER
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorResponse
 import no.nav.helse.flex.arbeidssokerregister.MetadataResponse
+import no.nav.helse.flex.lagFremtidigFriskTilArbeidSoknad
+import no.nav.helse.flex.serialisertTilString
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
@@ -23,7 +27,7 @@ import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
@@ -82,7 +86,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
                 it.periodeId.toString() `should be equal to` arbeidssokerperiodeId
                 (it.handling as Start).let { s ->
                     s.intervalMS `should be equal to` FJORDEN_DAGER
-                    s.graceMS `should be equal to` FIRE_MAANEDER
+                    s.graceMS `should be equal to` 10540800000
                 }
             }
         }
