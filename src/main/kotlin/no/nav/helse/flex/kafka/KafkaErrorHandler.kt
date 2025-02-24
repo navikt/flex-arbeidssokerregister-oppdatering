@@ -32,7 +32,7 @@ class KafkaErrorHandler :
             )
         }
         if (records.isEmpty()) {
-            log.error("Feil i listener uten noen records", thrownException)
+            log.error("Feil i listener uten noen records.", thrownException)
         }
         super.handleRemaining(thrownException, records, consumer, container)
     }
