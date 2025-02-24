@@ -1,4 +1,4 @@
-package no.nav.helse.flex.arbeidssokerperiode
+package no.nav.helse.flex.sykepengesoknad
 
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test

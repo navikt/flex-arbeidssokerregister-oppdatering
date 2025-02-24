@@ -1,4 +1,4 @@
-package no.nav.helse.flex.arbeidssokerperiode
+package no.nav.helse.flex.sykepengesoknad
 
 import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.FellesTestOppsett
@@ -30,9 +30,9 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
+class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
     @Autowired
-    private lateinit var arbeidssokerperiodeService: ArbeidssokerperiodeService
+    private lateinit var sykepengesoknadService: SykepengesoknadService
 
     @Autowired
     private lateinit var arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository
@@ -65,7 +65,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             MockResponse().setBody(lagArbeidsokerperiodeResponse(arbeidssokerperiodeId).serialisertTilString()),
         )
 
-        arbeidssokerperiodeService.behandleSoknad(soknad)
+        sykepengesoknadService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().also {
             it.size `should be equal to` 1
@@ -95,7 +95,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     @Test
     @Order(2)
     fun `Søknad med kjent FriskTilArbeid vedtaksperiode blir ikke lagret`() {
-        arbeidssokerperiodeService.behandleSoknad(soknad)
+        sykepengesoknadService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
     }
@@ -117,7 +117,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         )
 
         assertThrows<ArbeidssokerperiodeException> {
-            arbeidssokerperiodeService.behandleSoknad(
+            sykepengesoknadService.behandleSoknad(
                 soknad.copy(
                     fnr = "22222222222",
                     friskTilArbeidVedtakId = UUID.randomUUID().toString(),
@@ -136,7 +136,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     fun `Kun søknad med status FREMTIDIG blir behandlet`() {
         arbeidssokerperiodeRepository.deleteAll()
 
-        arbeidssokerperiodeService.behandleSoknad(soknad.copy(status = SoknadsstatusDTO.NY))
+        sykepengesoknadService.behandleSoknad(soknad.copy(status = SoknadsstatusDTO.NY))
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
     }
@@ -146,7 +146,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     fun `Kun søknad med type FRISKMELDT_TIL_ARBEIDSFORMIDLING blir behandlet`() {
         arbeidssokerperiodeRepository.deleteAll()
 
-        arbeidssokerperiodeService.behandleSoknad(soknad.copy(type = SoknadstypeDTO.ARBEIDSTAKERE))
+        sykepengesoknadService.behandleSoknad(soknad.copy(type = SoknadstypeDTO.ARBEIDSTAKERE))
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
     }
@@ -157,7 +157,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeRepository.deleteAll()
 
         assertThrows<Exception> {
-            arbeidssokerperiodeService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
+            sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
         }
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
@@ -169,7 +169,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeRepository.deleteAll()
 
         assertThrows<Exception> {
-            arbeidssokerperiodeService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
+            sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
         }
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
