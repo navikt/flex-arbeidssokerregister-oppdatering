@@ -40,7 +40,7 @@ val avroVersion = "1.12.0"
 val sykepengesoknadKafkaVersion = "2025.02.19-16.24-5e00417f"
 val arbeidssokerregisteretSchemaVersion = "1.11931397294.51-1"
 val bekreftelsesmeldingSchemaVersion = "1.25.02.10.17-1"
-val bekreftelsePaaVegneAvSchemaVersion = "1.25.02.10.17-1"
+val bekreftelsePaaVegneAvSchemaVersion = "24.11.13.14-1"
 
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
