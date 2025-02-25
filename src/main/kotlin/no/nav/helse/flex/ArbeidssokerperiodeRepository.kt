@@ -16,6 +16,8 @@ interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, St
     @Modifying
     @Query("DELETE FROM arbeidssokerperiode WHERE fnr = :fnr")
     fun deleteByFnr(fnr: String): Long
+
+    fun findByArbeidssokerperiodeId(id: String): Arbeidssokerperiode?
 }
 
 @Table("arbeidssokerperiode")
@@ -29,4 +31,6 @@ data class Arbeidssokerperiode(
     val arbeidssokerperiodeId: String? = null,
     @Column("sendt_paavegneav")
     val sendtPaaVegneAv: Instant? = null,
+    val avsluttetMottatt: Instant? = null,
+    val avsluttetTidspunkt: Instant? = null,
 )
