@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
-import java.time.OffsetDateTime
+import java.time.Instant
 
 @Repository
 interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, String> {
@@ -24,9 +24,9 @@ data class Arbeidssokerperiode(
     val id: String? = null,
     val fnr: String,
     val vedtaksperiodeId: String,
-    val opprettet: OffsetDateTime,
+    val opprettet: Instant,
     val kafkaRecordKey: Long? = null,
     val arbeidssokerperiodeId: String? = null,
     @Column("sendt_paavegneav")
-    val sendtPaaVegneAv: OffsetDateTime? = null,
+    val sendtPaaVegneAv: Instant? = null,
 )

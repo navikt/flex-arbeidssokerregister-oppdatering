@@ -18,8 +18,9 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 
 const val SOKNAR_DEAKTIVERES_ETTER_MAANEDER = 4
@@ -67,7 +68,7 @@ class SykepengesoknadService(
             vedtaksperiode.toArbeidssokerperiode(
                 kafkaRecordKey,
                 arbeidsokerperiode.periodeId,
-                OffsetDateTime.now(),
+                Instant.now(),
             ),
         )
 
@@ -90,11 +91,11 @@ class SykepengesoknadService(
     fun FriskTilArbeidVedtaksperiode.toArbeidssokerperiode(
         kafkaRecordKey: Long,
         arbeidssokerperiodeId: String,
-        sendtPaaVegneAv: OffsetDateTime,
+        sendtPaaVegneAv: Instant,
     ) = Arbeidssokerperiode(
         fnr = this.fnr,
         vedtaksperiodeId = this.vedtaksperiodeId,
-        opprettet = OffsetDateTime.now(),
+        opprettet = Instant.now(),
         kafkaRecordKey = kafkaRecordKey,
         arbeidssokerperiodeId = arbeidssokerperiodeId,
         sendtPaaVegneAv = sendtPaaVegneAv,
@@ -112,6 +113,8 @@ class SykepengesoknadService(
 }
 
 fun String.tilPeriode(): Periode = objectMapper.readValue(this)
+
+fun Instant.toLocalDate() = this.atZone(ZoneId.systemDefault()).toLocalDate()
 
 data class FriskTilArbeidVedtaksperiode(
     val fnr: String,
