@@ -119,11 +119,13 @@ private fun StoppRequest.tilStoppMelding() =
     StoppMelding(
         vedtaksperiodeId = this.id,
         fnr = this.fnr,
+        avsluttetTidspunkt = Instant.parse(this.avsluttetDato),
     )
 
 data class StoppRequest(
     val id: String,
     val fnr: String,
+    val avsluttetDato: String,
 )
 
 data class PaaVegneAvRequest(

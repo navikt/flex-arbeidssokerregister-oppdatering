@@ -27,7 +27,7 @@ class ArbeidssokerperiodeStoppProducer(
 data class StoppMelding(
     val vedtaksperiodeId: String,
     val fnr: String,
-    val avsluttetTidspunkt: Instant? = null,
+    val avsluttetTidspunkt: Instant,
 )
 
 internal fun String.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(this.toByteArray()).toString()
