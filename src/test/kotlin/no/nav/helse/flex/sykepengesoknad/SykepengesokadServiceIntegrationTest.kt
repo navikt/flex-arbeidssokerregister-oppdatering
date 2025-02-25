@@ -1,6 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import no.nav.helse.flex.ArbeidssokerperiodeRepository
+import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC
@@ -13,12 +14,14 @@ import no.nav.helse.flex.lagFremtidigFriskTilArbeidSoknad
 import no.nav.helse.flex.serialisertTilString
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
+import no.nav.helse.flex.truncatedToSeconds
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.apache.kafka.clients.consumer.Consumer
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -50,6 +53,11 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
         paaVegneAvConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
     }
 
+    @AfterEach
+    fun verifiserAtTopicEtTomt() {
+        paaVegneAvConsumer.fetchRecords().size `should be equal to` 0
+    }
+
     private val soknad = lagFremtidigFriskTilArbeidSoknad()
 
     @Test
@@ -73,7 +81,7 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
                 it.vedtaksperiodeId `should be equal to` VEDTAKSPERIODE_ID
                 it.kafkaRecordKey `should be equal to` 1000L
                 it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiodeId
-                it.sendtPaaVegneAv `should not be equal to` null
+                it.sendtPaaVegneAv!!.truncatedToSeconds() `should be equal to` Instant.now().truncatedToSeconds()
             }
         }
 
@@ -188,7 +196,7 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
                         id = "paw-arbeidssoekerregisteret-bekreftelse-utgang",
                     ),
                 kilde = "paw-arbeidssoekerregisteret-bekreftelse-utgang",
-                aarsak = "Utløpt",
+                aarsak = "Test",
                 tidspunktFraKilde = null,
             )
 
@@ -201,7 +209,7 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
                         utfoertAv =
                             BrukerResponse(
                                 type = "SLUTTBRUKER",
-                                id = "11111111111",
+                                id = FNR,
                             ),
                         kilde = "paw-arbeidssokerregisteret-api-inngang",
                         aarsak = "Test",

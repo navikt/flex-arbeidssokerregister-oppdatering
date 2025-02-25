@@ -20,7 +20,9 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 const val FNR = "11111111111"
@@ -131,3 +133,5 @@ fun lagFremtidigFriskTilArbeidSoknad(): SykepengesoknadDTO =
             ).serialisertTilString(),
         friskTilArbeidVedtakId = VEDTAKSPERIODE_ID,
     )
+
+fun Instant.truncatedToSeconds(): Instant = this.truncatedTo(ChronoUnit.SECONDS)
