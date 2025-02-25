@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.util.UUID
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -179,11 +179,9 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeId: String,
         erAvsluttet: Boolean = false,
     ): List<ArbeidssokerperiodeResponse> {
-        val tidspunkt = OffsetDateTime.parse("2025-01-01T00:00:00.000Z")
-
         val avsluttet =
             MetadataResponse(
-                tidspunkt = tidspunkt.plusMonths(1),
+                tidspunkt = Instant.parse("2025-01-31T00:00:00.000Z"),
                 utfoertAv =
                     BrukerResponse(
                         type = "SYSTEM",
@@ -199,7 +197,7 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
                 periodeId = arbeidssokerperiodeId,
                 startet =
                     MetadataResponse(
-                        tidspunkt = tidspunkt,
+                        tidspunkt = Instant.parse("2025-01-01T00:00:00.000Z"),
                         utfoertAv =
                             BrukerResponse(
                                 type = "SLUTTBRUKER",

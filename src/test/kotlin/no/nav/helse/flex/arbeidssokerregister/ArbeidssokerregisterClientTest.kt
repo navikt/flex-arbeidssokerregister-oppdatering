@@ -5,7 +5,7 @@ import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.OffsetDateTime
+import java.time.Instant
 
 class ArbeidssokerregisterClientTest : FellesTestOppsett() {
     @Autowired
@@ -24,7 +24,7 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
             it.size `should be equal to` 1
             it.first().also {
                 it.periodeId `should be equal to` "ec135a7e-f694-48fe-a65d-336fe7f923b1"
-                it.startet.tidspunkt `should be equal to` OffsetDateTime.parse("2025-01-01T00:00:00.000Z")
+                it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
                 it.startet.aarsak `should be equal to` "Test"
                 it.avsluttet `should be equal to` null
             }
@@ -53,9 +53,9 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
 
         response.first().also {
             it.periodeId `should be equal to` "04a78565-a5ae-43ee-8e44-42893060995a"
-            it.startet.tidspunkt `should be equal to` OffsetDateTime.parse("2025-01-01T00:00:00.000Z")
+            it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
             it.startet.aarsak `should be equal to` "Test"
-            it.avsluttet!!.tidspunkt `should be equal to` OffsetDateTime.parse("2025-02-02T00:00:00.000Z")
+            it.avsluttet!!.tidspunkt `should be equal to` Instant.parse("2025-02-02T00:00:00.000Z")
             it.avsluttet.aarsak `should be equal to` "Utløpt"
         }
     }

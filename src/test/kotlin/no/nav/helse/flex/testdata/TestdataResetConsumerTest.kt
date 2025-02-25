@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.util.*
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -45,7 +45,7 @@ class TestdataResetConsumerTest : FellesTestOppsett() {
             Arbeidssokerperiode(
                 fnr = "11111111111",
                 vedtaksperiodeId = UUID.randomUUID().toString(),
-                opprettet = OffsetDateTime.now(),
+                opprettet = Instant.now(),
             ),
         )
 
@@ -53,7 +53,7 @@ class TestdataResetConsumerTest : FellesTestOppsett() {
             Arbeidssokerperiode(
                 fnr = "22222222222",
                 vedtaksperiodeId = UUID.randomUUID().toString(),
-                opprettet = OffsetDateTime.now(),
+                opprettet = Instant.now(),
             ),
         )
 

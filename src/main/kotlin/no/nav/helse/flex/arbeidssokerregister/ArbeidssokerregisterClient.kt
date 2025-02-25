@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
-import java.time.OffsetDateTime
+import java.time.Instant
 
 @Component
 class ArbeidssokerregisterClient(
@@ -40,7 +40,7 @@ data class ArbeidssokerperiodeResponse(
 )
 
 data class MetadataResponse(
-    val tidspunkt: OffsetDateTime,
+    val tidspunkt: Instant,
     val utfoertAv: BrukerResponse,
     val kilde: String,
     val aarsak: String,
@@ -54,7 +54,7 @@ data class BrukerResponse(
 )
 
 data class TidspunktFraKildeResponse(
-    val tidspunkt: OffsetDateTime,
+    val tidspunkt: Instant,
     // UKJENT_VERDI, FORSINKELSE, RETTING, SLETTET, TIDSPUNKT_KORRIGERT
     val avviksType: String,
 )
