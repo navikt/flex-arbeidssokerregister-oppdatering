@@ -1,6 +1,7 @@
 package no.nav.helse.flex.testdata
 
 import no.nav.helse.flex.ArbeidssokerperiodeRepository
+import no.nav.helse.flex.PeriodebekreftelseRepository
 import no.nav.helse.flex.logger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.context.annotation.Profile
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 @Profile("test", "testdatareset")
 class TestdataResetListener(
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
+    private val periodebekreftelseRepository: PeriodebekreftelseRepository,
 ) {
     private val log = logger()
 
@@ -26,8 +28,14 @@ class TestdataResetListener(
         acknowledgment: Acknowledgment,
     ) {
         val fnr = cr.value()
-        val antallSlettet = arbeidssokerperiodeRepository.deleteByFnr(fnr)
-        log.info("Slettet: $antallSlettet arbeidssokerperioder for fnr: $fnr.")
+        arbeidssokerperiodeRepository.findByFnr(fnr)?.let {
+            it.forEach {
+                val en = periodebekreftelseRepository.deleteByArbeidssokerperiodeId(it.id!!)
+                log.info("Slettet: $en periodebekreftelse for fnr: $fnr.")
+                arbeidssokerperiodeRepository.delete(it)
+            }
+            log.info("Slettet: ${it.size} arbeidssokerperioder for fnr: $fnr.")
+        }
         acknowledgment.acknowledge()
     }
 }
