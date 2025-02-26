@@ -1,6 +1,6 @@
 package no.nav.helse.flex.arbeidssokerregister
 
-import no.nav.helse.flex.logger
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
@@ -8,9 +8,9 @@ import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
 @Component
-class ArbeidssokerperiodeListener {
-    private val log = logger()
-
+class ArbeidssokerperiodeListener(
+    private val arbeidssokerperiodeService: ArbeidssokerperiodeService,
+) {
     @KafkaListener(
         topics = [ARBEIDSSOKERPERIODE_TOPIC],
         id = "flex-arbeidssokerregister-periode-v1",
@@ -22,16 +22,10 @@ class ArbeidssokerperiodeListener {
         acknowledgment: Acknowledgment,
     ) {
         cr.value().also {
-            perioder[it.id.toString()] = it
-            log.info("Mottok periode med id: ${it.id}.")
+            arbeidssokerperiodeService.behandlePeriode(it)
         }
         acknowledgment.acknowledge()
     }
-
-    // TODO: Erstatt med @Repository og TestContainers.
-    private val perioder = mutableMapOf<String, Periode>()
-
-    fun hentPeriode(id: String): Periode? = perioder[id]
 }
 
 const val ARBEIDSSOKERPERIODE_TOPIC = "paw.arbeidssokerperioder-v1"

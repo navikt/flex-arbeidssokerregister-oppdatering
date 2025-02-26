@@ -6,6 +6,7 @@ import no.nav.helse.flex.serialisertTilString
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.stereotype.Component
+import java.time.Instant
 import java.util.*
 
 @Component
@@ -26,6 +27,7 @@ class ArbeidssokerperiodeStoppProducer(
 data class StoppMelding(
     val vedtaksperiodeId: String,
     val fnr: String,
+    val avsluttetTidspunkt: Instant,
 )
 
 internal fun String.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(this.toByteArray()).toString()
