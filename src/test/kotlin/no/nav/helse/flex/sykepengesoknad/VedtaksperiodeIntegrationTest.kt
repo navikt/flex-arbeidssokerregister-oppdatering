@@ -10,7 +10,7 @@ import no.nav.helse.flex.arbeidssokerregister.BrukerResponse
 import no.nav.helse.flex.arbeidssokerregister.FJORDEN_DAGER
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorResponse
 import no.nav.helse.flex.arbeidssokerregister.MetadataResponse
-import no.nav.helse.flex.lagFremtidigFriskTilArbeidSoknad
+import no.nav.helse.flex.lagSoknad
 import no.nav.helse.flex.serialisertTilString
 import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
@@ -33,7 +33,7 @@ import java.time.Instant
 import java.util.UUID
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
+class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     @Autowired
     private lateinit var sykepengesoknadService: SykepengesoknadService
 
@@ -58,7 +58,7 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
         paaVegneAvConsumer.fetchRecords().size `should be equal to` 0
     }
 
-    private val soknad = lagFremtidigFriskTilArbeidSoknad()
+    private val soknad = lagSoknad()
 
     @Test
     @Order(1)
@@ -75,20 +75,17 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
 
         sykepengesoknadService.behandleSoknad(soknad)
 
-        arbeidssokerperiodeRepository.findAll().toList().also {
-            it.size `should be equal to` 1
-            it.first().also {
-                it.vedtaksperiodeId `should be equal to` VEDTAKSPERIODE_ID
-                it.kafkaRecordKey `should be equal to` 1000L
-                it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiodeId
-                it.sendtPaaVegneAv!! `should be within seconds of` (1 to Instant.now())
-            }
+        arbeidssokerperiodeRepository.findAll().toList().single().also {
+            it.vedtaksperiodeId `should be equal to` VEDTAKSPERIODE_ID
+            it.kafkaRecordKey `should be equal to` 1000L
+            it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiodeId
+            it.sendtPaaVegneAv!! `should be within seconds of` (1 to Instant.now())
         }
 
         kafkaKeyGeneratorMockWebServer.takeRequest() `should not be equal to` null
         arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
 
-        paaVegneAvConsumer.waitForRecords(1).first().also {
+        paaVegneAvConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` 1000L
             it.value().also {
                 it.periodeId.toString() `should be equal to` arbeidssokerperiodeId

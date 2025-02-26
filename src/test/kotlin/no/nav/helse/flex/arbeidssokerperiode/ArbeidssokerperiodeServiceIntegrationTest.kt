@@ -70,7 +70,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
         }
 
-        arbeidssokerperiodeStoppConsumer.waitForRecords(1).first().also {
+        arbeidssokerperiodeStoppConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` FNR.asProducerRecordKey()
 
             it.value().tilArbeidssokerperiodeStoppMelding().also {
@@ -109,7 +109,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
         }
 
-        arbeidssokerperiodeStoppConsumer.waitForRecords(1).first().also {
+        arbeidssokerperiodeStoppConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` FNR.asProducerRecordKey()
 
             it.value().tilArbeidssokerperiodeStoppMelding().also {
@@ -122,18 +122,9 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
     @Test
     fun `Behandler ikke ukjent Periode`() {
-        val vedtaksperiodeId = UUID.randomUUID().toString()
-        val arbeidssokerperiodeId = UUID.randomUUID().toString()
-
-        val startetTidspunkt = LocalDate.of(2025, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
-        val avsluttetTidspunkt = LocalDate.of(2025, 1, 31).atStartOfDay().toInstant(ZoneOffset.UTC)
-
-        // TODO: Bygg opp mer realistisk.
-        val startet = Metadata(startetTidspunkt, Bruker(BrukerType.SYSTEM, "TEST"), "Test", "Test", null)
-        val avsluttet = Metadata(avsluttetTidspunkt, Bruker(BrukerType.SLUTTBRUKER, FNR), "Test", "Test", null)
-        val periode = Periode(UUID.fromString(arbeidssokerperiodeId), FNR, startet, avsluttet)
-
-        arbeidssokerperiodeService.behandlePeriode(periode)
+        lagKafkaPeriode(UUID.randomUUID().toString(), true).also {
+            arbeidssokerperiodeService.behandlePeriode(it)
+        }
 
         arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerperiodeId) `should be equal to` null
     }

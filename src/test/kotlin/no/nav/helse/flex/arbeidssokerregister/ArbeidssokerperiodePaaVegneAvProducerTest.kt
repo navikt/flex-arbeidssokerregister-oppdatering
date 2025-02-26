@@ -27,7 +27,7 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
 
         paaVegneAvProducer.send(paaVegneAvMelding)
 
-        paaVegneAvConsumer.waitForRecords(1).first().also {
+        paaVegneAvConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` paaVegneAvMelding.kafkaKey
             it.value().periodeId `should be equal to` paaVegneAvMelding.periodeId
         }

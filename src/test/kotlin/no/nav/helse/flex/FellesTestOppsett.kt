@@ -119,12 +119,16 @@ object ArbeidssokerperiodeMockDispatcher : QueueDispatcher() {
 private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
     createMockResponse().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
-fun lagFremtidigFriskTilArbeidSoknad(): SykepengesoknadDTO =
+fun lagSoknad(
+    status: SoknadsstatusDTO = SoknadsstatusDTO.FREMTIDIG,
+    fortsattArbeidssoker: Boolean? = null,
+    inntektUnderveis: Boolean? = null,
+): SykepengesoknadDTO =
     SykepengesoknadDTO(
         fnr = FNR,
         id = UUID.randomUUID().toString(),
         type = SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
-        status = SoknadsstatusDTO.FREMTIDIG,
+        status = status,
         fom = LocalDate.of(2025, 1, 1),
         tom = LocalDate.of(2025, 1, 31),
         friskTilArbeidVedtakPeriode =
@@ -133,6 +137,8 @@ fun lagFremtidigFriskTilArbeidSoknad(): SykepengesoknadDTO =
                 LocalDate.of(2025, 3, 31),
             ).serialisertTilString(),
         friskTilArbeidVedtakId = VEDTAKSPERIODE_ID,
+        fortsattArbeidssoker = fortsattArbeidssoker,
+        inntektUnderveis = inntektUnderveis,
     )
 
 infix fun Instant.`should be within seconds of`(pair: Pair<Int, Instant>) = this.shouldBeWithinSecondsOf(pair.first.toInt() to pair.second)

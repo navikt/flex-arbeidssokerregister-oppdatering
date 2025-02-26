@@ -1,5 +1,6 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
@@ -20,14 +21,11 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
             MockResponse().setBody(periode),
         )
 
-        arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest("11111111111")).also {
-            it.size `should be equal to` 1
-            it.first().also {
-                it.periodeId `should be equal to` "ec135a7e-f694-48fe-a65d-336fe7f923b1"
-                it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
-                it.startet.aarsak `should be equal to` "Test"
-                it.avsluttet `should be equal to` null
-            }
+        arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR)).single().also {
+            it.periodeId `should be equal to` "ec135a7e-f694-48fe-a65d-336fe7f923b1"
+            it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
+            it.startet.aarsak `should be equal to` "Test"
+            it.avsluttet `should be equal to` null
         }
 
         arbeidssokerperiodeMockWebServer.takeRequest().also {
@@ -48,10 +46,10 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
         arbeidssokerperiodeMockWebServer.enqueue(mockResponse)
 
         val response =
-            arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest("11111111111"))
+            arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR))
         response.size `should be equal to` 1
 
-        response.first().also {
+        response.single().also {
             it.periodeId `should be equal to` "04a78565-a5ae-43ee-8e44-42893060995a"
             it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
             it.startet.aarsak `should be equal to` "Test"
