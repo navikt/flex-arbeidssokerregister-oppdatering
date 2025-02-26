@@ -9,6 +9,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.QueueDispatcher
 import okhttp3.mockwebserver.RecordedRequest
+import org.amshove.kluent.should
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.awaitility.Awaitility
@@ -22,8 +23,8 @@ import org.testcontainers.utility.DockerImageName
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
+import kotlin.math.abs
 
 const val FNR = "11111111111"
 const val VEDTAKSPERIODE_ID = "52198b00-c980-4a68-832f-42b2c21316a2"
@@ -134,4 +135,10 @@ fun lagFremtidigFriskTilArbeidSoknad(): SykepengesoknadDTO =
         friskTilArbeidVedtakId = VEDTAKSPERIODE_ID,
     )
 
-fun Instant.truncatedToSeconds(): Instant = this.truncatedTo(ChronoUnit.SECONDS)
+infix fun Instant.`should be within seconds of`(pair: Pair<Int, Instant>) = this.shouldBeWithinSecondsOf(pair.first.toInt() to pair.second)
+
+infix fun Instant.shouldBeWithinSecondsOf(pair: Pair<Int, Instant>) {
+    val (seconds, other) = pair
+    val difference = abs(this.epochSecond - other.epochSecond)
+    this.should { difference <= seconds }
+}

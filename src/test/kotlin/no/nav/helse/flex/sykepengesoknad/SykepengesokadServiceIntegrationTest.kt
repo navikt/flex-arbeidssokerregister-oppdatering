@@ -12,9 +12,9 @@ import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorResponse
 import no.nav.helse.flex.arbeidssokerregister.MetadataResponse
 import no.nav.helse.flex.lagFremtidigFriskTilArbeidSoknad
 import no.nav.helse.flex.serialisertTilString
+import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
-import no.nav.helse.flex.truncatedToSeconds
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import okhttp3.mockwebserver.MockResponse
@@ -81,7 +81,7 @@ class SykepengesokadServiceIntegrationTest : FellesTestOppsett() {
                 it.vedtaksperiodeId `should be equal to` VEDTAKSPERIODE_ID
                 it.kafkaRecordKey `should be equal to` 1000L
                 it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiodeId
-                it.sendtPaaVegneAv!!.truncatedToSeconds() `should be equal to` Instant.now().truncatedToSeconds()
+                it.sendtPaaVegneAv!! `should be within seconds of` (1 to Instant.now())
             }
         }
 

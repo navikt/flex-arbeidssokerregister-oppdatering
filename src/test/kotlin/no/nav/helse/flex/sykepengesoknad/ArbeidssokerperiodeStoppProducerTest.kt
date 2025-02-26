@@ -1,7 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import no.nav.helse.flex.FellesTestOppsett
-import no.nav.helse.flex.truncatedToSeconds
+import no.nav.helse.flex.`should be within seconds of`
 import org.amshove.kluent.`should be equal to`
 import org.apache.kafka.clients.consumer.Consumer
 import org.junit.jupiter.api.BeforeAll
@@ -35,7 +35,7 @@ class ArbeidssokerperiodeStoppProducerTest : FellesTestOppsett() {
             it.value().tilArbeidssokerperiodeStoppMelding().also {
                 it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
                 it.fnr `should be equal to` fnr
-                it.avsluttetTidspunkt.truncatedToSeconds() `should be equal to` Instant.now().truncatedToSeconds()
+                it.avsluttetTidspunkt `should be within seconds of` (1 to Instant.now())
             }
         }
     }

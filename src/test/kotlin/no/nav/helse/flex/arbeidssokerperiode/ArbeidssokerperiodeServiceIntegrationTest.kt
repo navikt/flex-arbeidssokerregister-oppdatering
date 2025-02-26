@@ -4,16 +4,15 @@ import no.nav.helse.flex.Arbeidssokerperiode
 import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
+import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
 import no.nav.helse.flex.sykepengesoknad.asProducerRecordKey
 import no.nav.helse.flex.sykepengesoknad.tilArbeidssokerperiodeStoppMelding
-import no.nav.helse.flex.truncatedToSeconds
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be equal to`
 import org.apache.kafka.clients.consumer.Consumer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -67,7 +66,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         }
 
         arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerperiodeId)!!.also {
-            it.avsluttetMottatt `should not be equal to` Instant.now().truncatedToSeconds()
+            it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
             it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
         }
 
@@ -106,7 +105,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         }
 
         arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerperiodeId)!!.also {
-            it.avsluttetMottatt `should not be equal to` Instant.now().truncatedToSeconds()
+            it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
             it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
         }
 
