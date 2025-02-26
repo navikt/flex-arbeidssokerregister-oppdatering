@@ -1,10 +1,8 @@
 package no.nav.helse.flex.sykepengesoknad
 
-import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
-import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeResponse
 import no.nav.helse.flex.arbeidssokerregister.BrukerResponse
 import no.nav.helse.flex.arbeidssokerregister.FJORDEN_DAGER
@@ -15,47 +13,24 @@ import no.nav.helse.flex.serialisertTilString
 import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
-import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
-import org.apache.kafka.clients.consumer.Consumer
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.util.UUID
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
-    @Autowired
-    private lateinit var sykepengesoknadService: SykepengesoknadService
-
-    @Autowired
-    private lateinit var arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository
-
-    @Autowired
-    private lateinit var paaVegneAvConsumer: Consumer<Long, PaaVegneAv>
-
-    @BeforeAll
-    fun slettFraDatabase() {
-        arbeidssokerperiodeRepository.deleteAll()
-    }
-
-    @BeforeAll
-    fun subscribeToTopics() {
-        paaVegneAvConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
-    }
-
     @AfterEach
-    fun verifiserAtTopicEtTomt() {
-        paaVegneAvConsumer.fetchRecords().size `should be equal to` 0
+    fun verifiserAtTopicErTomt() {
+        arbeidssokerperiodeStoppConsumer.fetchRecords().size `should be equal to` 0
     }
 
     private val soknad = lagSoknad()

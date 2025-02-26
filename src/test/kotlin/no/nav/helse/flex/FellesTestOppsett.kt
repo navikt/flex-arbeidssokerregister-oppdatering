@@ -1,9 +1,22 @@
 package no.nav.helse.flex
 
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
+import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC
+import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
+import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
+import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
 import no.nav.helse.flex.sykepengesoknad.Periode
+import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import no.nav.helse.flex.testdata.TESTDATA_RESET_TOPIC
+import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
+import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -12,8 +25,12 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.amshove.kluent.should
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.producer.Producer
 import org.awaitility.Awaitility
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
@@ -34,6 +51,63 @@ const val VEDTAKSPERIODE_ID = "52198b00-c980-4a68-832f-42b2c21316a2"
 @AutoConfigureObservability
 @EnableMockOAuth2Server
 abstract class FellesTestOppsett {
+    @Autowired
+    lateinit var kafkaKeyGeneratorClient: KafkaKeyGeneratorClient
+
+    @Autowired
+    lateinit var arbeidssokerregisterClient: ArbeidssokerregisterClient
+
+    @Autowired
+    lateinit var arbeidssokerperiodeStoppConsumer: Consumer<String, String>
+
+    @Autowired
+    lateinit var testdataResetConsumer: Consumer<String, String>
+
+    @Autowired
+    lateinit var bekreftelseConsumer: Consumer<Long, Bekreftelse>
+
+    @Autowired
+    lateinit var paaVegneAvConsumer: Consumer<Long, PaaVegneAv>
+
+    @Autowired
+    lateinit var kafkaProducer: Producer<String, String>
+
+    @Autowired
+    lateinit var arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer
+
+    @Autowired
+    lateinit var bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer
+
+    @Autowired
+    lateinit var paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer
+
+    @Autowired
+    lateinit var arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository
+
+    @Autowired
+    lateinit var periodebekreftelseRepository: PeriodebekreftelseRepository
+
+    @Autowired
+    lateinit var arbeidssokerperiodeService: ArbeidssokerperiodeService
+
+    @Autowired
+    lateinit var sykepengesoknadService: SykepengesoknadService
+
+    @BeforeAll
+    fun subscribeToTopics() {
+        arbeidssokerperiodeStoppConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
+        bekreftelseConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC)
+        paaVegneAvConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
+        testdataResetConsumer.subscribeToTopics(TESTDATA_RESET_TOPIC)
+    }
+
+    @BeforeAll
+    @AfterAll
+    fun slettFraDatabase() {
+        periodebekreftelseRepository.deleteAll()
+        arbeidssokerperiodeRepository.deleteAll()
+    }
+
     companion object {
         init {
             PostgreSQLContainer16().apply {
@@ -62,7 +136,7 @@ abstract class FellesTestOppsett {
             }
     }
 
-    fun <K, V> Consumer<K, V>.subscribeToTopics(vararg topics: String) {
+    private fun <K, V> Consumer<K, V>.subscribeToTopics(vararg topics: String) {
         if (this.subscription().isEmpty()) {
             this.subscribe(listOf(*topics))
         }
@@ -96,6 +170,9 @@ abstract class FellesTestOppsett {
 
 private class PostgreSQLContainer16 : PostgreSQLContainer<PostgreSQLContainer16>("postgres:16-alpine")
 
+private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
+    createMockResponse().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+
 object KafkaKeyGeneratorMockDispatcher : QueueDispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
         if (responseQueue.peek() != null) {
@@ -115,9 +192,6 @@ object ArbeidssokerperiodeMockDispatcher : QueueDispatcher() {
         return MockResponse().setResponseCode(404)
     }
 }
-
-private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
-    createMockResponse().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
 
 fun lagSoknad(
     status: SoknadsstatusDTO = SoknadsstatusDTO.FREMTIDIG,

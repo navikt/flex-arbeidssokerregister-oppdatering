@@ -1,11 +1,9 @@
 package no.nav.helse.flex.arbeidssokerperiode
 
 import no.nav.helse.flex.Arbeidssokerperiode
-import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.`should be within seconds of`
-import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
 import no.nav.helse.flex.sykepengesoknad.asProducerRecordKey
 import no.nav.helse.flex.sykepengesoknad.tilArbeidssokerperiodeStoppMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
@@ -13,14 +11,10 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.amshove.kluent.`should be equal to`
-import org.apache.kafka.clients.consumer.Consumer
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -28,28 +22,9 @@ import java.util.*
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
-    @Autowired
-    private lateinit var arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository
-
-    @Autowired
-    private lateinit var arbeidssokerperiodeService: ArbeidssokerperiodeService
-
-    @Autowired
-    private lateinit var arbeidssokerperiodeStoppConsumer: Consumer<String, String>
-
-    @BeforeAll
-    fun subscribeToTopics() {
-        arbeidssokerperiodeStoppConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
-    }
-
     @BeforeEach
-    fun slettFraDatabase() {
+    fun setup() {
         arbeidssokerperiodeRepository.deleteAll()
-    }
-
-    @AfterEach
-    fun verifiserAtTopicEtTomt() {
-        arbeidssokerperiodeStoppConsumer.fetchRecords().size `should be equal to` 0
     }
 
     private val startetTidspunkt = LocalDate.of(2025, 1, 2).atStartOfDay().toInstant(ZoneOffset.UTC)
