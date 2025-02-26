@@ -1,5 +1,6 @@
 package no.nav.helse.flex.api
 
+import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelse
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
@@ -7,7 +8,6 @@ import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
-import no.nav.helse.flex.arbeidssokerregister.PeriodeBekreftelse
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
 import no.nav.helse.flex.sykepengesoknad.SOKNAR_DEAKTIVERES_ETTER_MAANEDER
@@ -54,7 +54,7 @@ class DevelopmentController(
         @PathVariable fnr: String,
     ): ResponseEntity<ArbeidssokerperiodeResponse> {
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr)).let {
-            it.first().also {
+            it.single().also {
                 return ResponseEntity.ok(
                     ArbeidssokerperiodeResponse(
                         it.periodeId.toString(),
@@ -105,14 +105,14 @@ private fun PaaVegneAvRequest.tilPaaVegneAvmelding() =
     )
 
 private fun PeriodeBekrefelseRequest.tilPeriodeBekreftelse() =
-    PeriodeBekreftelse(
+    ArbeidssokerperiodeBekreftelse(
         kafkaKey = this.kafkaKey,
         periodeId = UUID.fromString(this.periodeId),
         fnr = this.fnr,
         periodeStart = Instant.now(),
         periodeSlutt = Instant.now().plus(14, ChronoUnit.DAYS),
-        harJobbetIDennePerioden = this.harJobbet,
-        vilFortsetteSomArbeidssoeker = this.vilFortsette,
+        inntektUnderveis = this.inntektUnderveis,
+        fortsattArbeidssoker = this.fortsattArbeidssoker,
     )
 
 private fun StoppRequest.tilStoppMelding() =
@@ -138,8 +138,8 @@ data class PeriodeBekrefelseRequest(
     val kafkaKey: Long,
     val periodeId: String,
     val fnr: String,
-    val harJobbet: Boolean,
-    val vilFortsette: Boolean,
+    val inntektUnderveis: Boolean,
+    val fortsattArbeidssoker: Boolean,
 )
 
 data class KafkaKeyResponse(

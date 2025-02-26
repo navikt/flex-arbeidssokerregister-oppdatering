@@ -22,18 +22,18 @@ class ArbeidssokerperiodeBekreftelseProducer(
     @Qualifier("avroKafkaProducer")
     val kafkaProducer: Producer<Long, Bekreftelse>,
 ) {
-    fun send(periodeBekreftelse: PeriodeBekreftelse) {
+    fun send(arbeidssokerperiodeBekreftelse: ArbeidssokerperiodeBekreftelse) {
         kafkaProducer
             .send(
                 ProducerRecord(
                     ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC,
-                    periodeBekreftelse.kafkaKey,
-                    lagBekreftelse(periodeBekreftelse),
+                    arbeidssokerperiodeBekreftelse.kafkaKey,
+                    lagBekreftelse(arbeidssokerperiodeBekreftelse),
                 ),
             ).get()
     }
 
-    private fun lagBekreftelse(periodeBekrefelse: PeriodeBekreftelse): Bekreftelse {
+    private fun lagBekreftelse(periodeBekrefelse: ArbeidssokerperiodeBekreftelse): Bekreftelse {
         val metadata =
             Metadata(Instant.now(), Bruker(BrukerType.SLUTTBRUKER, periodeBekrefelse.fnr), UTFOERT_AV, AARSAK)
 
@@ -46,22 +46,22 @@ class ArbeidssokerperiodeBekreftelseProducer(
                     metadata,
                     periodeBekrefelse.periodeStart,
                     periodeBekrefelse.periodeSlutt,
-                    periodeBekrefelse.harJobbetIDennePerioden,
-                    periodeBekrefelse.vilFortsetteSomArbeidssoeker,
+                    periodeBekrefelse.inntektUnderveis,
+                    periodeBekrefelse.fortsattArbeidssoker,
                 ),
             )
         return bekreftelse
     }
 }
 
-data class PeriodeBekreftelse(
+data class ArbeidssokerperiodeBekreftelse(
     val kafkaKey: Long,
     val periodeId: UUID,
     val fnr: String,
     val periodeStart: Instant,
     val periodeSlutt: Instant,
-    val harJobbetIDennePerioden: Boolean,
-    val vilFortsetteSomArbeidssoeker: Boolean,
+    val inntektUnderveis: Boolean,
+    val fortsattArbeidssoker: Boolean,
 )
 
 const val ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC =
