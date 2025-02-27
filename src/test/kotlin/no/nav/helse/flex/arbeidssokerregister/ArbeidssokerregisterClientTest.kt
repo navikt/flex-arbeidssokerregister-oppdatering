@@ -5,13 +5,9 @@ import no.nav.helse.flex.FellesTestOppsett
 import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 
 class ArbeidssokerregisterClientTest : FellesTestOppsett() {
-    @Autowired
-    private lateinit var arbeidssokerregisterClient: ArbeidssokerregisterClient
-
     @Test
     fun `Deserialiserer gyldig periode`() {
         val periode =
