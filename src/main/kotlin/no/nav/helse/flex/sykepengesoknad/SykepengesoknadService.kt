@@ -13,7 +13,7 @@ import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.BekreftelseMelding
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
-import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
+import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStartMelding
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
@@ -76,7 +76,7 @@ class SykepengesoknadService(
         )
 
         paaVegneAvProducer.send(
-            PaaVegneAvMelding(
+            PaaVegneAvStartMelding(
                 kafkaRecordKey,
                 UUID.fromString(arbeidsokerperiode.periodeId),
                 beregnGraceMS(vedtaksperiode.tom, SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
@@ -84,7 +84,7 @@ class SykepengesoknadService(
         )
 
         log.info(
-            "Behandlet ny vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} for arbeidssokerperiode: ${arbeidsokerperiode.periodeId}",
+            "Behandlet ny vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} for arbeidssokerperiode: ${arbeidsokerperiode.periodeId}.",
         )
     }
 

@@ -4,6 +4,7 @@ import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
+import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.beans.factory.annotation.Qualifier
@@ -20,7 +21,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 ) {
     private val log = logger()
 
-    fun send(paaVegneAvMelding: PaaVegneAvMelding) {
+    fun send(paaVegneAvMelding: PaaVegneAvStartMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
         val periodeId = paaVegneAvMelding.periodeId
 
@@ -30,6 +31,16 @@ class ArbeidssokerperiodePaaVegneAvProducer(
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 Start(FJORDEN_DAGER, paaVegneAvMelding.graceMS),
             )
+
+        sendKafkaMelding(kafkaKey, paaVegneAv)
+
+        log.info("Sendt PaaVegneAvStartMelding med kafkaKey: $kafkaKey og periodeId: $periodeId.")
+    }
+
+    fun sendKafkaMelding(
+        kafkaKey: Long,
+        paaVegneAv: PaaVegneAv,
+    ) {
         kafkaProducer
             .send(
                 ProducerRecord(
@@ -38,15 +49,34 @@ class ArbeidssokerperiodePaaVegneAvProducer(
                     paaVegneAv,
                 ),
             ).get()
+    }
 
-        log.info("Sendt PaaVegneAv-melding med kafkaKey: $kafkaKey og periodeId: $periodeId")
+    fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
+        val kafkaKey = paaVegneAvMelding.kafkaKey
+        val periodeId = paaVegneAvMelding.periodeId
+
+        val paaVegneAv =
+            PaaVegneAv(
+                periodeId,
+                Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
+                Stopp(),
+            )
+
+        sendKafkaMelding(kafkaKey, paaVegneAv)
+
+        log.info("Sendt PaaVegneAvStoppMelding med kafkaKey: $kafkaKey og periodeId: $periodeId.")
     }
 }
 
-data class PaaVegneAvMelding(
+data class PaaVegneAvStartMelding(
     val kafkaKey: Long,
     val periodeId: UUID,
     val graceMS: Long,
+)
+
+data class PaaVegneAvStoppMelding(
+    val kafkaKey: Long,
+    val periodeId: UUID,
 )
 
 const val ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC =
