@@ -6,6 +6,7 @@ import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.asProducerRecordKey
 import no.nav.helse.flex.sykepengesoknad.tilArbeidssokerperiodeStoppMelding
+import no.nav.helse.flex.sykepengesoknad.toInstantAtStartOfDay
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.*
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -27,8 +27,8 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeRepository.deleteAll()
     }
 
-    private val startetTidspunkt = LocalDate.of(2025, 1, 2).atStartOfDay().toInstant(ZoneOffset.UTC)
-    private val avsluttetTidspunkt = LocalDate.of(2025, 1, 31).atStartOfDay().toInstant(ZoneOffset.UTC)
+    private val startetTidspunkt = LocalDate.of(2025, 1, 2).toInstantAtStartOfDay()
+    private val avsluttetTidspunkt = LocalDate.of(2025, 1, 31).toInstantAtStartOfDay()
     private val vedtaksperiodeId = UUID.randomUUID().toString()
     private val arbeidssokerperiodeId = UUID.randomUUID().toString()
 

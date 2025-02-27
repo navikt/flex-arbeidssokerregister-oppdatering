@@ -10,8 +10,8 @@ import java.util.*
 class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
     @Test
     fun `Kan serialisere og sende Bekreftelse`() {
-        val arbeidssokerperiodeBekreftelse =
-            ArbeidssokerperiodeBekreftelse(
+        val bekreftelseMelding =
+            BekreftelseMelding(
                 kafkaKey = -3771L,
                 periodeId = UUID.randomUUID(),
                 fnr = FNR,
@@ -21,11 +21,11 @@ class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
                 fortsattArbeidssoker = true,
             )
 
-        bekreftelseProducer.send(arbeidssokerperiodeBekreftelse)
+        bekreftelseProducer.send(bekreftelseMelding)
 
         bekreftelseConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` arbeidssokerperiodeBekreftelse.kafkaKey
-            it.value().periodeId `should be equal to` arbeidssokerperiodeBekreftelse.periodeId
+            it.key() `should be equal to` bekreftelseMelding.kafkaKey
+            it.value().periodeId `should be equal to` bekreftelseMelding.periodeId
         }
     }
 }
