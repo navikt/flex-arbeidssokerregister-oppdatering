@@ -29,7 +29,7 @@ class ArbeidssokerperiodeStoppProducerTest : FellesTestOppsett() {
 
         arbeidssokerperiodeStoppProducer.send(StoppMelding(vedtaksperiodeId, fnr, Instant.now()))
 
-        arbeidssokerperiodeStoppConsumer.waitForRecords(1).first().also {
+        arbeidssokerperiodeStoppConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` fnr.asProducerRecordKey()
 
             it.value().tilArbeidssokerperiodeStoppMelding().also {
