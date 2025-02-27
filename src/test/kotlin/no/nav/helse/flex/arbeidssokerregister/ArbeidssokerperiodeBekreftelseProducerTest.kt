@@ -1,5 +1,6 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import org.amshove.kluent.`should be equal to`
@@ -24,14 +25,14 @@ class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
 
     @Test
     fun `Kan serialisere og sende Bekreftelse`() {
-        val periodeBekreftelse =
-            PeriodeBekreftelse(1, UUID.randomUUID(), "11111111111", Instant.now(), Instant.now(), true, true)
+        val arbeidssokerperiodeBekreftelse =
+            ArbeidssokerperiodeBekreftelse(1, UUID.randomUUID(), FNR, Instant.now(), Instant.now(), true, true)
 
-        bekreftelseProducer.send(periodeBekreftelse)
+        bekreftelseProducer.send(arbeidssokerperiodeBekreftelse)
 
-        bekreftelseConsumer.waitForRecords(1).first().also {
-            it.key() `should be equal to` periodeBekreftelse.kafkaKey
-            it.value().periodeId `should be equal to` periodeBekreftelse.periodeId
+        bekreftelseConsumer.waitForRecords(1).single().also {
+            it.key() `should be equal to` arbeidssokerperiodeBekreftelse.kafkaKey
+            it.value().periodeId `should be equal to` arbeidssokerperiodeBekreftelse.periodeId
         }
     }
 }
