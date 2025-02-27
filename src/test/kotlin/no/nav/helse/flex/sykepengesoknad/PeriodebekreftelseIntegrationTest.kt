@@ -40,7 +40,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val inntektUnderveis = false
 
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
-
         sykepengesoknadService.behandleSoknad(soknad)
 
         verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
@@ -56,7 +55,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val inntektUnderveis = true
 
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
-
         sykepengesoknadService.behandleSoknad(soknad)
 
         verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
@@ -73,7 +71,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val inntektUnderveis = false
 
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
-
         sykepengesoknadService.behandleSoknad(soknad)
 
         verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
@@ -140,10 +137,27 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
 
         val soknad =
             lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(status = SoknadsstatusDTO.NY)
-
         sykepengesoknadService.behandleSoknad(soknad)
 
         periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
+    }
+
+    @Test
+    fun `Korrigerende søknad blir ikke behandlet`() {
+        val lagretPeriode = lagreArbeidssokerperiode()
+
+        val fortsattArbeidssoker = false
+        val inntektUnderveis = false
+
+        val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
+        sykepengesoknadService.behandleSoknad(soknad)
+
+        val korrigerendeSoknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis).copy(korrigerer = soknad.id)
+        sykepengesoknadService.behandleSoknad(korrigerendeSoknad)
+
+        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+
+        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
     }
 
     @Test
@@ -155,7 +169,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
                 fortsattArbeidssoker = true,
                 inntektUnderveis = false,
             ).copy(type = SoknadstypeDTO.ARBEIDSTAKERE)
-
         sykepengesoknadService.behandleSoknad(soknad)
 
         periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
