@@ -67,19 +67,19 @@ class SykepengesoknadService(
             )
         }
 
-        paaVegneAvProducer.send(
-            PaaVegneAvMelding(
-                kafkaRecordKey,
-                UUID.fromString(arbeidsokerperiode.periodeId),
-                beregnGraceMS(vedtaksperiode.tom, SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
-            ),
-        )
-
         arbeidssokerperiodeRepository.save(
             vedtaksperiode.toArbeidssokerperiode(
                 kafkaRecordKey,
                 arbeidsokerperiode.periodeId,
                 Instant.now(),
+            ),
+        )
+
+        paaVegneAvProducer.send(
+            PaaVegneAvMelding(
+                kafkaRecordKey,
+                UUID.fromString(arbeidsokerperiode.periodeId),
+                beregnGraceMS(vedtaksperiode.tom, SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
             ),
         )
 
@@ -89,6 +89,11 @@ class SykepengesoknadService(
     }
 
     private fun behandleBekreftelse(sykepengesoknadDTO: SykepengesoknadDTO) {
+        if (sykepengesoknadDTO.korrigerer != null) {
+            log.info("Ignorerer bekreftelse for korrigerende søknad: ${sykepengesoknadDTO.id}.")
+            return
+        }
+
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository.findByVedtaksperiodeId(sykepengesoknadDTO.friskTilArbeidVedtakId!!)
 
@@ -108,7 +113,7 @@ class SykepengesoknadService(
             ),
         )
 
-        val arbeidssokerperiodeBekreftelse =
+        val bekreftelseMelding =
             BekreftelseMelding(
                 kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
                 periodeId = UUID.fromString(arbeidssokerperiode.arbeidssokerperiodeId!!),
@@ -120,7 +125,7 @@ class SykepengesoknadService(
             )
 
         log.info("Behandlet bekreftelse for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.")
-        bekreftelseProducer.send(arbeidssokerperiodeBekreftelse)
+        bekreftelseProducer.send(bekreftelseMelding)
     }
 
     private fun erNyVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) =
