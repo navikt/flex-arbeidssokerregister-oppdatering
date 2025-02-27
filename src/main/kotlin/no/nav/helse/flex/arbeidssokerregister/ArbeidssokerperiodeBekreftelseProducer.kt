@@ -41,21 +41,24 @@ class ArbeidssokerperiodeBekreftelseProducer(
         log.info("Sendt Bekreftelse med kafkaKey: $kafkaKey og periodeId: $periodeId.")
     }
 
-    private fun lagBekreftelse(periodeBekrefelse: BekreftelseMelding): Bekreftelse {
+    private fun lagBekreftelse(periodeBekreftelse: BekreftelseMelding): Bekreftelse {
         val metadata =
-            Metadata(Instant.now(), Bruker(BrukerType.SLUTTBRUKER, periodeBekrefelse.fnr), UTFOERT_AV, AARSAK)
+            Metadata(Instant.now(), Bruker(BrukerType.SLUTTBRUKER, periodeBekreftelse.fnr), UTFOERT_AV, AARSAK)
 
         val bekreftelse =
             Bekreftelse(
-                periodeBekrefelse.periodeId,
+                periodeBekreftelse.periodeId,
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 UUID.randomUUID(),
                 Svar(
                     metadata,
-                    periodeBekrefelse.periodeStart,
-                    periodeBekrefelse.periodeSlutt,
-                    periodeBekrefelse.inntektUnderveis,
-                    periodeBekrefelse.fortsattArbeidssoker,
+                    periodeBekreftelse.periodeStart,
+                    periodeBekreftelse.periodeSlutt,
+                    // inntektUnderveis og fortsattArbeidssoker kan være null hvis det er siste søknad i periode og
+                    // da skal ikke Periodebekreftelse sendes, så de kan trygt settes til false siden de ikke
+                    // kan være null i Avro-klassen Periode.Svar.
+                    periodeBekreftelse.inntektUnderveis == true,
+                    periodeBekreftelse.fortsattArbeidssoker == true,
                 ),
             )
         return bekreftelse
@@ -68,8 +71,8 @@ data class BekreftelseMelding(
     val fnr: String,
     val periodeStart: Instant,
     val periodeSlutt: Instant,
-    val inntektUnderveis: Boolean,
-    val fortsattArbeidssoker: Boolean,
+    val inntektUnderveis: Boolean?,
+    val fortsattArbeidssoker: Boolean?,
 )
 
 const val ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC =

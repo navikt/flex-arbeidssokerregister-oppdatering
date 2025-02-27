@@ -31,10 +31,12 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     private val avsluttetTidspunkt = LocalDate.of(2025, 1, 31).toInstantAtStartOfDay()
     private val vedtaksperiodeId = UUID.randomUUID().toString()
     private val arbeidssokerperiodeId = UUID.randomUUID().toString()
+    private val vedtaksperiodeFom = LocalDate.now().minusMonths(1)
+    private val vedtaksperiodeTom = LocalDate.now().plusMonths(2)
 
     @Test
     fun `Behandler kjent avsluttet Periode`() {
-        lagreArbeidsokerperiode(vedtaksperiodeId, arbeidssokerperiodeId)
+        lagreArbeidsokerperiode()
 
         lagKafkaPeriode(arbeidssokerperiodeId, true).also {
             arbeidssokerperiodeService.behandlePeriode(it)
@@ -43,6 +45,8 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerperiodeId)!!.also {
             it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
             it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+            it.vedtaksperiodeFom `should be equal to` vedtaksperiodeFom
+            it.vedtaksperiodeTom `should be equal to` vedtaksperiodeTom
         }
 
         arbeidssokerperiodeStoppConsumer.waitForRecords(1).single().also {
@@ -58,7 +62,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
     @Test
     fun `Behandler ikke uavsluttet Periode`() {
-        lagreArbeidsokerperiode(vedtaksperiodeId, arbeidssokerperiodeId)
+        lagreArbeidsokerperiode()
 
         lagKafkaPeriode(arbeidssokerperiodeId, false).also {
             arbeidssokerperiodeService.behandlePeriode(it)
@@ -72,7 +76,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
     @Test
     fun `Behandler ikke avsluttet Periode to ganger`() {
-        lagreArbeidsokerperiode(vedtaksperiodeId, arbeidssokerperiodeId)
+        lagreArbeidsokerperiode()
 
         lagKafkaPeriode(arbeidssokerperiodeId, true).also {
             arbeidssokerperiodeService.behandlePeriode(it)
@@ -104,13 +108,12 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerperiodeId) `should be equal to` null
     }
 
-    private fun lagreArbeidsokerperiode(
-        vedtaksperiodeId: String,
-        arbeidssokerperiodeId: String,
-    ) {
+    private fun lagreArbeidsokerperiode() {
         Arbeidssokerperiode(
             fnr = FNR,
             vedtaksperiodeId = vedtaksperiodeId,
+            vedtaksperiodeFom = vedtaksperiodeFom,
+            vedtaksperiodeTom = vedtaksperiodeTom,
             opprettet = Instant.now(),
             kafkaRecordKey = -3771L,
             arbeidssokerperiodeId = arbeidssokerperiodeId,

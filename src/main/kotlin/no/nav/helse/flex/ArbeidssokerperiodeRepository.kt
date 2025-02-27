@@ -8,6 +8,7 @@ import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import java.time.Instant
+import java.time.LocalDate
 
 @Repository
 interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, String> {
@@ -28,6 +29,8 @@ data class Arbeidssokerperiode(
     val id: String? = null,
     val fnr: String,
     val vedtaksperiodeId: String,
+    val vedtaksperiodeFom: LocalDate,
+    val vedtaksperiodeTom: LocalDate,
     val opprettet: Instant,
     val kafkaRecordKey: Long? = null,
     val arbeidssokerperiodeId: String? = null,
@@ -35,4 +38,5 @@ data class Arbeidssokerperiode(
     val sendtPaaVegneAv: Instant? = null,
     val avsluttetMottatt: Instant? = null,
     val avsluttetTidspunkt: Instant? = null,
+    val sendtAvsluttet: Instant? = null,
 )
