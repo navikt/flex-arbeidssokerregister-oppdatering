@@ -18,6 +18,8 @@ interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, St
     fun deleteByFnr(fnr: String): Long
 
     fun findByArbeidssokerperiodeId(id: String): Arbeidssokerperiode?
+
+    fun findByFnr(string: String): List<Arbeidssokerperiode>?
 }
 
 @Table("arbeidssokerperiode")
