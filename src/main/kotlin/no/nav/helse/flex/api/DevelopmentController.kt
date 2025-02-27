@@ -1,10 +1,10 @@
 package no.nav.helse.flex.api
 
-import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelse
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
+import no.nav.helse.flex.arbeidssokerregister.BekreftelseMelding
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
@@ -80,7 +80,7 @@ class DevelopmentController(
     fun sendArbeidssokerregisterBekreftelse(
         @RequestBody request: PeriodeBekrefelseRequest,
     ): ResponseEntity<Void> {
-        bekrefelseProducer.send(request.tilPeriodeBekreftelse())
+        bekrefelseProducer.send(request.tilBekreftelseMelding())
 
         log.info("Sendt PeriodeBekreftelse for periodeId: ${request.periodeId}")
         return ResponseEntity.ok().build()
@@ -104,8 +104,8 @@ private fun PaaVegneAvRequest.tilPaaVegneAvmelding() =
         beregnGraceMS(LocalDate.now(), SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
     )
 
-private fun PeriodeBekrefelseRequest.tilPeriodeBekreftelse() =
-    ArbeidssokerperiodeBekreftelse(
+private fun PeriodeBekrefelseRequest.tilBekreftelseMelding() =
+    BekreftelseMelding(
         kafkaKey = this.kafkaKey,
         periodeId = UUID.fromString(this.periodeId),
         fnr = this.fnr,

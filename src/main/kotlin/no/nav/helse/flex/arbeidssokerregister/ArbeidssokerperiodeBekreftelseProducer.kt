@@ -22,18 +22,18 @@ class ArbeidssokerperiodeBekreftelseProducer(
     @Qualifier("avroKafkaProducer")
     val kafkaProducer: Producer<Long, Bekreftelse>,
 ) {
-    fun send(arbeidssokerperiodeBekreftelse: ArbeidssokerperiodeBekreftelse) {
+    fun send(bekreftelseMelding: BekreftelseMelding) {
         kafkaProducer
             .send(
                 ProducerRecord(
                     ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC,
-                    arbeidssokerperiodeBekreftelse.kafkaKey,
-                    lagBekreftelse(arbeidssokerperiodeBekreftelse),
+                    bekreftelseMelding.kafkaKey,
+                    lagBekreftelse(bekreftelseMelding),
                 ),
             ).get()
     }
 
-    private fun lagBekreftelse(periodeBekrefelse: ArbeidssokerperiodeBekreftelse): Bekreftelse {
+    private fun lagBekreftelse(periodeBekrefelse: BekreftelseMelding): Bekreftelse {
         val metadata =
             Metadata(Instant.now(), Bruker(BrukerType.SLUTTBRUKER, periodeBekrefelse.fnr), UTFOERT_AV, AARSAK)
 
@@ -54,7 +54,7 @@ class ArbeidssokerperiodeBekreftelseProducer(
     }
 }
 
-data class ArbeidssokerperiodeBekreftelse(
+data class BekreftelseMelding(
     val kafkaKey: Long,
     val periodeId: UUID,
     val fnr: String,
