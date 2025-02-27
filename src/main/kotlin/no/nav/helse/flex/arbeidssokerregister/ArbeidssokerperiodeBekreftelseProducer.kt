@@ -1,5 +1,6 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.melding.v1.vo.Bruker
@@ -22,15 +23,22 @@ class ArbeidssokerperiodeBekreftelseProducer(
     @Qualifier("avroKafkaProducer")
     val kafkaProducer: Producer<Long, Bekreftelse>,
 ) {
+    private val log = logger()
+
     fun send(bekreftelseMelding: BekreftelseMelding) {
+        val kafkaKey = bekreftelseMelding.kafkaKey
+        val periodeId = bekreftelseMelding.periodeId
+
         kafkaProducer
             .send(
                 ProducerRecord(
                     ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC,
-                    bekreftelseMelding.kafkaKey,
+                    kafkaKey,
                     lagBekreftelse(bekreftelseMelding),
                 ),
             ).get()
+
+        log.info("Sendt Bekreftelse med kafkaKey: $kafkaKey og periodeId: $periodeId.")
     }
 
     private fun lagBekreftelse(periodeBekrefelse: BekreftelseMelding): Bekreftelse {

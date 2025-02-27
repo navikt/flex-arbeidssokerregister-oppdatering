@@ -7,7 +7,8 @@ import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.BekreftelseMelding
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
-import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvMelding
+import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStartMelding
+import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStoppMelding
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
 import no.nav.helse.flex.sykepengesoknad.SOKNAR_DEAKTIVERES_ETTER_MAANEDER
@@ -66,23 +67,33 @@ class DevelopmentController(
         }
     }
 
-    @PostMapping("/arbeidssokerregisteret/paa-vegne-av")
-    fun sendArbeidssokerregisterPaaVegneAv(
+    @PostMapping("/arbeidssokerregisteret/paa-vegne-av-start")
+    fun sendPaaVegneAvStartMelding(
         @RequestBody request: PaaVegneAvRequest,
     ): ResponseEntity<Void> {
-        paaVegneAvProducer.send(request.tilPaaVegneAvmelding())
+        paaVegneAvProducer.send(request.tilPaaVegneStartMelding())
 
-        log.info("Sendt PaaVegneAvMelding for periodeId=${request.periodeId}")
+        log.info("Sendt PaaVegneAvMelding for periodeId=${request.periodeId} fra DevelopmentController.")
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/arbeidssokerregisteret/paa-vegne-av-stopp")
+    fun sendPaaVegneAvStoppMelding(
+        @RequestBody request: PaaVegneAvRequest,
+    ): ResponseEntity<Void> {
+        paaVegneAvProducer.send(request.tilPaaVegneStoppMelding())
+
+        log.info("Sendt PaaVegneAvStoppMelding for periodeId=${request.periodeId} fra DevelopmentController.")
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/arbeidssokerregisteret/bekreftelse")
-    fun sendArbeidssokerregisterBekreftelse(
+    fun sendBekreftelseMelding(
         @RequestBody request: PeriodeBekrefelseRequest,
     ): ResponseEntity<Void> {
         bekrefelseProducer.send(request.tilBekreftelseMelding())
 
-        log.info("Sendt PeriodeBekreftelse for periodeId: ${request.periodeId}")
+        log.info("Sendt PeriodeBekreftelse for periodeId: ${request.periodeId} fra DevelopmentController.")
         return ResponseEntity.ok().build()
     }
 
@@ -92,16 +103,22 @@ class DevelopmentController(
     ): ResponseEntity<Void> {
         arbeidssokerperiodeStoppProducer.send(request.tilStoppMelding())
 
-        log.info("Sendt StoppMelding med id: ${request.id}")
+        log.info("Sendt StoppMelding med id: ${request.id} fra DevelopmentController.")
         return ResponseEntity.ok().build()
     }
 }
 
-private fun PaaVegneAvRequest.tilPaaVegneAvmelding() =
-    PaaVegneAvMelding(
+private fun PaaVegneAvRequest.tilPaaVegneStartMelding() =
+    PaaVegneAvStartMelding(
         this.kafkaKey,
         UUID.fromString(this.periodeId),
         beregnGraceMS(LocalDate.now(), SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
+    )
+
+private fun PaaVegneAvRequest.tilPaaVegneStoppMelding() =
+    PaaVegneAvStoppMelding(
+        this.kafkaKey,
+        UUID.fromString(this.periodeId),
     )
 
 private fun PeriodeBekrefelseRequest.tilBekreftelseMelding() =
