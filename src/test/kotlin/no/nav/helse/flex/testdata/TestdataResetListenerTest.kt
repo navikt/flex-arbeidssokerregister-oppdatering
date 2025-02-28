@@ -11,10 +11,14 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import java.time.Instant
+import java.time.LocalDate
 import java.util.*
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class TestdataResetListenerTest : FellesTestOppsett() {
+    private val vedtaksperiodeFom = LocalDate.now().minusMonths(1)
+    private val vedtaksperiodeTom = LocalDate.now().plusMonths(2)
+
     @Test
     @Order(1)
     fun `Lagrer arbeidssøkerperioder for to brukere`() {
@@ -22,6 +26,8 @@ class TestdataResetListenerTest : FellesTestOppsett() {
             Arbeidssokerperiode(
                 fnr = FNR,
                 vedtaksperiodeId = UUID.randomUUID().toString(),
+                vedtaksperiodeFom = vedtaksperiodeFom,
+                vedtaksperiodeTom = vedtaksperiodeTom,
                 opprettet = Instant.now(),
             ),
         )
@@ -30,6 +36,8 @@ class TestdataResetListenerTest : FellesTestOppsett() {
             Arbeidssokerperiode(
                 fnr = "22222222222",
                 vedtaksperiodeId = UUID.randomUUID().toString(),
+                vedtaksperiodeFom = vedtaksperiodeFom,
+                vedtaksperiodeTom = vedtaksperiodeTom,
                 opprettet = Instant.now(),
             ),
         )

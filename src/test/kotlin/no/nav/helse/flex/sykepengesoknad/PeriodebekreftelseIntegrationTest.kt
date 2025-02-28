@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -179,6 +180,9 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             Arbeidssokerperiode(
                 fnr = FNR,
                 vedtaksperiodeId = VEDTAKSPERIODE_ID,
+                // TODO: Send inn verdier for å kunne teste om en søknad er siste eller ikke.
+                vedtaksperiodeFom = LocalDate.now().minusMonths(1),
+                vedtaksperiodeTom = LocalDate.now().plusMonths(2),
                 opprettet = opprettet,
                 kafkaRecordKey = -3771L,
                 arbeidssokerperiodeId = arbeidssokerperiodeId,

@@ -103,6 +103,11 @@ class SykepengesoknadService(
             )
         }
 
+        // TODO: Verifiser at fortsattArbeidssoker og inntektUnderveis er satt hvis det ikke er siste søknad.
+        // TODO: Beregn siste søknad.
+
+        // val erSisteSoknad =
+
         periodebekreftelseRepository.save(
             Periodebekreftelse(
                 arbeidssokerperiodeId = arbeidssokerperiode.id!!,
@@ -149,6 +154,8 @@ class SykepengesoknadService(
     ) = Arbeidssokerperiode(
         fnr = this.fnr,
         vedtaksperiodeId = this.vedtaksperiodeId,
+        vedtaksperiodeFom = this.fom,
+        vedtaksperiodeTom = this.tom,
         opprettet = Instant.now(),
         kafkaRecordKey = kafkaRecordKey,
         arbeidssokerperiodeId = arbeidssokerperiodeId,

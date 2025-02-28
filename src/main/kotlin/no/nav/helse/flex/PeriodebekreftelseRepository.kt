@@ -21,7 +21,8 @@ data class Periodebekreftelse(
     val id: String? = null,
     val arbeidssokerperiodeId: String,
     val sykepengesoknadId: String,
-    val fortsattArbeidssoker: Boolean,
-    val inntektUnderveis: Boolean,
+    val fortsattArbeidssoker: Boolean?,
+    val inntektUnderveis: Boolean?,
     val opprettet: Instant,
+    val avsluttendeSoknad: Boolean = false,
 )
