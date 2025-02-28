@@ -14,6 +14,7 @@ import no.nav.helse.flex.arbeidssokerregister.BekreftelseMelding
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorRequest
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStartMelding
+import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStoppMelding
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
@@ -28,7 +29,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.*
 
-const val SOKNAR_DEAKTIVERES_ETTER_MAANEDER = 4
+const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
 @Service
 class SykepengesoknadService(
@@ -79,7 +80,7 @@ class SykepengesoknadService(
             PaaVegneAvStartMelding(
                 kafkaRecordKey,
                 UUID.fromString(arbeidsokerperiode.periodeId),
-                beregnGraceMS(vedtaksperiode.tom, SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
+                beregnGraceMS(vedtaksperiode.tom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
             ),
         )
 
@@ -103,21 +104,39 @@ class SykepengesoknadService(
             )
         }
 
-        // TODO: Verifiser at fortsattArbeidssoker og inntektUnderveis er satt hvis det ikke er siste søknad.
-        // TODO: Beregn siste søknad.
+        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
 
-        // val erSisteSoknad =
+        if (!erAvsluttendeSoknad) {
+            if (sykepengesoknadDTO.fortsattArbeidssoker == null || sykepengesoknadDTO.inntektUnderveis == null) {
+                throw lagPeriodebekreftelseException(sykepengesoknadDTO, sykepengesoknadDTO.friskTilArbeidVedtakId)
+            }
+        }
 
         periodebekreftelseRepository.save(
             Periodebekreftelse(
                 arbeidssokerperiodeId = arbeidssokerperiode.id!!,
                 sykepengesoknadId = sykepengesoknadDTO.id,
-                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker!!,
-                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis!!,
+                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker,
+                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
                 opprettet = Instant.now(),
+                avsluttendeSoknad = erAvsluttendeSoknad,
             ),
         )
 
+        if (erAvsluttendeSoknad) {
+            arbeidssokerperiodeRepository.save(arbeidssokerperiode.copy(sendtAvsluttet = Instant.now()))
+            sendPaaVegneAvStoppMelding(arbeidssokerperiode)
+        } else {
+            sendBekreftelseMelding(arbeidssokerperiode, sykepengesoknadDTO)
+        }
+
+        log.info("Behandlet bekreftelse for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.")
+    }
+
+    private fun sendBekreftelseMelding(
+        arbeidssokerperiode: Arbeidssokerperiode,
+        sykepengesoknadDTO: SykepengesoknadDTO,
+    ) {
         val bekreftelseMelding =
             BekreftelseMelding(
                 kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
@@ -125,12 +144,20 @@ class SykepengesoknadService(
                 fnr = sykepengesoknadDTO.fnr,
                 periodeStart = sykepengesoknadDTO.fom!!.toInstantAtStartOfDay(),
                 periodeSlutt = sykepengesoknadDTO.tom!!.plusDays(1).toInstantAtStartOfDay(),
-                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis!!,
-                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker!!,
+                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
+                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker,
+            )
+        bekreftelseProducer.send(bekreftelseMelding)
+    }
+
+    private fun sendPaaVegneAvStoppMelding(arbeidssokerperiode: Arbeidssokerperiode) {
+        val paaVegneAvMelding =
+            PaaVegneAvStoppMelding(
+                kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
+                periodeId = UUID.fromString(arbeidssokerperiode.arbeidssokerperiodeId),
             )
 
-        log.info("Behandlet bekreftelse for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.")
-        bekreftelseProducer.send(bekreftelseMelding)
+        paaVegneAvProducer.send(paaVegneAvMelding)
     }
 
     private fun erNyVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) =
@@ -146,6 +173,17 @@ class SykepengesoknadService(
 
     private fun SykepengesoknadDTO.erSentFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.SENDT
+
+    private fun lagPeriodebekreftelseException(
+        soknad: SykepengesoknadDTO,
+        friskTilArbeidVedtakId: String?,
+    ): PeriodebekreftelseException {
+        val manglerVerdi = if (soknad.fortsattArbeidssoker == null) "fortsattArbeidssoker" else "inntektUnderveis"
+        return PeriodebekreftelseException(
+            "Mangler $manglerVerdi for vedtaksperiode: $friskTilArbeidVedtakId og søknad: ${soknad.id} " +
+                "som skal være satt da søknaden ikke er siste søknad i perioden.",
+        )
+    }
 
     fun FriskTilArbeidVedtaksperiode.toArbeidssokerperiode(
         kafkaRecordKey: Long,

@@ -11,7 +11,7 @@ import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStartMelding
 import no.nav.helse.flex.arbeidssokerregister.PaaVegneAvStoppMelding
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
-import no.nav.helse.flex.sykepengesoknad.SOKNAR_DEAKTIVERES_ETTER_MAANEDER
+import no.nav.helse.flex.sykepengesoknad.SOKNAD_DEAKTIVERES_ETTER_MAANEDER
 import no.nav.helse.flex.sykepengesoknad.StoppMelding
 import no.nav.helse.flex.sykepengesoknad.beregnGraceMS
 import no.nav.security.token.support.core.api.Unprotected
@@ -112,7 +112,7 @@ private fun PaaVegneAvRequest.tilPaaVegneStartMelding() =
     PaaVegneAvStartMelding(
         this.kafkaKey,
         UUID.fromString(this.periodeId),
-        beregnGraceMS(LocalDate.now(), SOKNAR_DEAKTIVERES_ETTER_MAANEDER),
+        beregnGraceMS(LocalDate.now(), SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
     )
 
 private fun PaaVegneAvRequest.tilPaaVegneStoppMelding() =

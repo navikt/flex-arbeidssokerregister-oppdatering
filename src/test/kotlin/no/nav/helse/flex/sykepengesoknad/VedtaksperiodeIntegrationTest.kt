@@ -66,7 +66,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
                 it.periodeId.toString() `should be equal to` arbeidssokerperiodeId
                 (it.handling as Start).let { s ->
                     s.intervalMS `should be equal to` FJORDEN_DAGER
-                    s.graceMS `should be equal to` 10540800000
+                    s.graceMS `should be equal to` 10368000000
                 }
             }
         }
