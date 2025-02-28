@@ -197,19 +197,18 @@ fun lagSoknad(
     status: SoknadsstatusDTO = SoknadsstatusDTO.FREMTIDIG,
     fortsattArbeidssoker: Boolean? = null,
     inntektUnderveis: Boolean? = null,
+    soknadFomTom: Periode = Periode(fom = LocalDate.of(2025, 1, 1), tom = LocalDate.of(2025, 1, 14)),
+    periodeFomTom: Periode = Periode(fom = LocalDate.of(2025, 1, 1), tom = LocalDate.of(2025, 1, 31)),
 ): SykepengesoknadDTO =
     SykepengesoknadDTO(
         fnr = FNR,
         id = UUID.randomUUID().toString(),
         type = SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
         status = status,
-        fom = LocalDate.of(2025, 1, 1),
-        tom = LocalDate.of(2025, 1, 31),
+        fom = soknadFomTom.fom,
+        tom = soknadFomTom.tom,
         friskTilArbeidVedtakPeriode =
-            Periode(
-                LocalDate.of(2025, 1, 1),
-                LocalDate.of(2025, 3, 31),
-            ).serialisertTilString(),
+            periodeFomTom.serialisertTilString(),
         friskTilArbeidVedtakId = VEDTAKSPERIODE_ID,
         fortsattArbeidssoker = fortsattArbeidssoker,
         inntektUnderveis = inntektUnderveis,
