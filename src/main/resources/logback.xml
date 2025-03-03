@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <appender name="Logstash" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>trace_id</includeMdcKeyName>
+            <includeMdcKeyName>span_id</includeMdcKeyName>
+        </encoder>
     </appender>
 
     <root level="WARN">
-        <appender-ref ref="Logstash"/>
+        <appender-ref ref="Console"/>
     </root>
 
     <logger name="no.nav.helse.flex" level="INFO"/>
-    <logger name="org.springframework" level="INFO"/>
 
-@</configuration>
+</configuration>
