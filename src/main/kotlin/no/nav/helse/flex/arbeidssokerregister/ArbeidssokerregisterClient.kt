@@ -3,7 +3,6 @@ package no.nav.helse.flex.arbeidssokerregister
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.objectMapper
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
@@ -11,16 +10,18 @@ import java.time.Instant
 
 @Component
 class ArbeidssokerregisterClient(
-    @Value("\${ARBEIDSSOEKERREGISTERET_API_URL}")
-    private val url: String,
     @Qualifier("arbeidssokerregisterRestClient")
     val restClient: RestClient,
 ) {
     fun hentSisteArbeidssokerperiode(request: ArbeidssokerperiodeRequest): List<ArbeidssokerperiodeResponse> =
         restClient
             .post()
-            .uri("$url/api/v1/veileder/arbeidssoekerperioder?siste=true")
-            .contentType(APPLICATION_JSON)
+            .uri { uriBuilder ->
+                uriBuilder
+                    .path("/api/v1/veileder/arbeidssoekerperioder")
+                    .queryParam("siste", true)
+                    .build()
+            }.contentType(APPLICATION_JSON)
             .body(request)
             .retrieve()
             .body(String::class.java)!!

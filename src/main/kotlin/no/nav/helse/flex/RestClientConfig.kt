@@ -6,6 +6,7 @@ import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpRequest
@@ -22,7 +23,41 @@ const val REST_CLIENT_API_READ_TIMEOUT = 10L
 @Configuration
 class RestClientConfig {
     @Bean
-    fun restClientBuilder(): RestClient.Builder {
+    fun kafkaKeyGeneratorRestClient(
+        @Value("\${KAFKA_KEY_GENERATOR_URL}")
+        url: String,
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
+        clientConfigurationProperties: ClientConfigurationProperties,
+    ): RestClient =
+        lagRestClientBuilder()
+            .baseUrl(url)
+            .requestInterceptor(
+                lagBearerTokenInterceptor(
+                    clientConfigurationProperties.registration["kafka-key-generator-client-credentials"]!!,
+                    oAuth2AccessTokenService,
+                ),
+            ).build()
+
+    @Bean
+    fun arbeidssokerregisterRestClient(
+        @Value("\${ARBEIDSSOEKERREGISTERET_API_URL}")
+        url: String,
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
+        clientConfigurationProperties: ClientConfigurationProperties,
+    ): RestClient =
+        lagRestClientBuilder()
+            .baseUrl(url)
+            .requestInterceptor(
+                lagBearerTokenInterceptor(
+                    clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!,
+                    oAuth2AccessTokenService,
+                ),
+            ).build()
+
+    private fun lagRestClientBuilder(
+        connectTimeout: Long = REST_CLIENT_CONNECT_TIMEOUT,
+        readTimeout: Long = REST_CLIENT_API_READ_TIMEOUT,
+    ): RestClient.Builder {
         val connectionManager =
             PoolingHttpClientConnectionManager().apply {
                 maxTotal = 10
@@ -37,8 +72,8 @@ class RestClientConfig {
 
         val requestFactory =
             HttpComponentsClientHttpRequestFactory(httpClient).apply {
-                setConnectTimeout(Duration.ofSeconds(REST_CLIENT_CONNECT_TIMEOUT))
-                setReadTimeout(Duration.ofSeconds(REST_CLIENT_API_READ_TIMEOUT))
+                setConnectTimeout(Duration.ofSeconds(connectTimeout))
+                setReadTimeout(Duration.ofSeconds(readTimeout))
             }
 
         return RestClient
@@ -46,37 +81,7 @@ class RestClientConfig {
             .requestFactory(requestFactory)
     }
 
-    @Bean
-    fun kafkaKeyGeneratorRestClient(
-        restClientBuilder: RestClient.Builder,
-        oAuth2AccessTokenService: OAuth2AccessTokenService,
-        clientConfigurationProperties: ClientConfigurationProperties,
-    ): RestClient =
-        restClientBuilder
-            .clone()
-            .requestInterceptor(
-                lagBearerTokenInterceptor(
-                    clientConfigurationProperties.registration["kafka-key-generator-client-credentials"]!!,
-                    oAuth2AccessTokenService,
-                ),
-            ).build()
-
-    @Bean
-    fun arbeidssokerregisterRestClient(
-        restClientBuilder: RestClient.Builder,
-        oAuth2AccessTokenService: OAuth2AccessTokenService,
-        clientConfigurationProperties: ClientConfigurationProperties,
-    ): RestClient =
-        restClientBuilder
-            .clone()
-            .requestInterceptor(
-                lagBearerTokenInterceptor(
-                    clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]!!,
-                    oAuth2AccessTokenService,
-                ),
-            ).build()
-
-    fun lagBearerTokenInterceptor(
+    private fun lagBearerTokenInterceptor(
         clientProperties: ClientProperties,
         oAuth2AccessTokenService: OAuth2AccessTokenService,
     ): ClientHttpRequestInterceptor =
