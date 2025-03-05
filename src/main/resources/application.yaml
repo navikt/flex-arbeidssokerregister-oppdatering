@@ -29,6 +29,7 @@ management:
     metrics.export.enabled: true
 
 logging.config: "classpath:logback.xml"
+nais.cluster: ${NAIS_CLUSTER_NAME}
 
 aiven-kafka:
   auto-offset-reset: none
