@@ -34,21 +34,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
-        log.info("Sendt PaaVegneAvStartMelding med kafkaKey: $kafkaKey og periodeId: $periodeId.")
-    }
-
-    fun sendKafkaMelding(
-        kafkaKey: Long,
-        paaVegneAv: PaaVegneAv,
-    ) {
-        kafkaProducer
-            .send(
-                ProducerRecord(
-                    ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC,
-                    kafkaKey,
-                    paaVegneAv,
-                ),
-            ).get()
+        log.info("Publisert PaaVegneAvStartMelding for arbeidssøkerregisterperiode: $periodeId.")
     }
 
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
@@ -64,7 +50,21 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
-        log.info("Sendt PaaVegneAvStoppMelding med kafkaKey: $kafkaKey og periodeId: $periodeId.")
+        log.info("Publisert PaaVegneAvStoppMelding for arbeidssøkerregisterperiode: $periodeId.")
+    }
+
+    private fun sendKafkaMelding(
+        kafkaKey: Long,
+        paaVegneAv: PaaVegneAv,
+    ) {
+        kafkaProducer
+            .send(
+                ProducerRecord(
+                    ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC,
+                    kafkaKey,
+                    paaVegneAv,
+                ),
+            ).get()
     }
 }
 

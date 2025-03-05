@@ -38,7 +38,10 @@ class ArbeidssokerperiodeBekreftelseProducer(
                 ),
             ).get()
 
-        log.info("Sendt Bekreftelse med kafkaKey: $kafkaKey og periodeId: $periodeId.")
+        log.info(
+            "Publisert Bekreftelse med fortsattArbeidssoker: ${bekreftelseMelding.fortsattArbeidssoker} og " +
+                "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for arbeidssøkerregisterperiode: $periodeId.",
+        )
     }
 
     private fun lagBekreftelse(periodeBekreftelse: BekreftelseMelding): Bekreftelse {

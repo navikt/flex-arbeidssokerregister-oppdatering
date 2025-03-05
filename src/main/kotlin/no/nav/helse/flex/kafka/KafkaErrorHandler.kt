@@ -27,7 +27,7 @@ class KafkaErrorHandler :
     ) {
         records.forEach {
             log.error(
-                "Feil i prossessering av record med offset: ${it.offset()}, key: ${it.key()} på topic: ${it.topic()}.",
+                "Feil i prossessering av record med offset: ${it.offset()} og key: ${it.key()} på topic: ${it.topic()}.",
                 thrownException,
             )
         }
