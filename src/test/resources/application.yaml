@@ -30,6 +30,7 @@ management:
     metrics.export.enabled: true
 
 logging.config: "classpath:logback-test.xml"
+nais.cluster: test
 
 aiven-kafka:
   auto-offset-reset: earliest

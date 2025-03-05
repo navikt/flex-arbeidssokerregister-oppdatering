@@ -1,6 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class SykepengesoknadListener(
     private val sykepengesoknadService: SykepengesoknadService,
+    private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
 
@@ -26,7 +28,19 @@ class SykepengesoknadListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
-            sykepengesoknadService.behandleSoknad(it)
+            try {
+                sykepengesoknadService.behandleSoknad(it)
+            } catch (e: Exception) {
+                if (!environmentToggles.erProduksjon()) {
+                    log.warn(
+                        "Feil ved behandling av sykepengesoknad: ${it.id} i " +
+                            "${environmentToggles.naisClusterName()}, men Ack'er melding:",
+                        e,
+                    )
+                } else {
+                    throw e
+                }
+            }
         }
         acknowledgment.acknowledge()
     }
