@@ -32,11 +32,8 @@ class SykepengesoknadListener(
                 sykepengesoknadService.behandleSoknad(it)
             } catch (e: Exception) {
                 if (!environmentToggles.erProduksjon()) {
-                    log.warn(
-                        "Feil ved behandling av sykepengesoknad: ${it.id} i " +
-                            "${environmentToggles.naisClusterName()}, men Ack'er melding:",
-                        e,
-                    )
+                    val clusterName = environmentToggles.naisClusterName()
+                    log.warn("Feil ved behandling av sykepengesoknad: ${it.id} i $clusterName: ${e.message}", e)
                 } else {
                     throw e
                 }

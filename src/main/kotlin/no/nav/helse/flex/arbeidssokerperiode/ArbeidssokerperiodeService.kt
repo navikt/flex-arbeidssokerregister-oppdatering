@@ -18,26 +18,26 @@ class ArbeidssokerperiodeService(
     private val log = logger()
 
     @Transactional
-    fun behandlePeriode(arbeidssokerregisterPeriode: Periode) {
-        if (arbeidssokerregisterPeriode.avsluttet == null) {
-            log.info("Behandler ikke uavsluttet arbeidssokerperiode: ${arbeidssokerregisterPeriode.id}.")
+    fun behandlePeriode(periode: Periode) {
+        if (periode.avsluttet == null) {
+            log.info("Behandler ikke uavsluttet arbeidssøkerregisterperiode: ${periode.id}.")
             return
         }
 
         val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerregisterPeriode.id.toString())
+            arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(periode.id.toString())
 
         if (arbeidssokerperiode == null) {
-            log.info("Behandler ikke ukjent avsluttet arbeidssokerperiode: ${arbeidssokerregisterPeriode.id}.")
+            log.info("Behandler ikke ukjent arbeidssøkerregisterperiode: ${periode.id}.")
             return
         }
 
         if (arbeidssokerperiode.avsluttetMottatt != null) {
-            log.info("Behandler ikke allerede avsluttet arbeidssokerperiode: ${arbeidssokerregisterPeriode.id}.")
+            log.info("Behandler ikke avsluttet arbeidssøkerregisterperiode: ${periode.id}.")
             return
         }
 
-        prosesserPeriode(arbeidssokerperiode, arbeidssokerregisterPeriode)
+        prosesserPeriode(arbeidssokerperiode, periode)
     }
 
     private fun prosesserPeriode(
@@ -59,7 +59,9 @@ class ArbeidssokerperiodeService(
             ),
         )
         log.info(
-            "Behandlet avsluttet arbeidssokerperiode: ${arbeidssokerperiode.id} for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+            "Behandlet avsluttet arbeidssokerperiode: ${arbeidssokerperiode.id} for " +
+                "arbeidssokerregisterperiode ${arbeidssokerperiode.arbeidssokerperiodeId} " +
+                "og vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
         )
     }
 }

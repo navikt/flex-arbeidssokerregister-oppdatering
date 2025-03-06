@@ -1,6 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.serialisertTilString
 import org.apache.kafka.clients.producer.Producer
@@ -13,6 +14,8 @@ import java.util.*
 class ArbeidssokerperiodeStoppProducer(
     private val kafkaProducer: Producer<String, String>,
 ) {
+    private val log = logger()
+
     fun send(stoppMelding: StoppMelding) {
         kafkaProducer.send(
             ProducerRecord(
@@ -21,6 +24,8 @@ class ArbeidssokerperiodeStoppProducer(
                 stoppMelding.serialisertTilString(),
             ),
         )
+
+        log.info("Publisert StoppMelding for vedtaksperiode: ${stoppMelding.vedtaksperiodeId}.")
     }
 }
 
