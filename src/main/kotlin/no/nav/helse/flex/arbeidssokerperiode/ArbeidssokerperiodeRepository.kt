@@ -33,4 +33,10 @@ data class Arbeidssokerperiode(
     val avsluttetMottatt: Instant? = null,
     val avsluttetTidspunkt: Instant? = null,
     val sendtAvsluttet: Instant? = null,
+    val avsluttetAarsak: AvsluttetAarsak? = null,
 )
+
+enum class AvsluttetAarsak {
+    BRUKER,
+    AVSLUTTET_PERIODE,
+}
