@@ -1,10 +1,9 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.helse.flex.Arbeidssokerperiode
-import no.nav.helse.flex.ArbeidssokerperiodeRepository
-import no.nav.helse.flex.Periodebekreftelse
-import no.nav.helse.flex.PeriodebekreftelseRepository
+import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
+import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
@@ -108,6 +107,7 @@ class SykepengesoknadService(
 
         val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
 
+        // Feltene fortsattArbeidssoker og inntektUnderveis skal være satt hvis det ikke er siste søknad i perioden.
         if (!erAvsluttendeSoknad) {
             if (sykepengesoknadDTO.fortsattArbeidssoker == null || sykepengesoknadDTO.inntektUnderveis == null) {
                 throw lagPeriodebekreftelseException(sykepengesoknadDTO, sykepengesoknadDTO.friskTilArbeidVedtakId)
@@ -126,9 +126,12 @@ class SykepengesoknadService(
         )
 
         if (erAvsluttendeSoknad) {
-            arbeidssokerperiodeRepository.save(arbeidssokerperiode.copy(sendtAvsluttet = Instant.now()))
+            arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.AVSLUTTET_PERIODE)
             sendPaaVegneAvStoppMelding(arbeidssokerperiode)
         } else {
+            if (sykepengesoknadDTO.fortsattArbeidssoker == false) {
+                arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.BRUKER)
+            }
             sendBekreftelseMelding(arbeidssokerperiode, sykepengesoknadDTO)
         }
 
@@ -186,6 +189,15 @@ class SykepengesoknadService(
         return PeriodebekreftelseException(
             "Mangler $manglerVerdi for vedtaksperiode: $friskTilArbeidVedtakId og sykepengesøknad: ${soknad.id} " +
                 "som skal være satt da søknaden ikke er siste søknad i perioden.",
+        )
+    }
+
+    private fun Arbeidssokerperiode.lagreAvsluttetAarsak(avsluttetAarsak: AvsluttetAarsak) {
+        arbeidssokerperiodeRepository.save(
+            this.copy(
+                sendtAvsluttet = Instant.now(),
+                avsluttetAarsak = avsluttetAarsak,
+            ),
         )
     }
 

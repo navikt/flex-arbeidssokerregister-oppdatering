@@ -1,6 +1,5 @@
 package no.nav.helse.flex.arbeidssokerperiode
 
-import no.nav.helse.flex.Arbeidssokerperiode
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.`should be within seconds of`

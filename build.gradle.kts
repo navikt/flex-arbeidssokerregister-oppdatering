@@ -99,7 +99,6 @@ tasks {
         testLogging {
             events("PASSED", "FAILED", "SKIPPED")
             exceptionFormat = FULL
-            showStandardStreams = true
         }
         failFast = false
     }

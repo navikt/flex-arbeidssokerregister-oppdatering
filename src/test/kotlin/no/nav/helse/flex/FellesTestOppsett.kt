@@ -1,5 +1,6 @@
 package no.nav.helse.flex
 
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC
@@ -10,6 +11,7 @@ import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
 import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
 import no.nav.helse.flex.sykepengesoknad.Periode
+import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO

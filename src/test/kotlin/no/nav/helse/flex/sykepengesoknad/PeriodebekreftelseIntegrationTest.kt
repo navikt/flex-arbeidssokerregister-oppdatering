@@ -1,9 +1,10 @@
 package no.nav.helse.flex.sykepengesoknad
 
-import no.nav.helse.flex.Arbeidssokerperiode
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
+import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
+import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
 import no.nav.helse.flex.lagSoknad
 import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
@@ -68,7 +69,8 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
-            it.sendtAvsluttet `should be equal to` null
+            it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
+            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.BRUKER
         }
 
         verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
@@ -186,6 +188,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
+            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.AVSLUTTET_PERIODE
         }
 
         paaVegneAvConsumer.waitForRecords(1).single().also {

@@ -1,7 +1,5 @@
 package no.nav.helse.flex.arbeidssokerperiode
 
-import no.nav.helse.flex.Arbeidssokerperiode
-import no.nav.helse.flex.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
 import no.nav.helse.flex.sykepengesoknad.StoppMelding

@@ -1,4 +1,4 @@
-package no.nav.helse.flex
+package no.nav.helse.flex.sykepengesoknad
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.jdbc.repository.query.Modifying
