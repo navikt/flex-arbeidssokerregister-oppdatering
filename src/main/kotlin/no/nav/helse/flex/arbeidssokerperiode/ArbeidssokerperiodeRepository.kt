@@ -1,8 +1,6 @@
-package no.nav.helse.flex
+package no.nav.helse.flex.arbeidssokerperiode
 
 import org.springframework.data.annotation.Id
-import org.springframework.data.jdbc.repository.query.Modifying
-import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
@@ -13,10 +11,6 @@ import java.time.LocalDate
 @Repository
 interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, String> {
     fun findByVedtaksperiodeId(vedtaksperiodeId: String): Arbeidssokerperiode?
-
-    @Modifying
-    @Query("DELETE FROM arbeidssokerperiode WHERE fnr = :fnr")
-    fun deleteByFnr(fnr: String): Long
 
     fun findByArbeidssokerperiodeId(id: String): Arbeidssokerperiode?
 

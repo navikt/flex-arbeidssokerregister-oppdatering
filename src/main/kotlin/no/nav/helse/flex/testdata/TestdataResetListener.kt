@@ -1,8 +1,8 @@
 package no.nav.helse.flex.testdata
 
-import no.nav.helse.flex.ArbeidssokerperiodeRepository
-import no.nav.helse.flex.PeriodebekreftelseRepository
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.logger
+import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener

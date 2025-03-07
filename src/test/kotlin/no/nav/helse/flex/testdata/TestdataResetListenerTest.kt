@@ -1,9 +1,9 @@
 package no.nav.helse.flex.testdata
 
-import no.nav.helse.flex.Arbeidssokerperiode
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
-import no.nav.helse.flex.Periodebekreftelse
+import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
+import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
 import org.amshove.kluent.`should be equal to`
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.MethodOrderer

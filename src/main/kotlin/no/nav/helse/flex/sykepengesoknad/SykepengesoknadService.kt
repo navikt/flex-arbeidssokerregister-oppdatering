@@ -1,10 +1,8 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.helse.flex.Arbeidssokerperiode
-import no.nav.helse.flex.ArbeidssokerperiodeRepository
-import no.nav.helse.flex.Periodebekreftelse
-import no.nav.helse.flex.PeriodebekreftelseRepository
+import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
+import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
