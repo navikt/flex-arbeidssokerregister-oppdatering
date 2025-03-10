@@ -38,7 +38,7 @@ val kluentVersion = "1.73"
 val confluentVersion = "7.9.0"
 val avroVersion = "1.12.0"
 val sykepengesoknadKafkaVersion = "2025.02.19-16.24-5e00417f"
-val arbeidssokerregisteretSchemaVersion = "1.11931397294.51-1"
+val arbeidssokerregisteretSchemaVersion = "1.13720481449.52-1"
 val bekreftelsesmeldingSchemaVersion = "1.25.02.10.17-1"
 val bekreftelsePaaVegneAvSchemaVersion = "1.25.02.10.17-1"
 
