@@ -44,17 +44,13 @@ class SykepengesoknadService(
     @Transactional
     fun behandleSoknad(sykepengesoknadDTO: SykepengesoknadDTO) {
         when {
-            sykepengesoknadDTO.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(sykepengesoknadDTO.tilVedtaksperiode())
+            sykepengesoknadDTO.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(sykepengesoknadDTO)
             sykepengesoknadDTO.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(sykepengesoknadDTO)
-            else -> {
-                if (sykepengesoknadDTO.erFriskTilArbeidSoknad()) {
-                    log.info("Behandler ikke søknadstype: ${sykepengesoknadDTO.type} med status: ${sykepengesoknadDTO.status}.")
-                }
-            }
         }
     }
 
-    private fun behandleVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) {
+    private fun behandleVedtaksperiode(sykepengesoknadDTO: SykepengesoknadDTO) {
+        val vedtaksperiode = sykepengesoknadDTO.tilVedtaksperiode()
         if (!erNyVedtaksperiode(vedtaksperiode)) {
             return
         }
@@ -65,17 +61,21 @@ class SykepengesoknadService(
         if (arbeidsokerperiodeResponse.avsluttet != null) {
             val avsluttetTidspunkt = arbeidsokerperiodeResponse.avsluttet.tidspunkt.toLocalDate()
             throw ArbeidssokerperiodeException(
-                "Arbeidssøkerregisterperiode: ${arbeidsokerperiodeResponse.periodeId} ble avsluttet $avsluttetTidspunkt.",
+                "Kan ikke behandle søknad: ${sykepengesoknadDTO.id} med " +
+                    "vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} da brukers " +
+                    "periode i arbeidssøkerregisteret: ${arbeidsokerperiodeResponse.periodeId} ble " +
+                    "avsluttet $avsluttetTidspunkt.",
             )
         }
 
-        arbeidssokerperiodeRepository.save(
-            vedtaksperiode.toArbeidssokerperiode(
-                kafkaRecordKey,
-                arbeidsokerperiodeResponse.periodeId,
-                Instant.now(),
-            ),
-        )
+        val lagretArbeidssokerperiode =
+            arbeidssokerperiodeRepository.save(
+                vedtaksperiode.toArbeidssokerperiode(
+                    kafkaRecordKey,
+                    arbeidsokerperiodeResponse.periodeId,
+                    Instant.now(),
+                ),
+            )
 
         paaVegneAvProducer.send(
             PaaVegneAvStartMelding(
@@ -86,7 +86,10 @@ class SykepengesoknadService(
         )
 
         log.info(
-            "Behandlet vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} for arbeidssøkerregisterperiode: ${arbeidsokerperiodeResponse.periodeId}.",
+            "Opprettet arbeidssøkerperiode: ${lagretArbeidssokerperiode.id} for " +
+                "søknad: ${sykepengesoknadDTO.id} med status ${sykepengesoknadDTO.status}, " +
+                "vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} og " +
+                "periode i arbeidssøkerregisteret: ${arbeidsokerperiodeResponse.periodeId}.",
         )
     }
 
@@ -101,7 +104,8 @@ class SykepengesoknadService(
 
         if (arbeidssokerperiode == null) {
             throw PeriodebekreftelseException(
-                "Fant ingen arbeidssøkerperiode for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.",
+                "Fant ikke arbeidssøkerperiode for søknad: ${sykepengesoknadDTO.id} med " +
+                    "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.",
             )
         }
 
@@ -110,8 +114,10 @@ class SykepengesoknadService(
         if (!erAvsluttendeSoknad) {
             if (sykepengesoknadDTO.fortsattArbeidssoker == null) {
                 throw PeriodebekreftelseException(
-                    "Mangler verdi for fortsattArbeidssoker for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} " +
-                        "og sykepengesøknad: ${sykepengesoknadDTO.id} som skal være satt da søknaden ikke er siste i perioden.",
+                    "Mangler verdi for fortsattArbeidssoker i søknad: ${sykepengesoknadDTO.id} med " +
+                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} og " +
+                        "arbeidssokerperiode: ${arbeidssokerperiode.id} som skal være satt da søknaden " +
+                        "ikke er siste i perioden.",
                 )
             }
         }
@@ -137,7 +143,12 @@ class SykepengesoknadService(
             sendBekreftelseMelding(arbeidssokerperiode, sykepengesoknadDTO)
         }
 
-        log.info("Behandlet periodebekreftelse for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.")
+        log.info(
+            "Behandlet periodebekreftelse for søknad: ${sykepengesoknadDTO.id} med " +
+                "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}, " +
+                "arbeidssøkerperiode: ${arbeidssokerperiode.id} og periode i " +
+                "arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
+        )
     }
 
     private fun sendBekreftelseMelding(

@@ -34,7 +34,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
-        log.info("Publisert PaaVegneAvStartMelding for arbeidssøkerregisterperiode: $periodeId.")
+        log.info("Publisert PaaVegneAvStartMelding for periode i arbeidssøkerregisteret: $periodeId.")
     }
 
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
@@ -50,7 +50,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
-        log.info("Publisert PaaVegneAvStoppMelding for arbeidssøkerregisterperiode: $periodeId.")
+        log.info("Publisert PaaVegneAvStoppMelding for periode i arbeidssøkerregisteret: $periodeId.")
     }
 
     private fun sendKafkaMelding(
