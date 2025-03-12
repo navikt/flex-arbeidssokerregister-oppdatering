@@ -135,17 +135,19 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Søknad som ikke er siste søknad og mangler verdi for inntektUnderveis feiler`() {
+    fun `Søknad hvor bruker ikke har fått svart på inntektUnderveis`() {
         lagreArbeidssokerperiode()
 
         val soknad =
-            lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(inntektUnderveis = null)
+            lagSendtSoknad(fortsattArbeidssoker = false, inntektUnderveis = false).copy(inntektUnderveis = null)
 
-        assertThrows<PeriodebekreftelseException> {
-            sykepengesoknadService.behandleSoknad(soknad)
+        sykepengesoknadService.behandleSoknad(soknad)
+
+        periodebekreftelseRepository.findAll().toList().single().also {
+            it.inntektUnderveis `should be equal to` null
         }
 
-        periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
+        verifiserKafkaMelding(soknad, false, false)
     }
 
     @Test
