@@ -216,6 +216,28 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
     }
 
+    @Test
+    fun `Duplikat søknad blir ikke behandlet`() {
+        val lagretPeriode = lagreArbeidssokerperiode()
+
+        val fortsattArbeidssoker = true
+        val inntektUnderveis = false
+
+        val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
+        sykepengesoknadService.behandleSoknad(soknad)
+
+        // Simulerer dobbel innsending av samme søknad.
+        sykepengesoknadService.behandleSoknad(soknad)
+
+        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+
+        arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
+            it.sendtAvsluttet `should be equal to` null
+        }
+
+        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
+    }
+
     private fun lagreArbeidssokerperiode(
         fom: LocalDate = LocalDate.of(2025, 1, 1),
         tom: LocalDate = LocalDate.of(2025, 1, 31),

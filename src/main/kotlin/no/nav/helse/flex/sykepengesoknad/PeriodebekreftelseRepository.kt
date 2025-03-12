@@ -13,6 +13,8 @@ interface PeriodebekreftelseRepository : CrudRepository<Periodebekreftelse, Stri
     @Modifying
     @Query("DELETE FROM periodebekreftelse WHERE arbeidssokerperiode_id = :string")
     fun deleteByArbeidssokerperiodeId(string: String): Long
+
+    fun findBySykepengesoknadId(string: String): Periodebekreftelse?
 }
 
 @Table("periodebekreftelse")
