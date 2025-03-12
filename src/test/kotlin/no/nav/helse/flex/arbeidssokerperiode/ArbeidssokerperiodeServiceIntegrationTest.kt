@@ -129,7 +129,8 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         val avsluttet =
             Metadata(
                 avsluttetTidspunkt,
-                Bruker(BrukerType.SLUTTBRUKER, FNR),
+                // Sender sikkerhetsnivaa siden meldingen er basert på melding på Kafka.
+                Bruker(BrukerType.SLUTTBRUKER, FNR, null),
                 "paw-arbeidssokerregisteret-api-utgang",
                 "Test",
                 null,
@@ -139,7 +140,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             FNR,
             Metadata(
                 startetTidspunkt,
-                Bruker(BrukerType.SLUTTBRUKER, FNR),
+                Bruker(BrukerType.SLUTTBRUKER, FNR, null),
                 "paw-arbeidssokerregisteret-api-inngang",
                 "Test",
                 null,
