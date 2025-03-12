@@ -107,10 +107,12 @@ class SykepengesoknadService(
 
         val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
 
-        // Feltene fortsattArbeidssoker og inntektUnderveis skal være satt hvis det ikke er siste søknad i perioden.
         if (!erAvsluttendeSoknad) {
-            if (sykepengesoknadDTO.fortsattArbeidssoker == null || sykepengesoknadDTO.inntektUnderveis == null) {
-                throw lagPeriodebekreftelseException(sykepengesoknadDTO, sykepengesoknadDTO.friskTilArbeidVedtakId)
+            if (sykepengesoknadDTO.fortsattArbeidssoker == null) {
+                throw PeriodebekreftelseException(
+                    "Mangler verdi for fortsattArbeidssoker for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} " +
+                        "og sykepengesøknad: ${sykepengesoknadDTO.id} som skal være satt da søknaden ikke er siste i perioden.",
+                )
             }
         }
 
@@ -180,17 +182,6 @@ class SykepengesoknadService(
 
     private fun SykepengesoknadDTO.erSendtFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.SENDT
-
-    private fun lagPeriodebekreftelseException(
-        soknad: SykepengesoknadDTO,
-        friskTilArbeidVedtakId: String?,
-    ): PeriodebekreftelseException {
-        val manglerVerdi = if (soknad.fortsattArbeidssoker == null) "fortsattArbeidssoker" else "inntektUnderveis"
-        return PeriodebekreftelseException(
-            "Mangler $manglerVerdi for vedtaksperiode: $friskTilArbeidVedtakId og sykepengesøknad: ${soknad.id} " +
-                "som skal være satt da søknaden ikke er siste søknad i perioden.",
-        )
-    }
 
     private fun Arbeidssokerperiode.lagreAvsluttetAarsak(avsluttetAarsak: AvsluttetAarsak) {
         arbeidssokerperiodeRepository.save(
