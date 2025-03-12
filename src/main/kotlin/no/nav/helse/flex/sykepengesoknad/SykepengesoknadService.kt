@@ -109,6 +109,11 @@ class SykepengesoknadService(
             )
         }
 
+        if (periodebekreftelseRepository.findBySykepengesoknadId(sykepengesoknadDTO.id) != null) {
+            log.info("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
+            return
+        }
+
         val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
 
         if (!erAvsluttendeSoknad) {
