@@ -17,21 +17,21 @@ class ArbeidssokerperiodeService(
 
     @Transactional
     fun behandlePeriode(periode: Periode) {
+        // Behandler ikke perioder som ikke er avsluttet.
         if (periode.avsluttet == null) {
-            log.info("Behandler ikke uavsluttet arbeidssøkerregisterperiode: ${periode.id}.")
             return
         }
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(periode.id.toString())
 
+        // Behandler ikke ukjente periode i arbeidssøkerregisteret.
         if (arbeidssokerperiode == null) {
-            log.info("Behandler ikke ukjent arbeidssøkerregisterperiode: ${periode.id}.")
             return
         }
 
+        // Behandler ikke en allerede avsluttet arbeidssøkerperiode.
         if (arbeidssokerperiode.avsluttetMottatt != null) {
-            log.info("Behandler ikke avsluttet arbeidssøkerregisterperiode: ${periode.id}.")
             return
         }
 
@@ -57,9 +57,9 @@ class ArbeidssokerperiodeService(
             ),
         )
         log.info(
-            "Behandlet avsluttet arbeidssokerperiode: ${arbeidssokerperiode.id} for " +
-                "arbeidssokerregisterperiode ${arbeidssokerperiode.arbeidssokerperiodeId} " +
-                "og vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+            "Avsluttet arbeidssøkerperiode: ${arbeidssokerperiode.id} for " +
+                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId} og " +
+                "periode i arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
         )
     }
 }

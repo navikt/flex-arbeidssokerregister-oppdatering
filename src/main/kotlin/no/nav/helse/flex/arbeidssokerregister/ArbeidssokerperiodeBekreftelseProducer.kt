@@ -40,7 +40,7 @@ class ArbeidssokerperiodeBekreftelseProducer(
 
         log.info(
             "Publisert Bekreftelse med fortsattArbeidssoker: ${bekreftelseMelding.fortsattArbeidssoker} og " +
-                "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for arbeidssøkerregisterperiode: $periodeId.",
+                "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for periode i arbeidssøkerregisteret: $periodeId.",
         )
     }
 
