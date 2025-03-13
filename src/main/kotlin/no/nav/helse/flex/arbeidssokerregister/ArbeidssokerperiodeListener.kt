@@ -13,9 +13,9 @@ class ArbeidssokerperiodeListener(
 ) {
     @KafkaListener(
         topics = [ARBEIDSSOKERPERIODE_TOPIC],
-        id = "flex-arbeidssokerregister-periode-v1",
+        id = "flex-arbeidssokerregister-oppdatering-periode-v1",
         containerFactory = "avroKafkaListenerContainerFactory",
-        properties = ["auto.offset.reset = earliest"],
+        properties = ["auto.offset.reset = latest"],
     )
     fun listen(
         cr: ConsumerRecord<Long, Periode>,

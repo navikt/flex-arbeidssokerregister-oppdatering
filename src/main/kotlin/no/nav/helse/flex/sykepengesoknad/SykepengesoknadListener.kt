@@ -19,7 +19,7 @@ class SykepengesoknadListener(
 
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad",
+        id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad-v1",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset = latest"],
     )
