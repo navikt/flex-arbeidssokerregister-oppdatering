@@ -79,4 +79,4 @@ data class BekreftelseMelding(
 )
 
 const val ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC =
-    "paw.arbeidssoker-bekreftelse-friskmeldt-til-arbeidsformidling-beta-v1"
+    "paw.arbeidssoker-bekreftelse-friskmeldt-til-arbeidsformidling-v1"

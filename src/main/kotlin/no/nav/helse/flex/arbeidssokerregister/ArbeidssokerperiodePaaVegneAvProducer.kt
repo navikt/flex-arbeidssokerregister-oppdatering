@@ -80,4 +80,4 @@ data class PaaVegneAvStoppMelding(
 )
 
 const val ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC =
-    "paw.arbeidssoker-bekreftelse-paavegneav-friskmeldt-til-arbeidsformidling-beta-v1"
+    "paw.arbeidssoker-bekreftelse-paavegneav-friskmeldt-til-arbeidsformidling-v1"
