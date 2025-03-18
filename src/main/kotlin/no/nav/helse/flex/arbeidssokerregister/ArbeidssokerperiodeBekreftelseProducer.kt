@@ -1,5 +1,8 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
@@ -29,6 +32,18 @@ class ArbeidssokerperiodeBekreftelseProducer(
         val kafkaKey = bekreftelseMelding.kafkaKey
         val periodeId = bekreftelseMelding.periodeId
 
+        Span.current().addEvent(
+            "Sendt BekreftelseMelding",
+            Attributes.of(
+                AttributeKey.stringKey("periodeId"),
+                bekreftelseMelding.periodeId.toString(),
+                AttributeKey.stringKey("fortsattArbeidssoker"),
+                bekreftelseMelding.fortsattArbeidssoker.toString(),
+                AttributeKey.stringKey("inntektUnderveis"),
+                bekreftelseMelding.inntektUnderveis.toString(),
+            ),
+        )
+
         kafkaProducer
             .send(
                 ProducerRecord(
@@ -57,9 +72,9 @@ class ArbeidssokerperiodeBekreftelseProducer(
                     metadata,
                     periodeBekreftelse.periodeStart,
                     periodeBekreftelse.periodeSlutt,
-                    // inntektUnderveis og fortsattArbeidssoker kan være null hvis det er siste søknad i periode og
-                    // da skal ikke Periodebekreftelse sendes, så de kan trygt settes til false siden de ikke
-                    // kan være null i Avro-klassen Periode.Svar.
+                    // "inntektUnderveis" og "fortsattArbeidssoker" er null hvis det er siste søknad i periode og
+                    // da skal ikke Periodebekreftelse sendes. Feltene kan ikke være null i Avro-klassen Periode.svar,
+                    // men kan settes til false
                     periodeBekreftelse.inntektUnderveis == true,
                     periodeBekreftelse.fortsattArbeidssoker == true,
                 ),

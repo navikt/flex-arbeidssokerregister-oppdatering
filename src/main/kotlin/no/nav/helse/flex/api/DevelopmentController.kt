@@ -1,6 +1,5 @@
 package no.nav.helse.flex.api
 
-import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeRequest
@@ -39,7 +38,6 @@ class DevelopmentController(
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
     private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
     private val bekrefelseProducer: ArbeidssokerperiodeBekreftelseProducer,
-    private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
 
