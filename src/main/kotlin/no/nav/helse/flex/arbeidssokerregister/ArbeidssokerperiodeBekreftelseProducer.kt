@@ -33,7 +33,7 @@ class ArbeidssokerperiodeBekreftelseProducer(
         val periodeId = bekreftelseMelding.periodeId
 
         Span.current().addEvent(
-            "Sendt BekreftelseMelding",
+            "BekreftelseMelding",
             Attributes.of(
                 AttributeKey.stringKey("periodeId"),
                 bekreftelseMelding.periodeId.toString(),
