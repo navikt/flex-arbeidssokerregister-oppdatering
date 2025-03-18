@@ -37,6 +37,7 @@ val logstashLogbackEncoderVersion = "8.0"
 val kluentVersion = "1.73"
 val confluentVersion = "7.9.0"
 val avroVersion = "1.12.0"
+val otelApiVersion = "1.48.0"
 val sykepengesoknadKafkaVersion = "2025.02.19-16.24-5e00417f"
 val arbeidssokerregisteretSchemaVersion = "1.13764081353.1-2"
 val bekreftelsesmeldingSchemaVersion = "1.25.02.10.17-1"
@@ -68,6 +69,7 @@ dependencies {
     implementation("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
     implementation("no.nav.paw.arbeidssokerregisteret.api:bekreftelsesmelding-schema:$bekreftelsesmeldingSchemaVersion")
     implementation("no.nav.paw.arbeidssokerregisteret.api:bekreftelse-paavegneav-schema:$bekreftelsePaaVegneAvSchemaVersion")
+    implementation("io.opentelemetry:opentelemetry-api:$otelApiVersion")
 
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainersVersion"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")

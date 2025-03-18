@@ -1,5 +1,8 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
@@ -32,6 +35,15 @@ class ArbeidssokerperiodePaaVegneAvProducer(
                 Start(FJORDEN_DAGER, paaVegneAvMelding.graceMS),
             )
 
+        Span.current().addEvent(
+            "PaaVegneAvStartMelding",
+            Attributes.of(
+                AttributeKey.stringKey("periodeId"),
+                paaVegneAvMelding.periodeId.toString(),
+                AttributeKey.stringKey("graceMs"),
+                paaVegneAvMelding.graceMS.toString(),
+            ),
+        )
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
         log.info("Publisert PaaVegneAvStartMelding for periode i arbeidssøkerregisteret: $periodeId.")
@@ -48,6 +60,13 @@ class ArbeidssokerperiodePaaVegneAvProducer(
                 Stopp(),
             )
 
+        Span.current().addEvent(
+            "PaaVegneAvStoppMelding",
+            Attributes.of(
+                AttributeKey.stringKey("periodeId"),
+                paaVegneAvMelding.periodeId.toString(),
+            ),
+        )
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
         log.info("Publisert PaaVegneAvStoppMelding for periode i arbeidssøkerregisteret: $periodeId.")

@@ -1,6 +1,9 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.serialisertTilString
@@ -17,6 +20,16 @@ class ArbeidssokerperiodeStoppProducer(
     private val log = logger()
 
     fun send(stoppMelding: StoppMelding) {
+        Span.current().addEvent(
+            "StoppMelding",
+            Attributes.of(
+                AttributeKey.stringKey("vedtaksperiodeId"),
+                stoppMelding.vedtaksperiodeId,
+                AttributeKey.stringKey("avsluttetTidspunkt"),
+                stoppMelding.avsluttetTidspunkt.toString(),
+            ),
+        )
+
         kafkaProducer.send(
             ProducerRecord(
                 ARBEIDSSOKERPERIODE_STOPP_TOPIC,
