@@ -3,6 +3,7 @@ package no.nav.helse.flex.arbeidssokerregister
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.melding.v1.vo.Bekreftelsesloesning
@@ -28,6 +29,7 @@ class ArbeidssokerperiodeBekreftelseProducer(
 ) {
     private val log = logger()
 
+    @WithSpan
     fun send(bekreftelseMelding: BekreftelseMelding) {
         val kafkaKey = bekreftelseMelding.kafkaKey
         val periodeId = bekreftelseMelding.periodeId

@@ -1,6 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
@@ -17,6 +18,7 @@ class SykepengesoknadListener(
 ) {
     private val log = logger()
 
+    @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
         id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad-v1",
