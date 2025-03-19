@@ -15,7 +15,6 @@ import no.nav.helse.flex.sykepengesoknad.SOKNAD_DEAKTIVERES_ETTER_MAANEDER
 import no.nav.helse.flex.sykepengesoknad.StoppMelding
 import no.nav.helse.flex.sykepengesoknad.beregnGraceMS
 import no.nav.security.token.support.core.api.Unprotected
-import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,11 +27,10 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-@Profile("testdatareset")
 @Unprotected
 @RestController
 @RequestMapping("/api/v1")
-class DevelopmentController(
+class DebugController(
     private val arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
     private val arbeidssokerregisterClient: ArbeidssokerregisterClient,
