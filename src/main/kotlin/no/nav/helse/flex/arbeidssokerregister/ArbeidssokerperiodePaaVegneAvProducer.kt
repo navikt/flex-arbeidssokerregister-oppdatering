@@ -3,6 +3,7 @@ package no.nav.helse.flex.arbeidssokerregister
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
@@ -24,6 +25,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 ) {
     private val log = logger()
 
+    @WithSpan
     fun send(paaVegneAvMelding: PaaVegneAvStartMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
         val periodeId = paaVegneAvMelding.periodeId
@@ -49,6 +51,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
         log.info("Publisert PaaVegneAvStartMelding for periode i arbeidssøkerregisteret: $periodeId.")
     }
 
+    @WithSpan
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
         val periodeId = paaVegneAvMelding.periodeId

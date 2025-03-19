@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.serialisertTilString
@@ -19,6 +20,7 @@ class ArbeidssokerperiodeStoppProducer(
 ) {
     private val log = logger()
 
+    @WithSpan
     fun send(stoppMelding: StoppMelding) {
         Span.current().addEvent(
             "StoppMelding",

@@ -1,5 +1,6 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component
 class ArbeidssokerperiodeListener(
     private val arbeidssokerperiodeService: ArbeidssokerperiodeService,
 ) {
+    @WithSpan
     @KafkaListener(
         topics = [ARBEIDSSOKERPERIODE_TOPIC],
         id = "flex-arbeidssokerregister-oppdatering-periode-v1",

@@ -1,5 +1,6 @@
 package no.nav.helse.flex.testdata
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
@@ -17,6 +18,7 @@ class TestdataResetListener(
 ) {
     private val log = logger()
 
+    @WithSpan
     @KafkaListener(
         topics = [TESTDATA_RESET_TOPIC],
         id = "flex-arbeidssokerregister-oppdatering-testdatareset-v1",
