@@ -1,8 +1,6 @@
 package no.nav.helse.flex.arbeidssokerperiode
 
 import org.springframework.data.annotation.Id
-import org.springframework.data.jdbc.repository.query.Modifying
-import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
@@ -17,10 +15,6 @@ interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, St
     fun findByArbeidssokerperiodeId(id: String): Arbeidssokerperiode?
 
     fun findByFnr(string: String): List<Arbeidssokerperiode>?
-
-    @Modifying
-    @Query("DELETE FROM arbeidssokerperiode WHERE vedtaksperiode_id = :id")
-    fun deleteByVedtaksperiodeId(id: String)
 }
 
 @Table("arbeidssokerperiode")
