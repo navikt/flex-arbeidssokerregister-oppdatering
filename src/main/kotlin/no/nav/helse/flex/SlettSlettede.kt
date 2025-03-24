@@ -13,10 +13,8 @@ class SlettSlettede(
 ) {
     private val log = logger()
 
-    @Scheduled(initialDelay = 5, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 3, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
     fun slettSlettede() {
-        log.info("Starter jobb som sletter 3 arbeidsøkerperioder.")
-
         listOf(
             "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
             "e4504199-f052-469a-9e0d-bffd1bad6bef",
