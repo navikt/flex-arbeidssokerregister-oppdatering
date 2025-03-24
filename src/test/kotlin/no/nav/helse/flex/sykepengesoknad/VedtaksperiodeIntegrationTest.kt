@@ -33,6 +33,11 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeStoppConsumer.fetchRecords().size `should be equal to` 0
     }
 
+    @AfterEach
+    fun slettExceptions() {
+        vedtaksperiodeExceptionRepository.deleteAll()
+    }
+
     private val soknad = lagSoknad()
 
     @Test
@@ -82,7 +87,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
     @Test
     @Order(3)
-    fun `Søknad med avsluttet arbeidssøkerperiode feiler`() {
+    fun `Feil lagres når søknad med avsluttet arbeidssøkerperiode feiler`() {
         kafkaKeyGeneratorMockWebServer.enqueue(
             MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
         )
@@ -96,13 +101,51 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
             ),
         )
 
-        assertThrows<ArbeidssokerperiodeException> {
-            sykepengesoknadService.behandleSoknad(
-                soknad.copy(
-                    fnr = "22222222222",
-                    friskTilArbeidVedtakId = UUID.randomUUID().toString(),
-                ),
-            )
+        val vedtaksperiodeId = UUID.randomUUID().toString()
+        sykepengesoknadService.behandleSoknad(
+            soknad.copy(
+                fnr = "22222222222",
+                friskTilArbeidVedtakId = vedtaksperiodeId,
+            ),
+        )
+
+        vedtaksperiodeExceptionRepository.findAll().single().also {
+            it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
+            it.sykepengesoknadId `should be equal to` soknad.id
+            it.fnr `should be equal to` "22222222222"
+            it.exceptionClassName `should be equal to` "no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException"
+        }
+
+        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
+
+        kafkaKeyGeneratorMockWebServer.takeRequest() `should not be equal to` null
+        arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
+    }
+
+    @Test
+    @Order(3)
+    fun `Feil lagres når søknad tom liste med arbeidssøkerperioder returneres`() {
+        kafkaKeyGeneratorMockWebServer.enqueue(
+            MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
+        )
+
+        arbeidssokerperiodeMockWebServer.enqueue(
+            MockResponse().setResponseCode(200).setBody("[]"),
+        )
+
+        val vedtaksperiodeId = UUID.randomUUID().toString()
+        sykepengesoknadService.behandleSoknad(
+            soknad.copy(
+                fnr = "22222222222",
+                friskTilArbeidVedtakId = vedtaksperiodeId,
+            ),
+        )
+
+        vedtaksperiodeExceptionRepository.findAll().single().also {
+            it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
+            it.sykepengesoknadId `should be equal to` soknad.id
+            it.fnr `should be equal to` "22222222222"
+            it.exceptionClassName `should be equal to` "no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException"
         }
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
