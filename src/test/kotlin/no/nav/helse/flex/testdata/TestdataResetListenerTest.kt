@@ -4,6 +4,7 @@ import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
+import no.nav.helse.flex.sykepengesoknad.VedtaksperiodeException
 import org.amshove.kluent.`should be equal to`
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.MethodOrderer
@@ -78,6 +79,36 @@ class TestdataResetListenerTest : FellesTestOppsett() {
     }
 
     @Test
+    @Order(2)
+    fun `Lagrer vedtaksperiodeExceptions for to forskjellige brukere`() {
+        vedtaksperiodeExceptionRepository.save(
+            VedtaksperiodeException(
+                opprettet = Instant.now(),
+                vedtaksperiodeId = UUID.randomUUID().toString(),
+                sykepengesoknadId = UUID.randomUUID().toString(),
+                fnr = FNR,
+                exceptionClassName = "Test",
+                exceptionMessage = "Test",
+            ),
+        )
+
+        vedtaksperiodeExceptionRepository.save(
+            VedtaksperiodeException(
+                opprettet = Instant.now(),
+                vedtaksperiodeId = UUID.randomUUID().toString(),
+                sykepengesoknadId = UUID.randomUUID().toString(),
+                fnr = "22222222222",
+                exceptionClassName = "Test",
+                exceptionMessage = "Test",
+            ),
+        )
+
+        vedtaksperiodeExceptionRepository.findAll().toList().also {
+            it.size `should be equal to` 2
+        }
+    }
+
+    @Test
     @Order(3)
     fun `Sletter data for èn bruker ved mottatt melding om testdata reset`() {
         val key = UUID.randomUUID().toString()
@@ -95,6 +126,10 @@ class TestdataResetListenerTest : FellesTestOppsett() {
         }
 
         arbeidssokerperiodeRepository.findAll().toList().single().also {
+            it.fnr `should be equal to` "22222222222"
+        }
+
+        vedtaksperiodeExceptionRepository.findAll().toList().single().also {
             it.fnr `should be equal to` "22222222222"
         }
     }

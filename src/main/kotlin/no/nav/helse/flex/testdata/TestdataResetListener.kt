@@ -4,6 +4,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.logger
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
+import no.nav.helse.flex.sykepengesoknad.VedtaksperiodeExceptionRepository
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.context.annotation.Profile
 import org.springframework.kafka.annotation.KafkaListener
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component
 class TestdataResetListener(
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
     private val periodebekreftelseRepository: PeriodebekreftelseRepository,
+    private val vedtaksperiodeExceptionRepository: VedtaksperiodeExceptionRepository,
 ) {
     private val log = logger()
 
@@ -30,6 +32,7 @@ class TestdataResetListener(
         acknowledgment: Acknowledgment,
     ) {
         val fnr = cr.value()
+        vedtaksperiodeExceptionRepository.deleteByFnr(fnr)
         arbeidssokerperiodeRepository.findByFnr(fnr)?.let {
             it.forEach {
                 val antall = periodebekreftelseRepository.deleteByArbeidssokerperiodeId(it.id!!)
