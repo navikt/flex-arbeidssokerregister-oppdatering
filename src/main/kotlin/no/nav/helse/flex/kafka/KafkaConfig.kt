@@ -7,6 +7,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG
+import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG
@@ -14,6 +15,7 @@ import org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CON
 import org.apache.kafka.clients.producer.ProducerConfig.RETRIES_CONFIG
 import org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MS_CONFIG
 import org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.apache.kafka.common.serialization.LongSerializer
@@ -27,6 +29,8 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.listener.ContainerProperties.AckMode
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 const val JAVA_KEYSTORE = "JKS"
 const val PKCS12 = "PKCS12"
@@ -96,6 +100,29 @@ class KafkaConfig(
             it.consumerFactory = DefaultKafkaConsumerFactory(consumerConfig)
             it.setCommonErrorHandler(kafkaErrorHandler)
             it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
+
+            it.containerProperties.setConsumerRebalanceListener(
+                object : org.springframework.kafka.listener.ConsumerAwareRebalanceListener {
+                    override fun onPartitionsAssigned(
+                        consumer: Consumer<*, *>,
+                        partitions: Collection<TopicPartition>,
+                    ) {
+                        if (partitions.isNotEmpty()) {
+                            val startAt = LocalDateTime.of(2025, 3, 17, 0, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()
+                            val partitionTimestampMap = partitions.associateWith { startAt }
+
+                            val offsetsForTimes = consumer.offsetsForTimes(partitionTimestampMap)
+                            offsetsForTimes?.forEach { (partition, offsetAndTimestamp) ->
+                                if (offsetAndTimestamp != null) {
+                                    consumer.seek(partition, offsetAndTimestamp.offset())
+                                }
+                            }
+                        }
+                    }
+
+                    override fun onPartitionsRevoked(partitions: Collection<TopicPartition>) {}
+                },
+            )
         }
 
     @Bean
