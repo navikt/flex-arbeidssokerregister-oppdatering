@@ -46,14 +46,15 @@ class SykepengesoknadService(
         try {
             val vedtaksperiode = sykepengesoknadDTO.tilVedtaksperiode()
             if (!erNyVedtaksperiode(vedtaksperiode)) {
-                log.warn(
-                    "Ignorerer vedtaksperiode for søknad: ${sykepengesoknadDTO.id} med " +
-                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} da den allerede er behandlet.",
-                )
+//                log.warn(
+//                    "Ignorerer vedtaksperiode for søknad: ${sykepengesoknadDTO.id} med " +
+//                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} da den allerede er behandlet.",
+//                )
                 return
             }
-            // TODO: Logg dry-run.
-            behandleVedtaksperiode(vedtaksperiode)
+            // TODO: Reset.
+            // behandleVedtaksperiode(vedtaksperiode)
+            log.info("Skulle behandlet vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} for sykepengesoknad: ${sykepengesoknadDTO.id}")
         } catch (e: ArbeidssokerperiodeException) {
             lagreException(sykepengesoknadDTO, e)
         }
@@ -122,7 +123,7 @@ class SykepengesoknadService(
         }
 
         if (periodebekreftelseRepository.findBySykepengesoknadId(sykepengesoknadDTO.id) != null) {
-            log.warn("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
+//            log.warn("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
             return
         }
 
@@ -139,34 +140,37 @@ class SykepengesoknadService(
             }
         }
 
-        // TODO: Logg dry-run.
-        periodebekreftelseRepository.save(
-            Periodebekreftelse(
-                arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                sykepengesoknadId = sykepengesoknadDTO.id,
-                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker,
-                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
-                opprettet = Instant.now(),
-                avsluttendeSoknad = erAvsluttendeSoknad,
-            ),
-        )
-
-        if (erAvsluttendeSoknad) {
-            arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.AVSLUTTET_PERIODE)
-            sendPaaVegneAvStoppMelding(arbeidssokerperiode)
-        } else {
-            if (sykepengesoknadDTO.fortsattArbeidssoker == false) {
-                arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.BRUKER)
-            }
-            sendBekreftelseMelding(arbeidssokerperiode, sykepengesoknadDTO)
-        }
-
+        // TODO: Reset
         log.info(
-            "Behandlet periodebekreftelse for søknad: ${sykepengesoknadDTO.id} med " +
-                "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}, " +
-                "arbeidssøkerperiode: ${arbeidssokerperiode.id} og periode i " +
-                "arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
+            "Skulle sendt periodebekreftelse for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} og søknad: ${sykepengesoknadDTO.id}.",
         )
+//        periodebekreftelseRepository.save(
+//            Periodebekreftelse(
+//                arbeidssokerperiodeId = arbeidssokerperiode.id!!,
+//                sykepengesoknadId = sykepengesoknadDTO.id,
+//                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker,
+//                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
+//                opprettet = Instant.now(),
+//                avsluttendeSoknad = erAvsluttendeSoknad,
+//            ),
+//        )
+
+//        if (erAvsluttendeSoknad) {
+//            arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.AVSLUTTET_PERIODE)
+//            sendPaaVegneAvStoppMelding(arbeidssokerperiode)
+//        } else {
+//            if (sykepengesoknadDTO.fortsattArbeidssoker == false) {
+//                arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.BRUKER)
+//            }
+//            sendBekreftelseMelding(arbeidssokerperiode, sykepengesoknadDTO)
+//        }
+
+//        log.info(
+//            "Behandlet periodebekreftelse for søknad: ${sykepengesoknadDTO.id} med " +
+//                "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}, " +
+//                "arbeidssøkerperiode: ${arbeidssokerperiode.id} og periode i " +
+//                "arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
+//        )
     }
 
     private fun sendBekreftelseMelding(
