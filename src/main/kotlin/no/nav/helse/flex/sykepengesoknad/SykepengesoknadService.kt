@@ -112,38 +112,39 @@ class SykepengesoknadService(
             return
         }
 
-        val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findByVedtaksperiodeId(sykepengesoknadDTO.friskTilArbeidVedtakId!!)
+//        val arbeidssokerperiode =
+//            arbeidssokerperiodeRepository.findByVedtaksperiodeId(sykepengesoknadDTO.friskTilArbeidVedtakId!!)
 
-        if (arbeidssokerperiode == null) {
-            throw PeriodebekreftelseException(
-                "Fant ikke arbeidssøkerperiode for søknad: ${sykepengesoknadDTO.id} med " +
-                    "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.",
-            )
-        }
+//        if (arbeidssokerperiode == null) {
+//            throw PeriodebekreftelseException(
+//                "Fant ikke arbeidssøkerperiode for søknad: ${sykepengesoknadDTO.id} med " +
+//                    "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.",
+//            )
+//        }
 
         if (periodebekreftelseRepository.findBySykepengesoknadId(sykepengesoknadDTO.id) != null) {
-//            log.warn("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
+            log.warn("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
             return
-        }
-
-        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
-
-        if (!erAvsluttendeSoknad) {
-            if (sykepengesoknadDTO.fortsattArbeidssoker == null) {
-                throw PeriodebekreftelseException(
-                    "Mangler verdi for fortsattArbeidssoker i søknad: ${sykepengesoknadDTO.id} med " +
-                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} og " +
-                        "arbeidssokerperiode: ${arbeidssokerperiode.id} som skal være satt da søknaden " +
-                        "ikke er siste i perioden.",
-                )
-            }
         }
 
         // TODO: Reset
         log.info(
             "Skulle sendt periodebekreftelse for vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} og søknad: ${sykepengesoknadDTO.id}.",
         )
+
+//        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
+
+//        if (!erAvsluttendeSoknad) {
+//            if (sykepengesoknadDTO.fortsattArbeidssoker == null) {
+//                throw PeriodebekreftelseException(
+//                    "Mangler verdi for fortsattArbeidssoker i søknad: ${sykepengesoknadDTO.id} med " +
+//                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} og " +
+//                        "arbeidssokerperiode: ${arbeidssokerperiode.id} som skal være satt da søknaden " +
+//                        "ikke er siste i perioden.",
+//                )
+//            }
+//        }
+
 //        periodebekreftelseRepository.save(
 //            Periodebekreftelse(
 //                arbeidssokerperiodeId = arbeidssokerperiode.id!!,
