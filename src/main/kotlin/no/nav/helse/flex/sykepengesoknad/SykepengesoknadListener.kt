@@ -37,6 +37,7 @@ class SykepengesoknadListener(
                     val clusterName = environmentToggles.naisClusterName()
                     log.warn("Feil ved behandling av søknad: ${it.id} i $clusterName: ${e.message}", e)
                 } else {
+                    log.error("Feil ved behandling av søknad: ${it.id} ", e)
                     throw e
                 }
             }
