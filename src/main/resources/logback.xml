@@ -12,6 +12,5 @@
     </root>
 
     <logger name="no.nav.helse.flex" level="INFO"/>
-    <logger name="org.springframework" level="INFO"/>
 
 </configuration>
