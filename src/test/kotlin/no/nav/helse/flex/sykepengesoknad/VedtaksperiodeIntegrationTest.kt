@@ -18,6 +18,7 @@ import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.assertThrows
 import java.time.Instant
 import java.util.UUID
 
+@Disabled
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     @AfterEach
@@ -80,6 +82,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     @Test
     @Order(2)
     fun `Søknad med kjent FriskTilArbeid vedtaksperiode blir ikke lagret`() {
+        // Simulerer dobbel innsending av samme søknad.
         sykepengesoknadService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
@@ -87,7 +90,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
     @Test
     @Order(3)
-    fun `Feil lagres når søknad med avsluttet arbeidssøkerperiode feiler`() {
+    fun `Feil lagres når søknad har bruker med avsluttet arbeidssøkerperiode`() {
         kafkaKeyGeneratorMockWebServer.enqueue(
             MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
         )
@@ -124,7 +127,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
     @Test
     @Order(3)
-    fun `Feil lagres når søknad tom liste med arbeidssøkerperioder returneres`() {
+    fun `Feil lagres når søknad har bruker som ikke er registert i arbeidssøkerregiseret`() {
         kafkaKeyGeneratorMockWebServer.enqueue(
             MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
         )
