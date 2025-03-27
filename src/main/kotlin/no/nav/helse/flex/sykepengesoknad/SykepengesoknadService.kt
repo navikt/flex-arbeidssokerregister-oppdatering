@@ -12,7 +12,6 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.HttpServerErrorException
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -37,54 +36,37 @@ class SykepengesoknadService(
     @Transactional
     fun behandleSoknad(sykepengesoknadDTO: SykepengesoknadDTO) {
         when {
-            sykepengesoknadDTO.erFremtidigFriskTilArbeidSoknad() ->
-                behandleVedtaksperiodeEllerLagreFeil(
-                    sykepengesoknadDTO,
-                )
+            sykepengesoknadDTO.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(sykepengesoknadDTO)
 
             sykepengesoknadDTO.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(sykepengesoknadDTO)
         }
     }
 
-    private fun behandleVedtaksperiodeEllerLagreFeil(sykepengesoknadDTO: SykepengesoknadDTO) {
+    private fun behandleVedtaksperiode(sykepengesoknadDTO: SykepengesoknadDTO) {
         try {
-            behandleVedtaksperiode(sykepengesoknadDTO)
-        } catch (e: Exception) {
-            when (e) {
-                is ArbeidssokerperiodeException, is HttpServerErrorException -> {
-                    vedtaksperiodeExceptionRepository.save(
-                        VedtaksperiodeException(
-                            opprettet = Instant.now(),
-                            vedtaksperiodeId = sykepengesoknadDTO.friskTilArbeidVedtakId!!,
-                            sykepengesoknadId = sykepengesoknadDTO.id,
-                            fnr = sykepengesoknadDTO.fnr,
-                            exceptionClassName = e.javaClass.canonicalName,
-                            exceptionMessage = e.message,
-                        ),
-                    )
-                    log.warn(
-                        "Lagret exception for sykepengesoknad: ${sykepengesoknadDTO.id} med vedtaksperiodeId: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.",
-                    )
-                }
-
-                else -> throw e
+            val vedtaksperiode = sykepengesoknadDTO.tilVedtaksperiode()
+            if (!erNyVedtaksperiode(vedtaksperiode)) {
+                log.warn(
+                    "Ignorerer vedtaksperiode for søknad: ${sykepengesoknadDTO.id} med " +
+                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} da den allerede er behandlet.",
+                )
+                return
             }
+            // TODO: Logg dry-run.
+            behandleVedtaksperiode(vedtaksperiode)
+        } catch (e: ArbeidssokerperiodeException) {
+            lagreException(sykepengesoknadDTO, e)
         }
     }
 
-    private fun behandleVedtaksperiode(sykepengesoknadDTO: SykepengesoknadDTO) {
-        val vedtaksperiode = sykepengesoknadDTO.tilVedtaksperiode()
-        if (!erNyVedtaksperiode(vedtaksperiode)) {
-            return
-        }
-
+    private fun behandleVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) {
         val kafkaRecordKey = hentKafkaRecordKey(vedtaksperiode.fnr)
 
         // Arbeidssøkerregisteret returnerer tom list hvis bruker ikke er registrert.
         val arbeidsokerperiodeResponse =
             hentArbeidssokerperiodeId(vedtaksperiode.fnr).singleOrNull()
                 ?: throw ArbeidssokerperiodeException(
-                    "Fant ikke arbeidssøkerperiode for søknad: ${sykepengesoknadDTO.id} med " +
+                    "Fant ikke arbeidssøkerperiode for søknad: ${vedtaksperiode.sykepengesoknadId} med " +
                         "vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId}.",
                 )
 
@@ -92,7 +74,7 @@ class SykepengesoknadService(
             val avsluttetTidspunkt = arbeidsokerperiodeResponse.avsluttet.tidspunkt.toLocalDate()
             throw ArbeidssokerperiodeException(
                 "Arbeidssøkerperiode i arbeidssøkerregisteret: ${arbeidsokerperiodeResponse.periodeId} for " +
-                    "søknad: ${sykepengesoknadDTO.id} med " +
+                    "søknad: ${vedtaksperiode.sykepengesoknadId} med " +
                     "vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} ble " +
                     "avsluttet $avsluttetTidspunkt.",
             )
@@ -117,7 +99,7 @@ class SykepengesoknadService(
 
         log.info(
             "Opprettet arbeidssøkerperiode: ${lagretArbeidssokerperiode.id} for " +
-                "søknad: ${sykepengesoknadDTO.id} med status ${sykepengesoknadDTO.status}, " +
+                "søknad: ${vedtaksperiode.sykepengesoknadId} med " +
                 "vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId} og " +
                 "periode i arbeidssøkerregisteret: ${arbeidsokerperiodeResponse.periodeId}.",
         )
@@ -140,7 +122,7 @@ class SykepengesoknadService(
         }
 
         if (periodebekreftelseRepository.findBySykepengesoknadId(sykepengesoknadDTO.id) != null) {
-            log.info("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
+            log.warn("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
             return
         }
 
@@ -157,6 +139,7 @@ class SykepengesoknadService(
             }
         }
 
+        // TODO: Logg dry-run.
         periodebekreftelseRepository.save(
             Periodebekreftelse(
                 arbeidssokerperiodeId = arbeidssokerperiode.id!!,
@@ -201,6 +184,22 @@ class SykepengesoknadService(
                 fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker,
             )
         bekreftelseProducer.send(bekreftelseMelding)
+    }
+
+    private fun lagreException(
+        sykepengesoknadDTO: SykepengesoknadDTO,
+        e: ArbeidssokerperiodeException,
+    ) {
+        vedtaksperiodeExceptionRepository.save(
+            VedtaksperiodeException(
+                opprettet = Instant.now(),
+                vedtaksperiodeId = sykepengesoknadDTO.friskTilArbeidVedtakId!!,
+                sykepengesoknadId = sykepengesoknadDTO.id,
+                fnr = sykepengesoknadDTO.fnr,
+                exceptionClassName = e.javaClass.canonicalName,
+                exceptionMessage = e.message,
+            ),
+        )
     }
 
     private fun sendPaaVegneAvStoppMelding(arbeidssokerperiode: Arbeidssokerperiode) {
@@ -256,6 +255,7 @@ class SykepengesoknadService(
         return FriskTilArbeidVedtaksperiode(
             fnr = this.fnr,
             vedtaksperiodeId = this.friskTilArbeidVedtakId!!,
+            sykepengesoknadId = this.id,
             fom = periode.fom,
             tom = periode.tom,
         )
@@ -271,6 +271,7 @@ fun String.tilPeriode(): Periode = objectMapper.readValue(this)
 data class FriskTilArbeidVedtaksperiode(
     val fnr: String,
     val vedtaksperiodeId: String,
+    val sykepengesoknadId: String,
     val fom: LocalDate,
     val tom: LocalDate,
 )

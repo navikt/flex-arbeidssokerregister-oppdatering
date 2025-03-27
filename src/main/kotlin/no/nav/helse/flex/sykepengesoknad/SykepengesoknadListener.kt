@@ -31,7 +31,10 @@ class SykepengesoknadListener(
     ) {
         cr.value().tilSykepengesoknadDTO().also {
             try {
-                sykepengesoknadService.behandleSoknad(it)
+                // TODO: Remove
+                if (listOf("04819696816", "11111111111", "22222222222").contains(it.fnr)) {
+                    sykepengesoknadService.behandleSoknad(it)
+                }
             } catch (e: Exception) {
                 if (!environmentToggles.erProduksjon()) {
                     val clusterName = environmentToggles.naisClusterName()
