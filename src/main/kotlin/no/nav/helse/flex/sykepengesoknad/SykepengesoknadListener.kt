@@ -33,8 +33,8 @@ class SykepengesoknadListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
+            // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
             if (
-                // Ikke prosesser søknader som er slettet, men som ligger på Kafka.
                 it.friskTilArbeidVedtakId in
                 listOf(
                     "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
@@ -60,11 +60,11 @@ class SykepengesoknadListener(
         acknowledgment.acknowledge()
     }
 
+    // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
     override fun onPartitionsAssigned(
         assignments: Map<org.apache.kafka.common.TopicPartition?, Long?>,
         callback: ConsumerSeekCallback,
     ) {
-        // Startet lytting på iSyfo-topic 20. mars 00:00:00.
         val startTimestamp = LocalDate.of(2025, 3, 20).toInstantAtStartOfDay().toEpochMilli()
 
         assignments.keys.filterNotNull().forEach { topicPartition ->

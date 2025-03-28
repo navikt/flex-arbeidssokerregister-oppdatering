@@ -14,7 +14,6 @@ import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -25,7 +24,6 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.jvm.optionals.toList
 
-@Disabled
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     @AfterEach
