@@ -18,13 +18,14 @@ import java.time.LocalDate
 class SykepengesoknadListener(
     private val sykepengesoknadService: SykepengesoknadService,
     private val environmentToggles: EnvironmentToggles,
+    // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
 ) : ConsumerSeekAware {
     private val log = logger()
 
     @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad-v4",
+        id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad-v5",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
     )
