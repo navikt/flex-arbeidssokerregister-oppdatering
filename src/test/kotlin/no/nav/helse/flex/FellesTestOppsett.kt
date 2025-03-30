@@ -118,6 +118,7 @@ abstract class FellesTestOppsett {
     companion object {
         init {
             PostgreSQLContainer16().apply {
+                withCommand("postgres", "-c", "wal_level=logical")
                 start()
                 System.setProperty("spring.datasource.url", "$jdbcUrl&reWriteBatchedInserts=true")
                 System.setProperty("spring.datasource.username", username)

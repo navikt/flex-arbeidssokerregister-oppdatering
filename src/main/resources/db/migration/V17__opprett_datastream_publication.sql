@@ -1,0 +1,1 @@
+CREATE PUBLICATION flex_arbeidssokerregister_oppdatering_publication for ALL TABLES;
