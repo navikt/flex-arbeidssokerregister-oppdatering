@@ -53,9 +53,14 @@ spec:
         databases:
           - name: flex-arbeidssokerregister-oppdatering-db
             envVarPrefix: DB
+            users:
+              - name: bigquery-datastream
         maintenance:
           day: 2
           hour: 2
+        flags:
+          - name: cloudsql.logical_decoding
+            value: "on"
   accessPolicy:
     outbound:
       rules:
