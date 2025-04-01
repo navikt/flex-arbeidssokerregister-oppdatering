@@ -41,6 +41,7 @@ class SykepengesoknadListener(
                     "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
                     "e4504199-f052-469a-9e0d-bffd1bad6bef",
                     "688142df-92d9-4f44-b176-fd74d0c5da1d",
+                    "bedb05d3-a2ff-4ee3-8525-44965b21442c",
                 )
             ) {
                 return
