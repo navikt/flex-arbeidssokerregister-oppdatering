@@ -31,7 +31,7 @@ val schema: Configuration by configurations.creating {
 
 ext["okhttp3"] = "4.12" // Token-support tester trenger MockWebServer.
 
-val tokenSupportVersion = "5.0.19"
+val tokenSupportVersion = "5.0.24"
 val testContainersVersion = "1.20.6"
 val logstashLogbackEncoderVersion = "8.0"
 val kluentVersion = "1.73"
