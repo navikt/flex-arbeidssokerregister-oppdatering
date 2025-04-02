@@ -18,13 +18,14 @@ import java.time.LocalDate
 class SykepengesoknadListener(
     private val sykepengesoknadService: SykepengesoknadService,
     private val environmentToggles: EnvironmentToggles,
+    // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
 ) : ConsumerSeekAware {
     private val log = logger()
 
     @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad-v4",
+        id = "flex-arbeidssokerregister-oppdatering-sykepengesoknad-v5",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
     )
@@ -33,13 +34,14 @@ class SykepengesoknadListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
+            // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
             if (
-                // Ikke prosesser søknader som er slettet, men som ligger på Kafka.
                 it.friskTilArbeidVedtakId in
                 listOf(
                     "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
                     "e4504199-f052-469a-9e0d-bffd1bad6bef",
                     "688142df-92d9-4f44-b176-fd74d0c5da1d",
+                    "bedb05d3-a2ff-4ee3-8525-44965b21442c",
                 )
             ) {
                 return
@@ -60,11 +62,11 @@ class SykepengesoknadListener(
         acknowledgment.acknowledge()
     }
 
+    // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
     override fun onPartitionsAssigned(
         assignments: Map<org.apache.kafka.common.TopicPartition?, Long?>,
         callback: ConsumerSeekCallback,
     ) {
-        // Startet lytting på iSyfo-topic 20. mars 00:00:00.
         val startTimestamp = LocalDate.of(2025, 3, 20).toInstantAtStartOfDay().toEpochMilli()
 
         assignments.keys.filterNotNull().forEach { topicPartition ->
