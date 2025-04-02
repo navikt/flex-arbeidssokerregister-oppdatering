@@ -8,18 +8,14 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.kafka.annotation.KafkaListener
-import org.springframework.kafka.listener.ConsumerSeekAware
-import org.springframework.kafka.listener.ConsumerSeekAware.ConsumerSeekCallback
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
-import java.time.LocalDate
 
 @Component
 class SykepengesoknadListener(
     private val sykepengesoknadService: SykepengesoknadService,
     private val environmentToggles: EnvironmentToggles,
-    // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
-) : ConsumerSeekAware {
+) {
     private val log = logger()
 
     @WithSpan
@@ -42,6 +38,7 @@ class SykepengesoknadListener(
                     "e4504199-f052-469a-9e0d-bffd1bad6bef",
                     "688142df-92d9-4f44-b176-fd74d0c5da1d",
                     "bedb05d3-a2ff-4ee3-8525-44965b21442c",
+                    "5abde058-fc10-470f-a336-0daccd7ed733",
                 )
             ) {
                 return
@@ -60,18 +57,6 @@ class SykepengesoknadListener(
             }
         }
         acknowledgment.acknowledge()
-    }
-
-    // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
-    override fun onPartitionsAssigned(
-        assignments: Map<org.apache.kafka.common.TopicPartition?, Long?>,
-        callback: ConsumerSeekCallback,
-    ) {
-        val startTimestamp = LocalDate.of(2025, 3, 20).toInstantAtStartOfDay().toEpochMilli()
-
-        assignments.keys.filterNotNull().forEach { topicPartition ->
-            callback.seekToTimestamp(topicPartition.topic(), topicPartition.partition(), startTimestamp)
-        }
     }
 }
 
