@@ -29,7 +29,7 @@ import java.util.*
 
 @Unprotected
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/debug")
 class DebugController(
     private val arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer,
     private val kafkaKeyGeneratorClient: KafkaKeyGeneratorClient,
@@ -51,11 +51,11 @@ class DebugController(
     @GetMapping("/arbeidssokerregisteret/periode/{fnr}")
     fun hentArbeidssokerperiode(
         @PathVariable fnr: String,
-    ): ResponseEntity<ArbeidssokerperiodeResponse> {
+    ): ResponseEntity<ArbeidssokerperiodeDebugResponse> {
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr)).let {
             it.single().also {
                 return ResponseEntity.ok(
-                    ArbeidssokerperiodeResponse(
+                    ArbeidssokerperiodeDebugResponse(
                         it.periodeId.toString(),
                         it.startet.utfoertAv.type,
                         it.avsluttet != null,
@@ -67,7 +67,7 @@ class DebugController(
 
     @PostMapping("/arbeidssokerregisteret/paa-vegne-av-start")
     fun sendPaaVegneAvStartMelding(
-        @RequestBody request: PaaVegneAvRequest,
+        @RequestBody request: PaaVegneAvDebugRequest,
     ): ResponseEntity<Void> {
         paaVegneAvProducer.send(request.tilPaaVegneStartMelding())
 
@@ -77,7 +77,7 @@ class DebugController(
 
     @PostMapping("/arbeidssokerregisteret/paa-vegne-av-stopp")
     fun sendPaaVegneAvStoppMelding(
-        @RequestBody request: PaaVegneAvRequest,
+        @RequestBody request: PaaVegneAvDebugRequest,
     ): ResponseEntity<Void> {
         paaVegneAvProducer.send(request.tilPaaVegneStoppMelding())
 
@@ -87,7 +87,7 @@ class DebugController(
 
     @PostMapping("/arbeidssokerregisteret/bekreftelse")
     fun sendBekreftelseMelding(
-        @RequestBody request: PeriodeBekrefelseRequest,
+        @RequestBody request: PeriodebekrefelseDebugRequest,
     ): ResponseEntity<Void> {
         bekrefelseProducer.send(request.tilBekreftelseMelding())
 
@@ -97,7 +97,7 @@ class DebugController(
 
     @PostMapping("/sykepengesoknad/stopp-melding")
     fun sendArbeidssokerperiodeStoppMelding(
-        @RequestBody request: StoppRequest,
+        @RequestBody request: StoppDebugRequest,
     ): ResponseEntity<Void> {
         arbeidssokerperiodeStoppProducer.send(request.tilStoppMelding())
 
@@ -106,20 +106,20 @@ class DebugController(
     }
 }
 
-private fun PaaVegneAvRequest.tilPaaVegneStartMelding() =
+private fun PaaVegneAvDebugRequest.tilPaaVegneStartMelding() =
     PaaVegneAvStartMelding(
         this.kafkaKey,
         UUID.fromString(this.periodeId),
         beregnGraceMS(LocalDate.now(), SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
     )
 
-private fun PaaVegneAvRequest.tilPaaVegneStoppMelding() =
+private fun PaaVegneAvDebugRequest.tilPaaVegneStoppMelding() =
     PaaVegneAvStoppMelding(
         this.kafkaKey,
         UUID.fromString(this.periodeId),
     )
 
-private fun PeriodeBekrefelseRequest.tilBekreftelseMelding() =
+private fun PeriodebekrefelseDebugRequest.tilBekreftelseMelding() =
     BekreftelseMelding(
         kafkaKey = this.kafkaKey,
         periodeId = UUID.fromString(this.periodeId),
@@ -130,25 +130,25 @@ private fun PeriodeBekrefelseRequest.tilBekreftelseMelding() =
         fortsattArbeidssoker = this.fortsattArbeidssoker,
     )
 
-private fun StoppRequest.tilStoppMelding() =
+private fun StoppDebugRequest.tilStoppMelding() =
     StoppMelding(
         vedtaksperiodeId = this.id,
         fnr = this.fnr,
         avsluttetTidspunkt = Instant.now(),
     )
 
-data class StoppRequest(
+data class StoppDebugRequest(
     val id: String,
     val fnr: String,
 )
 
-data class PaaVegneAvRequest(
+data class PaaVegneAvDebugRequest(
     val kafkaKey: Long,
     val periodeId: String,
     val fnr: String,
 )
 
-data class PeriodeBekrefelseRequest(
+data class PeriodebekrefelseDebugRequest(
     val kafkaKey: Long,
     val periodeId: String,
     val fnr: String,
@@ -160,7 +160,7 @@ data class KafkaKeyResponse(
     val kafkaKey: Long,
 )
 
-data class ArbeidssokerperiodeResponse(
+data class ArbeidssokerperiodeDebugResponse(
     val periodeId: String,
     val utfoertAv: String,
     val erAvsluttet: Boolean,

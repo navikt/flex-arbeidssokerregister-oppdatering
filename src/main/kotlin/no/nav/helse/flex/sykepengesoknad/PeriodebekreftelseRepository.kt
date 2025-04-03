@@ -10,11 +10,13 @@ import java.time.Instant
 
 @Repository
 interface PeriodebekreftelseRepository : CrudRepository<Periodebekreftelse, String> {
+    fun findBySykepengesoknadId(string: String): Periodebekreftelse?
+
     @Modifying
     @Query("DELETE FROM periodebekreftelse WHERE arbeidssokerperiode_id = :string")
     fun deleteByArbeidssokerperiodeId(string: String): Long
 
-    fun findBySykepengesoknadId(string: String): Periodebekreftelse?
+    fun findByArbeidssokerperiodeId(string: String): List<Periodebekreftelse>
 }
 
 @Table("periodebekreftelse")
