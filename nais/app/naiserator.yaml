@@ -62,6 +62,9 @@ spec:
           - name: cloudsql.logical_decoding
             value: "on"
   accessPolicy:
+    inbound:
+      rules:
+        - application: flex-internal-frontend
     outbound:
       rules:
         - application: paw-kafka-key-generator

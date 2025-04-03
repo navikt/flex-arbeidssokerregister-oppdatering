@@ -43,6 +43,8 @@ KAFKA_SCHEMA_REGISTRY: "url"
 KAFKA_SCHEMA_REGISTRY_USER: ""
 KAFKA_SCHEMA_REGISTRY_PASSWORD: ""
 
+AZURE_APP_PRE_AUTHORIZED_APPS: "[{\"name\":\"dev-gcp:flex:flex-internal-frontend\",\"clientId\":\"flex-internal-frontend-client-id\"}]"
+
 no.nav.security.jwt:
   issuer:
     azureator:

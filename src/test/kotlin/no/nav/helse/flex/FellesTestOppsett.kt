@@ -20,6 +20,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.testdata.TESTDATA_RESET_TOPIC
 import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
+import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -35,6 +36,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.testcontainers.containers.PostgreSQLContainer
@@ -51,6 +54,7 @@ const val VEDTAKSPERIODE_ID = "52198b00-c980-4a68-832f-42b2c21316a2"
 
 @SpringBootTest(classes = [Application::class])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@AutoConfigureMockMvc(print = MockMvcPrint.NONE, printOnlyOnFailure = false)
 @AutoConfigureObservability
 @EnableMockOAuth2Server
 abstract class FellesTestOppsett {
@@ -98,6 +102,9 @@ abstract class FellesTestOppsett {
 
     @Autowired
     lateinit var sykepengesoknadService: SykepengesoknadService
+
+    @Autowired
+    lateinit var server: MockOAuth2Server
 
     @BeforeAll
     fun subscribeToTopics() {
