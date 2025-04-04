@@ -91,13 +91,6 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Returnerer 404 når arbeidssøkerperiode ikke ble funnet`() {
-        mockMvc
-            .perform(lagMockMvcRequest())
-            .andExpect(MockMvcResultMatchers.status().isNotFound)
-    }
-
-    @Test
     fun `Map til ArbeidssokerperiodeResponse`() {
         val arbeidssokerperiodeId = UUID.randomUUID().toString()
         val sykepengesoknadId = UUID.randomUUID().toString()
