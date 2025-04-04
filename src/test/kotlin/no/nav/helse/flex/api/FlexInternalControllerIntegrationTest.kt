@@ -168,7 +168,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
 
     private fun lagMockMvcRequest(): MockHttpServletRequestBuilder =
         MockMvcRequestBuilders
-            .post("/api/v1/internal/arbeidssokerperioder")
+            .post("/api/v1/flex/arbeidssokerperioder")
             .header("Authorization", "Bearer ${skapAzureJwt("flex-internal-frontend-client-id", "99999999999")}")
             .contentType(MediaType.APPLICATION_JSON)
             .content(FlexInternalRequest(FNR).serialisertTilString())
