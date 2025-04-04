@@ -34,10 +34,6 @@ class FlexInternalController(
                 it.tilArbeidssokerperiodeResponse(hentPeriodebekreftelser(it))
             } ?: emptyList()
 
-        if (arbeidssokerperioder.isEmpty()) {
-            return ResponseEntity.notFound().build()
-        }
-
         return ResponseEntity.ok(FlexInternalResponse(arbeidssokerperioder))
     }
 
