@@ -17,7 +17,7 @@ import java.time.LocalDate
 
 @RestController
 @ProtectedWithClaims(issuer = AZUREATOR)
-@RequestMapping("/api/v1/internal")
+@RequestMapping("/api/v1/flex")
 class FlexInternalController(
     private val clientValidation: ClientValidation,
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
