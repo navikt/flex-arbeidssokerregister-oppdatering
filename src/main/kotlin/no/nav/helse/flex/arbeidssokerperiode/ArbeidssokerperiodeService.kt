@@ -35,13 +35,7 @@ class ArbeidssokerperiodeService(
             return
         }
 
-        log.info(
-            "Skulle avsluttet arbeidssøkerperiode: ${arbeidssokerperiode.id} for " +
-                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId} og " +
-                "periode i arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
-        )
-
-//        prosesserPeriode(arbeidssokerperiode, periode)
+        prosesserPeriode(arbeidssokerperiode, periode)
     }
 
     private fun prosesserPeriode(
