@@ -21,6 +21,7 @@ class ArbeidssokerperiodeListener(
         topics = [ARBEIDSSOKERPERIODE_TOPIC],
         id = "flex-arbeidssokerregister-oppdatering-periode-v2",
         containerFactory = "avroKafkaListenerContainerFactory",
+        properties = ["auto.offset.reset=earliest"],
     )
     fun listen(
         cr: ConsumerRecord<Long, Periode>,
