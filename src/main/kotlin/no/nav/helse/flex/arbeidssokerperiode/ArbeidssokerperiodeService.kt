@@ -21,7 +21,7 @@ class ArbeidssokerperiodeService(
 ) {
     private val log = logger()
 
-    @Scheduled(initialDelay = 2, fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 2, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
     fun sendStoppMelding() {
         if (environmentToggles.erProduksjon()) {
             listOf(
@@ -29,19 +29,19 @@ class ArbeidssokerperiodeService(
                 "5abde058-fc10-470f-a336-0daccd7ed733",
             ).forEach {
                 vedtaksperiodeExceptionRepository.findByVedtaksperiodeId(it).first().also {
-//                    arbeidssokerperiodeStoppProducer.send(
-//                        StoppMelding(
-//                            vedtaksperiodeId = it.vedtaksperiodeId,
-//                            fnr = it.fnr,
-//                            avsluttetTidspunkt = Instant.now(),
-//                        ),
-//                    )
-//                    vedtaksperiodeExceptionRepository.deleteByFnrAndVedtaksperiodeId(
-//                        fnr = it.fnr,
-//                        vedtaksperiodeId = it.vedtaksperiodeId,
-//                    )
+                    arbeidssokerperiodeStoppProducer.send(
+                        StoppMelding(
+                            vedtaksperiodeId = it.vedtaksperiodeId,
+                            fnr = it.fnr,
+                            avsluttetTidspunkt = Instant.now(),
+                        ),
+                    )
+                    vedtaksperiodeExceptionRepository.deleteByFnrAndVedtaksperiodeId(
+                        fnr = it.fnr,
+                        vedtaksperiodeId = it.vedtaksperiodeId,
+                    )
                     log.info(
-                        "Skulle sendt StoppMelding for vedtaksperiode: ${it.vedtaksperiodeId} og slettet fra vedtaksperiode_exception.",
+                        "Sendt StoppMelding for vedtaksperiode: ${it.vedtaksperiodeId} og slettet fra vedtaksperiode_exception.",
                     )
                 }
             }
