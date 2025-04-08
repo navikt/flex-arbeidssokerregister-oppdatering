@@ -34,23 +34,30 @@ class SykepengesoknadService(
     private val log = logger()
 
     @Transactional
-    fun behandleSoknad(sykepengesoknadDTO: SykepengesoknadDTO) {
+    fun behandleSoknad(soknad: SykepengesoknadDTO) {
         when {
-            sykepengesoknadDTO.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(sykepengesoknadDTO)
+            soknad.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(soknad)
 
-            sykepengesoknadDTO.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(sykepengesoknadDTO)
+            soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
         }
     }
 
-    private fun behandleVedtaksperiode(sykepengesoknadDTO: SykepengesoknadDTO) {
+    private fun behandleVedtaksperiode(soknad: SykepengesoknadDTO) {
+        if (soknad.ignorerArbeidssokerregister == true) {
+            log.info(
+                "Ignorerer søknad: ${soknad.id} med vedtaksperiodeId: ${soknad.friskTilArbeidVedtakId} siden ignorerArbeidssokerregister er satt.",
+            )
+            return
+        }
+
         try {
-            val vedtaksperiode = sykepengesoknadDTO.tilVedtaksperiode()
+            val vedtaksperiode = soknad.tilVedtaksperiode()
             if (!erNyVedtaksperiode(vedtaksperiode)) {
                 return
             }
             behandleVedtaksperiode(vedtaksperiode)
         } catch (e: ArbeidssokerperiodeException) {
-            lagreException(sykepengesoknadDTO, e)
+            lagreException(soknad, e)
         }
     }
 
@@ -100,33 +107,40 @@ class SykepengesoknadService(
         )
     }
 
-    private fun behandleBekreftelse(sykepengesoknadDTO: SykepengesoknadDTO) {
-        if (sykepengesoknadDTO.korrigerer != null) {
-            log.info("Ignorerer periodebekreftelse for korrigerende søknad: ${sykepengesoknadDTO.id}.")
+    private fun behandleBekreftelse(soknad: SykepengesoknadDTO) {
+        if (soknad.ignorerArbeidssokerregister == true) {
+            log.info(
+                "Ignorerer periodebekreftelse for søknad: ${soknad.id} med vedtaksperiodeId: ${soknad.friskTilArbeidVedtakId} siden ignorerArbeidssokerregisterer satt.",
+            )
+            return
+        }
+
+        if (soknad.korrigerer != null) {
+            log.info("Ignorerer periodebekreftelse for korrigerende søknad: ${soknad.id}.")
             return
         }
 
         val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findByVedtaksperiodeId(sykepengesoknadDTO.friskTilArbeidVedtakId!!)
+            arbeidssokerperiodeRepository.findByVedtaksperiodeId(soknad.friskTilArbeidVedtakId!!)
 
         if (arbeidssokerperiode == null) {
             throw PeriodebekreftelseException(
-                "Fant ikke arbeidssøkerperiode for søknad: ${sykepengesoknadDTO.id} med " +
-                    "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}.",
+                "Fant ikke arbeidssøkerperiode for søknad: ${soknad.id} med " +
+                    "vedtaksperiode: ${soknad.friskTilArbeidVedtakId}.",
             )
         }
 
-        if (periodebekreftelseRepository.findBySykepengesoknadId(sykepengesoknadDTO.id) != null) {
+        if (periodebekreftelseRepository.findBySykepengesoknadId(soknad.id) != null) {
             return
         }
 
-        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == sykepengesoknadDTO.tom
+        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == soknad.tom
 
         if (!erAvsluttendeSoknad) {
-            if (sykepengesoknadDTO.fortsattArbeidssoker == null) {
+            if (soknad.fortsattArbeidssoker == null) {
                 throw PeriodebekreftelseException(
-                    "Mangler verdi for fortsattArbeidssoker i søknad: ${sykepengesoknadDTO.id} med " +
-                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} og " +
+                    "Mangler verdi for fortsattArbeidssoker i søknad: ${soknad.id} med " +
+                        "vedtaksperiode: ${soknad.friskTilArbeidVedtakId} og " +
                         "arbeidssokerperiode: ${arbeidssokerperiode.id} som skal være satt da søknaden " +
                         "ikke er siste i perioden.",
                 )
@@ -136,9 +150,9 @@ class SykepengesoknadService(
         periodebekreftelseRepository.save(
             Periodebekreftelse(
                 arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                sykepengesoknadId = sykepengesoknadDTO.id,
-                fortsattArbeidssoker = sykepengesoknadDTO.fortsattArbeidssoker,
-                inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
+                sykepengesoknadId = soknad.id,
+                fortsattArbeidssoker = soknad.fortsattArbeidssoker,
+                inntektUnderveis = soknad.inntektUnderveis,
                 opprettet = Instant.now(),
                 avsluttendeSoknad = erAvsluttendeSoknad,
             ),
@@ -148,15 +162,15 @@ class SykepengesoknadService(
             arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.AVSLUTTET_PERIODE)
             sendPaaVegneAvStoppMelding(arbeidssokerperiode)
         } else {
-            if (sykepengesoknadDTO.fortsattArbeidssoker == false) {
+            if (soknad.fortsattArbeidssoker == false) {
                 arbeidssokerperiode.lagreAvsluttetAarsak(AvsluttetAarsak.BRUKER)
             }
-            sendBekreftelseMelding(arbeidssokerperiode, sykepengesoknadDTO)
+            sendBekreftelseMelding(arbeidssokerperiode, soknad)
         }
 
         log.info(
-            "Behandlet periodebekreftelse for søknad: ${sykepengesoknadDTO.id} med " +
-                "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId}, " +
+            "Behandlet periodebekreftelse for søknad: ${soknad.id} med " +
+                "vedtaksperiode: ${soknad.friskTilArbeidVedtakId}, " +
                 "arbeidssøkerperiode: ${arbeidssokerperiode.id} og periode i " +
                 "arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
         )

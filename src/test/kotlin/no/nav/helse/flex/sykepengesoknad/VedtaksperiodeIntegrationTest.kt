@@ -17,6 +17,7 @@ import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
+import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -42,6 +43,16 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
     @Test
     @Order(1)
+    fun `Søknad med med ignorerArbeidssokerregister satt blir ikke behandlet`() {
+        val soknad = lagSoknad().copy(ignorerArbeidssokerregister = true)
+
+        sykepengesoknadService.behandleSoknad(soknad)
+
+        arbeidssokerperiodeRepository.findAll().toList() shouldHaveSize 0
+    }
+
+    @Test
+    @Order(2)
     fun `Søknad med ny FriskTilArbeid vedtaksperiode blir lagret`() {
         val arbeidssokerperiodeId = UUID.randomUUID().toString()
 
@@ -78,7 +89,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     fun `Søknad med kjent FriskTilArbeid vedtaksperiode blir ikke lagret`() {
         // Simulerer dobbel innsending av samme søknad.
         sykepengesoknadService.behandleSoknad(soknad)
@@ -87,7 +98,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     fun `Feil lagres når søknad har bruker med avsluttet arbeidssøkerperiode`() {
         kafkaKeyGeneratorMockWebServer.enqueue(
             MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
@@ -124,7 +135,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     fun `Feil lagres når søknad har bruker som ikke er registert i arbeidssøkerregiseret`() {
         kafkaKeyGeneratorMockWebServer.enqueue(
             MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
@@ -156,7 +167,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     fun `Kun søknad med status FREMTIDIG blir behandlet`() {
         arbeidssokerperiodeRepository.deleteAll()
 
@@ -166,7 +177,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     fun `Kun søknad med type FRISKMELDT_TIL_ARBEIDSFORMIDLING blir behandlet`() {
         arbeidssokerperiodeRepository.deleteAll()
 
@@ -176,7 +187,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     fun `Søknad som mangler vedtaksperiodeId feiler`() {
         arbeidssokerperiodeRepository.deleteAll()
 
@@ -188,7 +199,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     fun `Søknad som mangler friskTilArbeidVedtakPeriode feiler`() {
         arbeidssokerperiodeRepository.deleteAll()
 

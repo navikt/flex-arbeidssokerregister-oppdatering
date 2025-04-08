@@ -13,6 +13,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
+import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -37,6 +38,19 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     private val sendtPaaVegneAv = Instant.now()
 
     @Test
+    @Order(1)
+    fun `Søknad med med ignorerArbeidssokerregister satt blir ikke behandlet`() {
+        val fortsattArbeidssoker = true
+        val inntektUnderveis = false
+
+        val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis).copy(ignorerArbeidssokerregister = true)
+        sykepengesoknadService.behandleSoknad(soknad)
+
+        periodebekreftelseRepository.findAll().toList() shouldHaveSize 0
+    }
+
+    @Test
+    @Order(2)
     fun `Søknad hvor bruker vil fortsett å være arbeidssøker`() {
         val lagretPeriode = lagreArbeidssokerperiode()
 
