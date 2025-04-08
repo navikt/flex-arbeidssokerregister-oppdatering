@@ -46,10 +46,6 @@ class SykepengesoknadService(
         try {
             val vedtaksperiode = sykepengesoknadDTO.tilVedtaksperiode()
             if (!erNyVedtaksperiode(vedtaksperiode)) {
-                log.warn(
-                    "Ignorerer vedtaksperiode for søknad: ${sykepengesoknadDTO.id} med " +
-                        "vedtaksperiode: ${sykepengesoknadDTO.friskTilArbeidVedtakId} da den allerede er behandlet.",
-                )
                 return
             }
             behandleVedtaksperiode(vedtaksperiode)
@@ -121,7 +117,6 @@ class SykepengesoknadService(
         }
 
         if (periodebekreftelseRepository.findBySykepengesoknadId(sykepengesoknadDTO.id) != null) {
-            log.warn("Ignorerer periodebekreftelse for søknad: ${sykepengesoknadDTO.id} da den allerede er behandlet.")
             return
         }
 
