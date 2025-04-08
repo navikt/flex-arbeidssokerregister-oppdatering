@@ -29,20 +29,6 @@ class SykepengesoknadListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
-            if (
-                it.friskTilArbeidVedtakId in
-                listOf(
-                    "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
-                    "e4504199-f052-469a-9e0d-bffd1bad6bef",
-                    "688142df-92d9-4f44-b176-fd74d0c5da1d",
-                    "bedb05d3-a2ff-4ee3-8525-44965b21442c",
-                    "5abde058-fc10-470f-a336-0daccd7ed733",
-                    "fe691fa4-245f-4bd9-abfd-1222b9353627",
-                )
-            ) {
-                return
-            }
-
             try {
                 sykepengesoknadService.behandleSoknad(it)
             } catch (e: Exception) {
