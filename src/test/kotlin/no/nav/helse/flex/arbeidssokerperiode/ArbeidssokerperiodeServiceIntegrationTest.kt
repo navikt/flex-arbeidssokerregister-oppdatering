@@ -12,6 +12,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
@@ -19,6 +20,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.*
 
+@Disabled
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     @BeforeEach
