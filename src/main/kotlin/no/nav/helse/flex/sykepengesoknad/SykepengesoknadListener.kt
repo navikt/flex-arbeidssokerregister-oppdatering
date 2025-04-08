@@ -29,7 +29,6 @@ class SykepengesoknadListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
-            // TODO: Slett når SYKEPENGESOKNAD_TOPIC er prosessert på nytt.
             if (
                 it.friskTilArbeidVedtakId in
                 listOf(
