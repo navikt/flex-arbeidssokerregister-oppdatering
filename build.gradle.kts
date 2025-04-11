@@ -42,7 +42,7 @@ val arbeidssokerregisteretSchemaVersion = "1.13764081353.1-2"
 val bekreftelsesmeldingSchemaVersion = "1.25.02.10.17-1"
 val bekreftelsePaaVegneAvSchemaVersion = "1.25.02.10.17-1"
 val opentelemetryApiVersion = "1.49.0"
-val opentelemetryInstrumentationVersion = "2.14.0"
+val opentelemetryInstrumentationVersion = "2.15.0"
 
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
