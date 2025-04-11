@@ -19,7 +19,6 @@ import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -96,77 +95,6 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         sykepengesoknadService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
-    }
-
-    @Disabled
-    @Test
-    @Order(4)
-    fun `Feil lagres når søknad har bruker med avsluttet arbeidssøkerperiode`() {
-        kafkaKeyGeneratorMockWebServer.enqueue(
-            MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
-        )
-
-        arbeidssokerperiodeMockWebServer.enqueue(
-            MockResponse().setBody(
-                lagArbeidsokerperiodeResponse(
-                    arbeidssokerperiodeId = UUID.randomUUID().toString(),
-                    erAvsluttet = true,
-                ).serialisertTilString(),
-            ),
-        )
-
-        val vedtaksperiodeId = UUID.randomUUID().toString()
-        sykepengesoknadService.behandleSoknad(
-            soknad.copy(
-                fnr = "22222222222",
-                friskTilArbeidVedtakId = vedtaksperiodeId,
-            ),
-        )
-
-        vedtaksperiodeExceptionRepository.findAll().single().also {
-            it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
-            it.sykepengesoknadId `should be equal to` soknad.id
-            it.fnr `should be equal to` "22222222222"
-            it.exceptionClassName `should be equal to` "no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException"
-        }
-
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
-
-        kafkaKeyGeneratorMockWebServer.takeRequest() `should not be equal to` null
-        arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
-    }
-
-    @Disabled
-    @Test
-    @Order(4)
-    fun `Feil lagres når søknad har bruker som ikke er registert i arbeidssøkerregiseret`() {
-        kafkaKeyGeneratorMockWebServer.enqueue(
-            MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
-        )
-
-        arbeidssokerperiodeMockWebServer.enqueue(
-            MockResponse().setResponseCode(200).setBody("[]"),
-        )
-
-        val vedtaksperiodeId = UUID.randomUUID().toString()
-        sykepengesoknadService.behandleSoknad(
-            soknad.copy(
-                fnr = "22222222222",
-                friskTilArbeidVedtakId = vedtaksperiodeId,
-            ),
-        )
-
-        vedtaksperiodeExceptionRepository.findAll().single().also {
-            it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
-            it.sykepengesoknadId `should be equal to` soknad.id
-            it.fnr `should be equal to` "22222222222"
-            it.exceptionClassName `should be equal to` "no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException"
-        }
-
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
-
-        kafkaKeyGeneratorMockWebServer.takeRequest() `should not be equal to` null
-        arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
     }
 
     @Test
