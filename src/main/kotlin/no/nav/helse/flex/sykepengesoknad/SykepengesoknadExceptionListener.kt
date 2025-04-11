@@ -23,7 +23,7 @@ class SykepengesoknadExceptionListener(
     @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-exception-v1",
+        id = "flex-arbeidssokerregister-oppdatering-exception-v2",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
         concurrency = "3",
@@ -32,40 +32,35 @@ class SykepengesoknadExceptionListener(
         cr: ConsumerRecord<String, String>,
         acknowledgment: Acknowledgment,
     ) {
-        cr.value().tilSykepengesoknadDTO().also { sykepengesoknad ->
-            if (!environmentToggles.erProduksjon()) {
-                return
-            }
+        val sykepengesoknad = cr.value().tilSykepengesoknadDTO()
 
-            if (sykepengesoknad.type != SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
-                return
-            }
+        // Early checks that do not exit the function early
+        if (!environmentToggles.erProduksjon() ||
+            sykepengesoknad.type != SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING ||
+            sykepengesoknad.friskTilArbeidVedtakId in
+            listOf(
+                "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
+                "e4504199-f052-469a-9e0d-bffd1bad6bef",
+                "688142df-92d9-4f44-b176-fd74d0c5da1d",
+                "bedb05d3-a2ff-4ee3-8525-44965b21442c",
+                "5abde058-fc10-470f-a336-0daccd7ed733",
+                "fe691fa4-245f-4bd9-abfd-1222b9353627",
+            )
+        ) {
+            acknowledgment.acknowledge()
+            return
+        }
 
-            if (
-                sykepengesoknad.friskTilArbeidVedtakId in
-                listOf(
-                    "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
-                    "e4504199-f052-469a-9e0d-bffd1bad6bef",
-                    "688142df-92d9-4f44-b176-fd74d0c5da1d",
-                    "bedb05d3-a2ff-4ee3-8525-44965b21442c",
-                    "5abde058-fc10-470f-a336-0daccd7ed733",
-                    "fe691fa4-245f-4bd9-abfd-1222b9353627",
-                )
-            ) {
-                return
+        try {
+            if (vedtaksperiodeExceptionRepository.findBySykepengesoknadId(sykepengesoknad.id).isNotEmpty()) {
+                sykepengesoknadService.behandleSoknad(sykepengesoknad)
             }
-
-            try {
-                vedtaksperiodeExceptionRepository.findBySykepengesoknadId(sykepengesoknad.id)?.let {
-                    sykepengesoknadService.behandleSoknad(sykepengesoknad)
-                }
-            } catch (e: Exception) {
-                log.error(
-                    "Feil ved reprosessering av søknad i vedtaksperiode_exception: ${sykepengesoknad.id} med " +
-                        "vedtaksperiodeId: ${sykepengesoknad.friskTilArbeidVedtakId}.",
-                    e,
-                )
-            }
+        } catch (e: Exception) {
+            log.warn(
+                "Feil ved reprosessering av søknad i vedtaksperiode_exception: ${sykepengesoknad.id} med " +
+                    "vedtaksperiodeId: ${sykepengesoknad.friskTilArbeidVedtakId}.",
+                e,
+            )
         }
         acknowledgment.acknowledge()
     }

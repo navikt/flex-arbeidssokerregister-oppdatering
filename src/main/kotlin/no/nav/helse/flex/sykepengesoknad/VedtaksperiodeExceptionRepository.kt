@@ -14,7 +14,7 @@ interface VedtaksperiodeExceptionRepository : CrudRepository<VedtaksperiodeExcep
     @Query("DELETE FROM vedtaksperiode_exception WHERE fnr = :fnr")
     fun deleteByFnr(fnr: String)
 
-    fun findBySykepengesoknadId(sykepengesoknadId: String): VedtaksperiodeException?
+    fun findBySykepengesoknadId(sykepengesoknadId: String): List<VedtaksperiodeException>
 }
 
 @Table("vedtaksperiode_exception")
