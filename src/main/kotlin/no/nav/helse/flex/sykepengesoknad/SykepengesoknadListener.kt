@@ -29,6 +29,19 @@ class SykepengesoknadListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().tilSykepengesoknadDTO().also {
+            if (
+                it.friskTilArbeidVedtakId in
+                listOf(
+                    "fe691fa4-245f-4bd9-abfd-1222b9353627",
+                )
+            ) {
+                log.info(
+                    "Ignorerer søknad: ${it.id} og vedtaksperiodeId: ${it.friskTilArbeidVedtakId} siden bruker " +
+                        "ikke skal være regsitert som arbeidssøker.",
+                )
+                return
+            }
+
             try {
                 sykepengesoknadService.behandleSoknad(it)
             } catch (e: Exception) {
