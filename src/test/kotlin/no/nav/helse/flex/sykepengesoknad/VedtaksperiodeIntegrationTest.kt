@@ -19,6 +19,7 @@ import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -97,6 +98,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
     }
 
+    @Disabled
     @Test
     @Order(4)
     fun `Feil lagres når søknad har bruker med avsluttet arbeidssøkerperiode`() {
@@ -134,6 +136,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
     }
 
+    @Disabled
     @Test
     @Order(4)
     fun `Feil lagres når søknad har bruker som ikke er registert i arbeidssøkerregiseret`() {

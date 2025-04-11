@@ -45,26 +45,21 @@ class SykepengesoknadService(
     private fun behandleVedtaksperiode(soknad: SykepengesoknadDTO) {
         if (soknad.ignorerArbeidssokerregister == true) {
             log.info(
-                "Ignorerer søknad: ${soknad.id} med vedtaksperiodeId: ${soknad.friskTilArbeidVedtakId} siden ignorerArbeidssokerregister er satt.",
+                "Ignorerer søknad: ${soknad.id} med vedtaksperiodeId: ${soknad.friskTilArbeidVedtakId} " +
+                    "siden ignorerArbeidssokerregister er satt.",
             )
             return
         }
 
-        try {
-            val vedtaksperiode = soknad.tilVedtaksperiode()
-            if (!erNyVedtaksperiode(vedtaksperiode)) {
-                return
-            }
-            behandleVedtaksperiode(vedtaksperiode)
-        } catch (e: ArbeidssokerperiodeException) {
-            lagreException(soknad, e)
-        }
-    }
+        val vedtaksperiode = soknad.tilVedtaksperiode()
 
-    private fun behandleVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) {
+        if (!erNyVedtaksperiode(vedtaksperiode)) {
+            return
+        }
+
         val kafkaRecordKey = hentKafkaRecordKey(vedtaksperiode.fnr)
 
-        // Arbeidssøkerregisteret returnerer tom list hvis bruker ikke er registrert.
+        // Arbeidssøkerregisteret returnerer tom liste hvis bruker ikke er registrert.
         val arbeidsokerperiodeResponse =
             hentArbeidssokerperiodeId(vedtaksperiode.fnr).singleOrNull()
                 ?: throw ArbeidssokerperiodeException(
