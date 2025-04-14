@@ -1,6 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
@@ -10,6 +11,7 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -18,6 +20,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -30,8 +33,51 @@ class SykepengesoknadService(
     private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
     private val bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer,
     private val vedtaksperiodeExceptionRepository: VedtaksperiodeExceptionRepository,
+    private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
+
+    @Scheduled(initialDelay = 2, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
+    fun restorePaaVegneAv() {
+        if (environmentToggles.erProduksjon()) {
+            listOf(
+                "62a94391-b3bc-4bc9-bd3c-ddf38cfa5412",
+                "d654ea16-a72f-440c-ac45-4960f8ee0232",
+                "decc0f76-1c39-4025-95e7-8331983ce46c",
+                "2a8a3024-2a17-4ba1-8888-4da0992f4591",
+            ).forEach {
+                arbeidssokerperiodeRepository.findByVedtaksperiodeId(it)?.let {
+                    val arbeidsokerperiodeResponse =
+                        hentArbeidssokerperiodeId(it.fnr).singleOrNull()
+                            ?: throw ArbeidssokerperiodeException(
+                                "Fant ikke arbeidssøkerperiode for vedtaksperiode: ${it.vedtaksperiodeId}.",
+                            )
+
+                    paaVegneAvProducer.send(
+                        PaaVegneAvStartMelding(
+                            it.kafkaRecordKey!!,
+                            UUID.fromString(arbeidsokerperiodeResponse.periodeId),
+                            beregnGraceMS(it.vedtaksperiodeTom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
+                        ),
+                    )
+
+                    arbeidssokerperiodeRepository.save(
+                        it.copy(
+                            avsluttetMottatt = null,
+                            avsluttetTidspunkt = null,
+                            arbeidssokerperiodeId = arbeidsokerperiodeResponse.periodeId,
+                            sendtPaaVegneAv = Instant.now(),
+                        ),
+                    )
+
+                    log.info(
+                        "Slettet avsluttet og sendt ny PaaVegneAv.Start.melding for vedtaksperiode: ${it.vedtaksperiodeId} " +
+                            "med arbeidssokerperiodeId: ${it.arbeidssokerperiodeId}.",
+                    )
+                }
+            }
+        }
+    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
