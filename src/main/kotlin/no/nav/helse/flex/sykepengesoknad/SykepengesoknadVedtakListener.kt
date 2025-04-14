@@ -31,7 +31,7 @@ class SykepengesoknadVedtakListener(
     @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v3",
+        id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v2",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset=earliest"],
         concurrency = "6",
@@ -46,19 +46,6 @@ class SykepengesoknadVedtakListener(
         }
 
         cr.value().tilSykepengesoknadDTO().also {
-            if (it.friskTilArbeidVedtakId == "62a94391-b3bc-4bc9-bd3c-ddf38cfa5412") {
-                val arbeidssokerperiode = arbeidssokerperiodeRepository.findByVedtaksperiodeId(it.friskTilArbeidVedtakId!!)
-                log.info(
-                    "Fant en søknad med vedtaksperiodeId: ${it.friskTilArbeidVedtakId} med status: ${it.status}. Fant tilhørende arbeidssøkerperiode: ${arbeidssokerperiode != null}",
-                )
-                if (arbeidssokerperiode != null) {
-                    log.info(
-                        "ArbeidsøkerperiodeId: ${arbeidssokerperiode.id} er avsluttet: ${arbeidssokerperiode.avsluttetMottatt}. Søknaden er opprettet: ${it.opprettet}.",
-                    )
-                }
-                return@also
-            }
-
             if (behandlet.contains(it.id)) {
                 return@also
             }
@@ -118,7 +105,7 @@ class SykepengesoknadVedtakListener(
         assignments: Map<org.apache.kafka.common.TopicPartition?, Long?>,
         callback: ConsumerSeekCallback,
     ) {
-        val startTimestamp = LocalDate.of(2025, 4, 1).toInstantAtStartOfDay().toEpochMilli()
+        val startTimestamp = LocalDate.of(2025, 3, 20).toInstantAtStartOfDay().toEpochMilli()
 
         assignments.keys.filterNotNull().forEach { topicPartition ->
             callback.seekToTimestamp(topicPartition.topic(), topicPartition.partition(), startTimestamp)
