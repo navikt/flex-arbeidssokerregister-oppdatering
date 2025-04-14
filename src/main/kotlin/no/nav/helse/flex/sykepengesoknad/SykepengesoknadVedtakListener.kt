@@ -15,7 +15,6 @@ import org.springframework.kafka.listener.ConsumerSeekAware.ConsumerSeekCallback
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
-import java.time.ZoneOffset
 import kotlin.collections.contains
 
 @Component
@@ -32,7 +31,7 @@ class SykepengesoknadVedtakListener(
     @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v4",
+        id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v3",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset=earliest"],
         concurrency = "6",
@@ -46,21 +45,34 @@ class SykepengesoknadVedtakListener(
             return
         }
 
-        cr.value().tilSykepengesoknadDTO().also { soknad ->
-            if (behandlet.contains(soknad.id)) {
+        cr.value().tilSykepengesoknadDTO().also {
+            if (it.friskTilArbeidVedtakId == "62a94391-b3bc-4bc9-bd3c-ddf38cfa5412") {
+                val arbeidssokerperiode = arbeidssokerperiodeRepository.findByVedtaksperiodeId(it.friskTilArbeidVedtakId!!)
+                log.info(
+                    "Fant en søknad med vedtaksperiodeId: ${it.friskTilArbeidVedtakId} med status: ${it.status}. Fant tilhørende arbeidssøkerperiode: ${arbeidssokerperiode != null}",
+                )
+                if (arbeidssokerperiode != null) {
+                    log.info(
+                        "ArbeidsøkerperiodeId: ${arbeidssokerperiode.id} er avsluttet: ${arbeidssokerperiode.avsluttetMottatt}. Søknaden er opprettet: ${it.opprettet}.",
+                    )
+                }
                 return@also
             }
 
-            if (soknad.type != SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
+            if (behandlet.contains(it.id)) {
                 return@also
             }
 
-            if (soknad.status != SoknadsstatusDTO.FREMTIDIG) {
+            if (it.type != SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
+                return@also
+            }
+
+            if (it.status != SoknadsstatusDTO.FREMTIDIG) {
                 return@also
             }
 
             if (
-                soknad.friskTilArbeidVedtakId in
+                it.friskTilArbeidVedtakId in
                 listOf(
                     "4fe42342-7102-44d8-acd9-dc6a4f226f5a",
                     "e4504199-f052-469a-9e0d-bffd1bad6bef",
@@ -75,8 +87,8 @@ class SykepengesoknadVedtakListener(
 
             // Sjekker om det finnes en eksisterende vedtaksperiode for samme vedtak, som har avsluttetMottatt før
             // ny FREMTIDIG søknad søknaden ble opprettet og sjekk om den har periodebekreftelser.
-            arbeidssokerperiodeRepository.findByVedtaksperiodeId(soknad.friskTilArbeidVedtakId!!)?.let {
-                if (it.avsluttetMottatt != null && it.avsluttetMottatt.isBefore(soknad.opprettet!!.toInstant(ZoneOffset.UTC))) {
+            arbeidssokerperiodeRepository.findByVedtaksperiodeId(it.friskTilArbeidVedtakId!!)?.let {
+                if (it.avsluttetMottatt != null && it.avsluttetMottatt.isBefore(it.opprettet)) {
                     val periodebekreftelser = periodebekreftelseRepository.findByArbeidssokerperiodeId(it.id!!)
 
                     var registert =
@@ -85,11 +97,15 @@ class SykepengesoknadVedtakListener(
 
                     log.info(
                         "Det eksisterer en Arbeidssøkerperiode med vedtaksperiodeId: ${it.vedtaksperiodeId} for " +
-                            "søknad: ${soknad.id}. Den har avsluttetMottatt: ${it.avsluttetMottatt} " +
-                            "som er før søknaden ble opprettet: ${soknad.opprettet}. " +
+                            "søknad: ${it.id}. Den har avsluttetMottatt: ${it.avsluttetMottatt} " +
+                            "som er før søknaden ble opprettet: ${it.opprettet}. " +
                             "Den har ${periodebekreftelser.size} periodebekreftelser. " +
                             "Bruker er registrert i arbeidssøkerregisteret: $aktivRegistrering.",
                     )
+
+                    // TODO: Slett eksisterende og behandle søknad på vanlig måte.
+                    // TODO: Hva gjør vi hvis perioden allerede har periodebekreftelser.
+
                     // Vi trenger bare å prosessere en av de FREMTIDIGE søknadene som oppretted for en vedtaksperiode.
                     behandlet.add(it.fnr)
                 }
@@ -102,7 +118,7 @@ class SykepengesoknadVedtakListener(
         assignments: Map<org.apache.kafka.common.TopicPartition?, Long?>,
         callback: ConsumerSeekCallback,
     ) {
-        val startTimestamp = LocalDate.of(2025, 3, 20).toInstantAtStartOfDay().toEpochMilli()
+        val startTimestamp = LocalDate.of(2025, 4, 1).toInstantAtStartOfDay().toEpochMilli()
 
         assignments.keys.filterNotNull().forEach { topicPartition ->
             callback.seekToTimestamp(topicPartition.topic(), topicPartition.partition(), startTimestamp)
