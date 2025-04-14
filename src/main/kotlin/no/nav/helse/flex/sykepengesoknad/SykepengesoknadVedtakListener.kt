@@ -33,8 +33,6 @@ class SykepengesoknadVedtakListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
         id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v1",
         containerFactory = "kafkaListenerContainerFactory",
-        properties = ["auto.offset.reset=earliest"],
-        concurrency = "6",
     )
     fun listen(
         cr: ConsumerRecord<String, String>,
