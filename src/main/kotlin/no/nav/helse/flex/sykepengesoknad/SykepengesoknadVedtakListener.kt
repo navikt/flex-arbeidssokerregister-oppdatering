@@ -31,7 +31,7 @@ class SykepengesoknadVedtakListener(
     @WithSpan
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
-        id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v2",
+        id = "flex-arbeidssokerregister-oppdatering-vedtak-debug-v1",
         containerFactory = "kafkaListenerContainerFactory",
         properties = ["auto.offset.reset=earliest"],
         concurrency = "6",
@@ -41,21 +41,20 @@ class SykepengesoknadVedtakListener(
         acknowledgment: Acknowledgment,
     ) {
         if (!environmentToggles.erProduksjon()) {
-            acknowledgment.acknowledge()
             return
         }
 
         cr.value().tilSykepengesoknadDTO().also {
             if (behandlet.contains(it.id)) {
-                return@also
+                return
             }
 
             if (it.type != SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING) {
-                return@also
+                return
             }
 
             if (it.status != SoknadsstatusDTO.FREMTIDIG) {
-                return@also
+                return
             }
 
             if (
@@ -69,7 +68,7 @@ class SykepengesoknadVedtakListener(
                     "fe691fa4-245f-4bd9-abfd-1222b9353627",
                 )
             ) {
-                return@also
+                return
             }
 
             // Sjekker om det finnes en eksisterende vedtaksperiode for samme vedtak, som har avsluttetMottatt før
