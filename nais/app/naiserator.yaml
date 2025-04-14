@@ -9,6 +9,8 @@ metadata:
     config.linkerd.io/proxy-outbound-connect-timeout: 10s
 spec:
   image: {{image}}
+  strategy:
+    type: Recreate
   replicas:
     min: 1 
     max: 1
