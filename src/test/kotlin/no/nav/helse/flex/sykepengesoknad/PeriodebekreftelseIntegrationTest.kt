@@ -87,7 +87,13 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             it.avsluttetAarsak `should be equal to` AvsluttetAarsak.BRUKER
         }
 
-        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
+        paaVegneAvConsumer.waitForRecords(1).single().also {
+            it.key() `should be equal to` lagretPeriode.kafkaRecordKey
+            it.value().also {
+                it.periodeId.toString() `should be equal to` lagretPeriode.arbeidssokerperiodeId
+                (it.handling as Stopp) `should not be equal to` null
+            }
+        }
     }
 
     @Test
@@ -153,7 +159,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         lagreArbeidssokerperiode()
 
         val soknad =
-            lagSendtSoknad(fortsattArbeidssoker = false, inntektUnderveis = false).copy(inntektUnderveis = null)
+            lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(inntektUnderveis = null)
 
         sykepengesoknadService.behandleSoknad(soknad)
 
@@ -161,7 +167,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             it.inntektUnderveis `should be equal to` null
         }
 
-        verifiserKafkaMelding(soknad, false, false)
+        verifiserKafkaMelding(soknad, true, false)
     }
 
     @Test
@@ -179,7 +185,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     fun `Søknad som korrigerer blir ikke behandlet`() {
         val lagretPeriode = lagreArbeidssokerperiode()
 
-        val fortsattArbeidssoker = false
+        val fortsattArbeidssoker = true
         val inntektUnderveis = false
 
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)

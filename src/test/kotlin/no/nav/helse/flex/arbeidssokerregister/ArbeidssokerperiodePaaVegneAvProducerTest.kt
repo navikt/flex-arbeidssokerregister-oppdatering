@@ -14,7 +14,8 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
         val paaVegneAvMelding =
             PaaVegneAvStartMelding(
                 kafkaKey = -3771L,
-                periodeId = UUID.randomUUID(),
+                arbeidssokerperiodeId = UUID.randomUUID().toString(),
+                arbeidssokerregisterPeriodeId = UUID.randomUUID().toString(),
                 graceMS = 86400,
             )
 
@@ -23,7 +24,7 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
         paaVegneAvConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` paaVegneAvMelding.kafkaKey
             it.value().also {
-                it.periodeId `should be equal to` paaVegneAvMelding.periodeId
+                it.periodeId `should be equal to` UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId)
                 (it.handling as Start).graceMS `should be equal to` paaVegneAvMelding.graceMS
             }
         }
@@ -34,7 +35,8 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
         val paaVegneAvMelding =
             PaaVegneAvStoppMelding(
                 kafkaKey = -3771L,
-                periodeId = UUID.randomUUID(),
+                arbeidssokerperiodeId = UUID.randomUUID().toString(),
+                arbeidssokerregisterPeriodeId = UUID.randomUUID().toString(),
             )
 
         paaVegneAvProducer.send(paaVegneAvMelding)
@@ -42,7 +44,7 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
         paaVegneAvConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` paaVegneAvMelding.kafkaKey
             it.value().also {
-                it.periodeId `should be equal to` paaVegneAvMelding.periodeId
+                it.periodeId `should be equal to` UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId)
                 (it.handling as Stopp) `should not be equal to` null
             }
         }
