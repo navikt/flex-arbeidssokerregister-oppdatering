@@ -13,7 +13,8 @@ class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
         val bekreftelseMelding =
             BekreftelseMelding(
                 kafkaKey = -3771L,
-                periodeId = UUID.randomUUID(),
+                arbeidssokerperiodeId = UUID.randomUUID().toString(),
+                arbeidssokerregisterPeriodeId = UUID.randomUUID().toString(),
                 fnr = FNR,
                 periodeStart = Instant.now(),
                 periodeSlutt = Instant.now(),
@@ -25,7 +26,7 @@ class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
 
         bekreftelseConsumer.waitForRecords(1).single().also {
             it.key() `should be equal to` bekreftelseMelding.kafkaKey
-            it.value().periodeId `should be equal to` bekreftelseMelding.periodeId
+            it.value().periodeId `should be equal to` UUID.fromString(bekreftelseMelding.arbeidssokerregisterPeriodeId)
         }
     }
 }

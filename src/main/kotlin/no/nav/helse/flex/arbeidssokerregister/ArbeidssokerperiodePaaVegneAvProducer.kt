@@ -28,11 +28,10 @@ class ArbeidssokerperiodePaaVegneAvProducer(
     @WithSpan
     fun send(paaVegneAvMelding: PaaVegneAvStartMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
-        val periodeId = paaVegneAvMelding.periodeId
 
         val paaVegneAv =
             PaaVegneAv(
-                periodeId,
+                UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 Start(FJORDEN_DAGER, paaVegneAvMelding.graceMS),
             )
@@ -41,24 +40,26 @@ class ArbeidssokerperiodePaaVegneAvProducer(
             "PaaVegneAvStartMelding",
             Attributes.of(
                 AttributeKey.stringKey("periodeId"),
-                paaVegneAvMelding.periodeId.toString(),
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId.toString(),
                 AttributeKey.stringKey("graceMs"),
                 paaVegneAvMelding.graceMS.toString(),
             ),
         )
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
-        log.info("Publisert PaaVegneAvStartMelding for periode i arbeidssøkerregisteret: $periodeId.")
+        log.info(
+            "Publisert PaaVegneAvStartMelding for arbeidsøkerperiode: ${paaVegneAvMelding.arbeidssokerperiodeId} " +
+                "og periode i arbeidssøkerregisteret: ${paaVegneAvMelding.arbeidssokerregisterPeriodeId}.",
+        )
     }
 
     @WithSpan
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
-        val periodeId = paaVegneAvMelding.periodeId
 
         val paaVegneAv =
             PaaVegneAv(
-                periodeId,
+                UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 Stopp(),
             )
@@ -67,12 +68,15 @@ class ArbeidssokerperiodePaaVegneAvProducer(
             "PaaVegneAvStoppMelding",
             Attributes.of(
                 AttributeKey.stringKey("periodeId"),
-                paaVegneAvMelding.periodeId.toString(),
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId,
             ),
         )
         sendKafkaMelding(kafkaKey, paaVegneAv)
 
-        log.info("Publisert PaaVegneAvStoppMelding for periode i arbeidssøkerregisteret: $periodeId.")
+        log.info(
+            "Publisert PaaVegneAvStoppMelding for arbeidsøkerperiode: ${paaVegneAvMelding.arbeidssokerperiodeId} " +
+                "og periode i arbeidssøkerregisteret: ${paaVegneAvMelding.arbeidssokerregisterPeriodeId}.",
+        )
     }
 
     private fun sendKafkaMelding(
@@ -92,13 +96,15 @@ class ArbeidssokerperiodePaaVegneAvProducer(
 
 data class PaaVegneAvStartMelding(
     val kafkaKey: Long,
-    val periodeId: UUID,
+    val arbeidssokerperiodeId: String,
+    val arbeidssokerregisterPeriodeId: String,
     val graceMS: Long,
 )
 
 data class PaaVegneAvStoppMelding(
     val kafkaKey: Long,
-    val periodeId: UUID,
+    val arbeidssokerperiodeId: String,
+    val arbeidssokerregisterPeriodeId: String,
 )
 
 const val ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC =

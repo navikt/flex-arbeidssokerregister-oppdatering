@@ -32,13 +32,12 @@ class ArbeidssokerperiodeBekreftelseProducer(
     @WithSpan
     fun send(bekreftelseMelding: BekreftelseMelding) {
         val kafkaKey = bekreftelseMelding.kafkaKey
-        val periodeId = bekreftelseMelding.periodeId
 
         Span.current().addEvent(
             "BekreftelseMelding",
             Attributes.of(
                 AttributeKey.stringKey("periodeId"),
-                bekreftelseMelding.periodeId.toString(),
+                bekreftelseMelding.arbeidssokerregisterPeriodeId.toString(),
                 AttributeKey.stringKey("fortsattArbeidssoker"),
                 bekreftelseMelding.fortsattArbeidssoker.toString(),
                 AttributeKey.stringKey("inntektUnderveis"),
@@ -57,7 +56,9 @@ class ArbeidssokerperiodeBekreftelseProducer(
 
         log.info(
             "Publisert Bekreftelse med fortsattArbeidssoker: ${bekreftelseMelding.fortsattArbeidssoker} og " +
-                "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for periode i arbeidssøkerregisteret: $periodeId.",
+                "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for " +
+                "arbeidssøkerperiode: ${bekreftelseMelding.arbeidssokerperiodeId} " +
+                "og periode i arbeidssøkerregisteret: ${bekreftelseMelding.arbeidssokerregisterPeriodeId}.",
         )
     }
 
@@ -67,16 +68,16 @@ class ArbeidssokerperiodeBekreftelseProducer(
 
         val bekreftelse =
             Bekreftelse(
-                periodeBekreftelse.periodeId,
+                UUID.fromString(periodeBekreftelse.arbeidssokerregisterPeriodeId),
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 UUID.randomUUID(),
                 Svar(
                     metadata,
                     periodeBekreftelse.periodeStart,
                     periodeBekreftelse.periodeSlutt,
-                    // "inntektUnderveis" og "fortsattArbeidssoker" er null hvis det er siste søknad i periode og
-                    // da skal ikke Periodebekreftelse sendes. Feltene kan ikke være null i Avro-klassen Periode.svar,
-                    // men kan settes til false
+                    // "inntektUnderveis" og "fortsattArbeidssoker" er null hvis det er siste søknad i en periode. Da
+                    // sendes det ikke Periodebekreftelse. Feltene kan ikke være null i Avro-klassen Periode.svar,
+                    // men kan settes til false,
                     periodeBekreftelse.inntektUnderveis == true,
                     periodeBekreftelse.fortsattArbeidssoker == true,
                 ),
@@ -87,7 +88,8 @@ class ArbeidssokerperiodeBekreftelseProducer(
 
 data class BekreftelseMelding(
     val kafkaKey: Long,
-    val periodeId: UUID,
+    val arbeidssokerperiodeId: String,
+    val arbeidssokerregisterPeriodeId: String,
     val fnr: String,
     val periodeStart: Instant,
     val periodeSlutt: Instant,
