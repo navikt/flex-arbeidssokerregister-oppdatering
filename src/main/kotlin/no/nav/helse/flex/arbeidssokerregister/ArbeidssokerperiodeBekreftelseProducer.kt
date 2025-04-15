@@ -63,8 +63,13 @@ class ArbeidssokerperiodeBekreftelseProducer(
     }
 
     private fun lagBekreftelse(periodeBekreftelse: BekreftelseMelding): Bekreftelse {
+        val bruker =
+            Bruker().also {
+                it.type = BrukerType.SLUTTBRUKER
+                it.id = periodeBekreftelse.fnr
+            }
         val metadata =
-            Metadata(Instant.now(), Bruker(BrukerType.SLUTTBRUKER, periodeBekreftelse.fnr), UTFOERT_AV, AARSAK)
+            Metadata(Instant.now(), bruker, UTFOERT_AV, AARSAK)
 
         val bekreftelse =
             Bekreftelse(
