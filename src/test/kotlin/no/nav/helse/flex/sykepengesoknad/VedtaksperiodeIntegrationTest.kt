@@ -34,11 +34,6 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         arbeidssokerperiodeStoppConsumer.fetchRecords().size `should be equal to` 0
     }
 
-    @AfterEach
-    fun slettExceptions() {
-        vedtaksperiodeExceptionRepository.deleteAll()
-    }
-
     private val soknad = lagSoknad()
 
     @Test

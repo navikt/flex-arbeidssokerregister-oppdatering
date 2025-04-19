@@ -13,7 +13,6 @@ import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
 import no.nav.helse.flex.sykepengesoknad.Periode
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
-import no.nav.helse.flex.sykepengesoknad.VedtaksperiodeExceptionRepository
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
@@ -95,9 +94,6 @@ abstract class FellesTestOppsett {
     lateinit var periodebekreftelseRepository: PeriodebekreftelseRepository
 
     @Autowired
-    lateinit var vedtaksperiodeExceptionRepository: VedtaksperiodeExceptionRepository
-
-    @Autowired
     lateinit var arbeidssokerperiodeService: ArbeidssokerperiodeService
 
     @Autowired
@@ -119,7 +115,6 @@ abstract class FellesTestOppsett {
     fun slettFraDatabase() {
         periodebekreftelseRepository.deleteAll()
         arbeidssokerperiodeRepository.deleteAll()
-        vedtaksperiodeExceptionRepository.deleteAll()
     }
 
     companion object {
