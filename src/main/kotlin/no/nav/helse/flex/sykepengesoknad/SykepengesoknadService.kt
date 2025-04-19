@@ -17,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.*
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -29,7 +28,6 @@ class SykepengesoknadService(
     private val periodebekreftelseRepository: PeriodebekreftelseRepository,
     private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
     private val bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer,
-    private val vedtaksperiodeExceptionRepository: VedtaksperiodeExceptionRepository,
 ) {
     private val log = logger()
 
