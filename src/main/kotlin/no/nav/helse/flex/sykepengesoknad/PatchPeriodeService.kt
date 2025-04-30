@@ -24,11 +24,13 @@ class PatchPeriodeService(
             val opprinneligPeriode = arbeidssokerperiodeRepository.findByVedtaksperiodeId(periode.vedtaksperiodeId)!!
             val oppdatertPeriode = opprinneligPeriode.copy(vedtaksperiodeTom = periode.vedtaksperiodeTom)
 
+            arbeidssokerperiodeRepository.save(oppdatertPeriode)
+
             log.info(
-                "Vil oppdatere arbeidssokerperiode: ${opprinneligPeriode.id} med " +
+                "Oppdaterte arbeidssokerperiode: ${opprinneligPeriode.id} med " +
                     "vedtaksperiodeId: ${opprinneligPeriode.vedtaksperiodeId} og " +
                     "tom-dato: ${opprinneligPeriode.vedtaksperiodeTom} til ny " +
-                    "tom-dato: ${oppdatertPeriode.vedtaksperiodeTom}",
+                    "tom-dato: ${oppdatertPeriode.vedtaksperiodeTom}.",
             )
         }
     }
