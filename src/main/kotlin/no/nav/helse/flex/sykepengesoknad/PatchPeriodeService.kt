@@ -25,9 +25,9 @@ class PatchPeriodeService(
             val oppdatertPeriode = opprinneligPeriode.copy(vedtaksperiodeTom = periode.vedtaksperiodeTom)
 
             log.info(
-                "Vil oppdatere arbeidssokerperiode: ${opprinneligPeriode.id} med " +
-                    "vedtaksperiodeId: ${opprinneligPeriode.vedtaksperiodeId} og " +
-                    "tom-dato: ${opprinneligPeriode.vedtaksperiodeTom} til ny " +
+                "Vil oppdatere arbeidssokerperiode: ${oppdatertPeriode.id} med " +
+                    "vedtaksperiodeId: ${periode.vedtaksperiodeId} og " +
+                    "tom-dato: ${periode.vedtaksperiodeTom} til ny " +
                     "tom-dato: ${oppdatertPeriode.vedtaksperiodeTom}",
             )
         }
