@@ -131,13 +131,16 @@ class SykepengesoknadService(
 
         val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == soknad.tom
 
-        if (!erAvsluttendeSoknad && soknad.fortsattArbeidssoker == null) {
-            throw PeriodebekreftelseException(
-                "Mangler verdi for fortsattArbeidssoker i søknad: ${soknad.id} med " +
-                    "vedtaksperiode: ${soknad.friskTilArbeidVedtakId} og " +
-                    "arbeidssokerperiode: ${arbeidssokerperiode.id} som skal være satt da søknaden " +
-                    "ikke er siste i perioden.",
-            )
+        // Skipper sjekk for søkand som en gang i tiden har vært siste søknad.
+        if (soknad.id != "44ccf531-7458-33e8-89ed-35c2cc83aba6") {
+            if (!erAvsluttendeSoknad && soknad.fortsattArbeidssoker == null) {
+                throw PeriodebekreftelseException(
+                    "Mangler verdi for fortsattArbeidssoker i søknad: ${soknad.id} med " +
+                        "vedtaksperiode: ${soknad.friskTilArbeidVedtakId} og " +
+                        "arbeidssokerperiode: ${arbeidssokerperiode.id} som skal være satt da søknaden " +
+                        "ikke er siste i perioden.",
+                )
+            }
         }
 
         periodebekreftelseRepository.save(
