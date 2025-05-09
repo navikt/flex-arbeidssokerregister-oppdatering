@@ -4,8 +4,8 @@ db_pointInTimeRecovery: true
 db_type: POSTGRES_16
 kafkaPool: nav-prod
 azureTenant: nav.no
-cpu: 200m
-memory: 1000Mi
+cpu: 100m
+memory: 768Mi
 env:
   SPRING_PROFILES_ACTIVE: default
   KAFKA_KEY_GENERATOR_AAD_CLIENT_ID: prod-gcp.paw.paw-kafka-key-generator
