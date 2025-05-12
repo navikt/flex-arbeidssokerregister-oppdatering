@@ -42,6 +42,10 @@ class ArbeidssokerperiodeBekreftelseProducer(
                 bekreftelseMelding.fortsattArbeidssoker.toString(),
                 AttributeKey.stringKey("inntektUnderveis"),
                 bekreftelseMelding.inntektUnderveis.toString(),
+                AttributeKey.stringKey("periodeStart"),
+                bekreftelseMelding.periodeStart.toString(),
+                AttributeKey.stringKey("periodeSlutt"),
+                bekreftelseMelding.periodeSlutt.toString(),
             ),
         )
 
@@ -58,7 +62,9 @@ class ArbeidssokerperiodeBekreftelseProducer(
             "Publisert Bekreftelse med fortsattArbeidssoker: ${bekreftelseMelding.fortsattArbeidssoker} og " +
                 "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for " +
                 "arbeidssøkerperiode: ${bekreftelseMelding.arbeidssokerperiodeId} " +
-                "og periode i arbeidssøkerregisteret: ${bekreftelseMelding.arbeidssokerregisterPeriodeId}.",
+                "og periode i arbeidssøkerregisteret: ${bekreftelseMelding.arbeidssokerregisterPeriodeId}. Periode er " +
+                "fra: ${bekreftelseMelding.periodeStart} " +
+                "til: ${bekreftelseMelding.periodeSlutt}.",
         )
     }
 
