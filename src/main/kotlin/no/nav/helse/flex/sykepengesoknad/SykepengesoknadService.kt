@@ -180,8 +180,8 @@ class SykepengesoknadService(
                 arbeidssokerperiodeId = arbeidssokerperiode.id!!,
                 arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
                 fnr = sykepengesoknadDTO.fnr,
-                periodeStart = sykepengesoknadDTO.fom!!.toInstantAtStartOfDay(),
-                periodeSlutt = sykepengesoknadDTO.tom!!.plusDays(1).toInstantAtStartOfDay(),
+                periodeStart = sykepengesoknadDTO.fom!!.toInstantAtStartOfDayOsloTid(),
+                periodeSlutt = sykepengesoknadDTO.tom!!.plusDays(1).toInstantAtStartOfDayOsloTid(),
                 inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
                 fortsattArbeidssoker = true,
             )
@@ -250,6 +250,8 @@ class SykepengesoknadService(
 }
 
 fun LocalDate.toInstantAtStartOfDay(): Instant = this.atStartOfDay().toInstant(ZoneOffset.UTC)
+
+fun LocalDate.toInstantAtStartOfDayOsloTid(): Instant = this.atStartOfDay(ZoneId.of("Europe/Oslo")).toInstant()
 
 fun Instant.toLocalDate(): LocalDate = this.atZone(ZoneId.systemDefault()).toLocalDate()
 

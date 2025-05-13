@@ -42,6 +42,10 @@ class ArbeidssokerperiodeBekreftelseProducer(
                 bekreftelseMelding.fortsattArbeidssoker.toString(),
                 AttributeKey.stringKey("inntektUnderveis"),
                 bekreftelseMelding.inntektUnderveis.toString(),
+                AttributeKey.stringKey("periodeStart"),
+                bekreftelseMelding.periodeStart.toString(),
+                AttributeKey.stringKey("periodeSlutt"),
+                bekreftelseMelding.periodeSlutt.toString(),
             ),
         )
 

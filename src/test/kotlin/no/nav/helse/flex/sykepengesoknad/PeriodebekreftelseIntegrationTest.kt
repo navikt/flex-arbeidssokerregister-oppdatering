@@ -34,8 +34,11 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     }
 
     private val arbeidssokerperiodeId = UUID.randomUUID().toString()
+
     private val opprettet = Instant.now()
     private val sendtPaaVegneAv = Instant.now()
+    private val soknadFomTom: Periode = Periode(fom = LocalDate.of(2025, 1, 1), tom = LocalDate.of(2025, 1, 14))
+    private val periodeFomTom: Periode = Periode(fom = LocalDate.of(2025, 1, 1), tom = LocalDate.of(2025, 1, 31))
 
     @Test
     @Order(1)
@@ -60,13 +63,13 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
         sykepengesoknadService.behandleSoknad(soknad)
 
-        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet `should be equal to` null
         }
 
-        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
     }
 
     @Test
@@ -80,16 +83,16 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
         sykepengesoknadService.behandleSoknad(soknad)
 
-        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
             it.avsluttetAarsak `should be equal to` AvsluttetAarsak.BRUKER
         }
 
-        paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` lagretPeriode.kafkaRecordKey
-            it.value().also {
+        paaVegneAvConsumer.waitForRecords(1).single().also { consumerRecord ->
+            consumerRecord.key() `should be equal to` lagretPeriode.kafkaRecordKey
+            consumerRecord.value().also {
                 it.periodeId.toString() `should be equal to` lagretPeriode.arbeidssokerperiodeId
                 (it.handling as Stopp) `should not be equal to` null
             }
@@ -106,13 +109,13 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val soknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis)
         sykepengesoknadService.behandleSoknad(soknad)
 
-        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet `should be equal to` null
         }
 
-        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
     }
 
     @Test
@@ -167,7 +170,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             it.inntektUnderveis `should be equal to` null
         }
 
-        verifiserKafkaMelding(soknad, true, false)
+        verifiserBekreftelseKafkaMelding(soknad = soknad, inntektUnderveis = false)
     }
 
     @Test
@@ -194,9 +197,9 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val korrigerendeSoknad = lagSendtSoknad(fortsattArbeidssoker, inntektUnderveis).copy(korrigerer = soknad.id)
         sykepengesoknadService.behandleSoknad(korrigerendeSoknad)
 
-        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
-        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
     }
 
     @Test
@@ -206,16 +209,20 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val soknad = lagSisteSoknadForArbeidsokerperiode(lagretPeriode)
         sykepengesoknadService.behandleSoknad(soknad)
 
-        verifiserPeriodebekreftelse(arbeidssokerperiode = lagretPeriode, soknad = soknad, avsluttendeSoknad = true)
+        verifiserLagretPeriodebekreftelse(
+            arbeidssokerperiode = lagretPeriode,
+            soknad = soknad,
+            avsluttendeSoknad = true,
+        )
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
             it.avsluttetAarsak `should be equal to` AvsluttetAarsak.AVSLUTTET_PERIODE
         }
 
-        paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` lagretPeriode.kafkaRecordKey
-            it.value().also {
+        paaVegneAvConsumer.waitForRecords(1).single().also { consumerRecord ->
+            consumerRecord.key() `should be equal to` lagretPeriode.kafkaRecordKey
+            consumerRecord.value().also {
                 it.periodeId.toString() `should be equal to` lagretPeriode.arbeidssokerperiodeId
                 (it.handling as Stopp) `should not be equal to` null
             }
@@ -249,25 +256,32 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         // Simulerer dobbel innsending av samme søknad.
         sykepengesoknadService.behandleSoknad(soknad)
 
-        verifiserPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet `should be equal to` null
         }
 
-        verifiserKafkaMelding(soknad, fortsattArbeidssoker, inntektUnderveis)
+        verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
     }
 
-    private fun lagreArbeidssokerperiode(
-        fom: LocalDate = LocalDate.of(2025, 1, 1),
-        tom: LocalDate = LocalDate.of(2025, 1, 31),
-    ): Arbeidssokerperiode =
+    @Test
+    fun konverterOsloDatoTilInstantSommertid() {
+        LocalDate.of(2025, 5, 10).toInstantAtStartOfDayOsloTid().toString() `should be equal to` "2025-05-09T22:00:00Z"
+    }
+
+    @Test
+    fun konverterOsloDatoTilInstantVintertid() {
+        LocalDate.of(2025, 1, 10).toInstantAtStartOfDayOsloTid().toString() `should be equal to` "2025-01-09T23:00:00Z"
+    }
+
+    private fun lagreArbeidssokerperiode(): Arbeidssokerperiode =
         arbeidssokerperiodeRepository.save(
             Arbeidssokerperiode(
                 fnr = FNR,
                 vedtaksperiodeId = VEDTAKSPERIODE_ID,
-                vedtaksperiodeFom = fom,
-                vedtaksperiodeTom = tom,
+                vedtaksperiodeFom = periodeFomTom.fom,
+                vedtaksperiodeTom = periodeFomTom.tom,
                 opprettet = opprettet,
                 kafkaRecordKey = -3771L,
                 arbeidssokerperiodeId = arbeidssokerperiodeId,
@@ -283,6 +297,8 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             status = SoknadsstatusDTO.SENDT,
             fortsattArbeidssoker = fortsattArbeidssoker,
             inntektUnderveis = inntektUnderveis,
+            soknadFomTom = soknadFomTom,
+            periodeFomTom = periodeFomTom,
         )
 
     private fun lagSisteSoknadForArbeidsokerperiode(arbeidssokerperiode: Arbeidssokerperiode): SykepengesoknadDTO =
@@ -296,7 +312,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             periodeFomTom = Periode(arbeidssokerperiode.vedtaksperiodeFom, arbeidssokerperiode.vedtaksperiodeTom),
         )
 
-    private fun verifiserPeriodebekreftelse(
+    private fun verifiserLagretPeriodebekreftelse(
         arbeidssokerperiode: Arbeidssokerperiode,
         soknad: SykepengesoknadDTO,
         fortsattArbeidssoker: Boolean? = null,
@@ -314,25 +330,25 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         }
     }
 
-    private fun verifiserKafkaMelding(
+    private fun verifiserBekreftelseKafkaMelding(
         soknad: SykepengesoknadDTO,
-        fortsattArbeidssoker: Boolean,
         inntektUnderveis: Boolean,
     ) {
-        bekreftelseConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` -3771L
-            it.value().also {
-                it.periodeId.toString() `should be equal to` arbeidssokerperiodeId
-                it.bekreftelsesloesning.toString() `should be equal to` "FRISKMELDT_TIL_ARBEIDSFORMIDLING"
-                it.svar.also {
-                    it.sendtInnAv.also {
-                        it.utfoertAv.type.toString() `should be equal to` "SLUTTBRUKER"
-                        it.utfoertAv.id `should be equal to` FNR
+        bekreftelseConsumer.waitForRecords(1).single().also { consumerRecord ->
+            consumerRecord.key() `should be equal to` -3771L
+            consumerRecord.value().also { bekreftelse ->
+                bekreftelse.periodeId.toString() `should be equal to` arbeidssokerperiodeId
+                bekreftelse.bekreftelsesloesning.toString() `should be equal to` "FRISKMELDT_TIL_ARBEIDSFORMIDLING"
+                bekreftelse.svar.also { svar ->
+                    svar.sendtInnAv.also { metadata ->
+                        metadata.utfoertAv.type.toString() `should be equal to` "SLUTTBRUKER"
+                        metadata.utfoertAv.id `should be equal to` FNR
                     }
-                    it.gjelderFra `should be equal to` soknad.fom!!.toInstantAtStartOfDay()
-                    it.gjelderTil `should be equal to` soknad.tom!!.plusDays(1).toInstantAtStartOfDay()
-                    it.vilFortsetteSomArbeidssoeker `should be equal to` fortsattArbeidssoker
-                    it.harJobbetIDennePerioden `should be equal to` inntektUnderveis
+                    svar.gjelderFra `should be equal to` soknad.fom!!.toInstantAtStartOfDayOsloTid()
+                    svar.gjelderTil `should be equal to` soknad.tom!!.plusDays(1).toInstantAtStartOfDayOsloTid()
+                    // Vi sender Bekreftelser kun når bruker vil fortsette å være arbeidssøker.
+                    svar.vilFortsetteSomArbeidssoeker `should be equal to` true
+                    svar.harJobbetIDennePerioden `should be equal to` inntektUnderveis
                 }
             }
         }
