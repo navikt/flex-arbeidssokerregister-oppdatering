@@ -62,9 +62,7 @@ class ArbeidssokerperiodeBekreftelseProducer(
             "Publisert Bekreftelse med fortsattArbeidssoker: ${bekreftelseMelding.fortsattArbeidssoker} og " +
                 "inntektUnderveis: ${bekreftelseMelding.inntektUnderveis} for " +
                 "arbeidssøkerperiode: ${bekreftelseMelding.arbeidssokerperiodeId} " +
-                "og periode i arbeidssøkerregisteret: ${bekreftelseMelding.arbeidssokerregisterPeriodeId}. Periode er " +
-                "fra: ${bekreftelseMelding.periodeStart} " +
-                "til: ${bekreftelseMelding.periodeSlutt}.",
+                "og periode i arbeidssøkerregisteret: ${bekreftelseMelding.arbeidssokerregisterPeriodeId}.",
         )
     }
 
