@@ -45,7 +45,6 @@ spec:
     logging:
       destinations:
         - id: loki
-        - id: elastic
   gcp:
     sqlInstances:
       - type: {{db_type}}
