@@ -35,17 +35,16 @@ class SykepengesoknadService(
 
     @Scheduled(initialDelay = 3, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
     fun oppdaterTom() {
-        val id = "08f002b3-a97b-4842-8ae9-98cde418bbe3"
+        val arbeidssokerperiodeId = "08f002b3-a97b-4842-8ae9-98cde418bbe3"
         val vedtaksperiodeId = "ab4c2b84-898f-45be-a1a4-df48cd287af4"
 
         val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findById(id).get()
-
+            arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(arbeidssokerperiodeId)!!
         assert(arbeidssokerperiode.vedtaksperiodeId == vedtaksperiodeId)
 
         val tom = LocalDate.of(2025, 8, 13)
         arbeidssokerperiodeRepository.save(arbeidssokerperiode.copy(vedtaksperiodeTom = tom))
-        log.info("Oppdaterte arbeidssokerperiode:: $id fra tom: ${arbeidssokerperiode.vedtaksperiodeTom} til: $tom.")
+        log.info("Oppdaterte arbeidssokerperiode:: $arbeidssokerperiodeId fra tom: ${arbeidssokerperiode.vedtaksperiodeTom} til: $tom.")
     }
 
     @Transactional
