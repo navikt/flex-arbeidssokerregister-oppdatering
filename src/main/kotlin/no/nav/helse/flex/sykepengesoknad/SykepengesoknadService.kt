@@ -10,7 +10,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -18,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -32,21 +30,6 @@ class SykepengesoknadService(
     private val bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 3, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
-    fun oppdaterTom() {
-        val id = "08f002b3-a97b-4842-8ae9-98cde418bbe3"
-        val vedtaksperiodeId = "ab4c2b84-898f-45be-a1a4-df48cd287af4"
-
-        val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findById(id).get()
-
-        assert(arbeidssokerperiode.vedtaksperiodeId == vedtaksperiodeId)
-
-        val tom = LocalDate.of(2025, 8, 13)
-        arbeidssokerperiodeRepository.save(arbeidssokerperiode.copy(vedtaksperiodeTom = tom))
-        log.info("Oppdaterte arbeidssokerperiode:: $id fra tom: ${arbeidssokerperiode.vedtaksperiodeTom} til: $tom.")
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
