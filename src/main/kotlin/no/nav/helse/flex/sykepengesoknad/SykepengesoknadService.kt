@@ -10,7 +10,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -18,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -32,50 +30,6 @@ class SykepengesoknadService(
     private val bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 2, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
-    fun rettFeil() {
-        val arbeidssokerperiode1 = "3831c265-6654-4640-a942-9f481db7cf6d"
-        val vedtaksperiodeId1 = "19d1d4e3-b075-4d77-8c56-e7cfae55526b"
-        arbeidssokerperiodeRepository.findById(arbeidssokerperiode1).get().also {
-            assert(it.vedtaksperiodeId == vedtaksperiodeId1)
-            arbeidssokerperiodeRepository.save(it.copy(vedtaksperiodeTom = LocalDate.of(2025, 8, 24)))
-            log.info("Oppdatert arbeidsøkerperiode: $arbeidssokerperiode1 med ny tom: ${LocalDate.of(2025, 8, 24)}.")
-        }
-
-        val arbeidssokerperiode2 = "91266567-6ad0-4d07-ae4a-4cb3055b3ea9"
-        val vedtaksperiodeId2 = "05a23013-da6b-437f-9a3b-e4c3c1419c92"
-        arbeidssokerperiodeRepository.findById(arbeidssokerperiode2).get().also {
-            assert(it.vedtaksperiodeId == vedtaksperiodeId2)
-            arbeidssokerperiodeRepository.save(it.copy(vedtaksperiodeTom = LocalDate.of(2025, 8, 20)))
-            log.info("Oppdatert arbeidsøkerperiode: $arbeidssokerperiode2 med ny tom: ${LocalDate.of(2025, 8, 20)}.")
-        }
-
-        val arbeidssokerperiode3 = "c0e72344-25d5-4c19-be5a-43ec6f2de7c7"
-        val vedtaksperiodeId3 = "902f7d2d-517d-424f-9dc9-650661737f1e"
-        val arbeidssokerregisterPeriodeId3 = "76524274-9bac-4b76-aa3b-13876a6aeebd"
-
-        arbeidssokerperiodeRepository.findById(arbeidssokerperiode3).get().also {
-            assert(it.vedtaksperiodeId == vedtaksperiodeId3)
-            arbeidssokerperiodeRepository.save(it.copy(arbeidssokerperiodeId = arbeidssokerregisterPeriodeId3))
-            log.info(
-                "Oppdatert arbeidsøkerperiode: $arbeidssokerperiode3 med ny arbeidssokerregisterperiodeId: $arbeidssokerregisterPeriodeId3.",
-            )
-
-            paaVegneAvProducer.send(
-                PaaVegneAvStartMelding(
-                    kafkaKey = it.kafkaRecordKey!!,
-                    arbeidssokerperiodeId = it.id!!,
-                    arbeidssokerregisterPeriodeId = arbeidssokerregisterPeriodeId3,
-                    beregnGraceMS(it.vedtaksperiodeTom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
-                ),
-            )
-
-            log.info(
-                "Sendt PaaVegneAvStartMelding med arbeidssokerperiodeId: ${it.id} og arbeidssokerregisterperiodeId: $arbeidssokerregisterPeriodeId3.",
-            )
-        }
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
