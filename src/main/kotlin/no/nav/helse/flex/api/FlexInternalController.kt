@@ -9,6 +9,7 @@ import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -37,6 +38,29 @@ class FlexInternalController(
         return ResponseEntity.ok(FlexInternalResponse(arbeidssokerperioder))
     }
 
+    @PutMapping("/arbeidssokerperioder/oppdater-tom")
+    fun updateVedtaksperiodeTom(
+        @RequestBody request: UpdateVedtaksperiodeTomRequest,
+    ): ResponseEntity<Void> {
+        clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+
+        val arbeidssokerperiodeOptional = arbeidssokerperiodeRepository.findById(request.id)
+
+        if (!arbeidssokerperiodeOptional.isPresent) {
+            return ResponseEntity.notFound().build()
+        }
+
+        val arbeidssokerperiode = arbeidssokerperiodeOptional.get()
+        val updatedArbeidssokerperiode =
+            arbeidssokerperiode.copy(
+                vedtaksperiodeTom = request.vedtaksperiodeTom,
+            )
+
+        arbeidssokerperiodeRepository.save(updatedArbeidssokerperiode)
+
+        return ResponseEntity.noContent().build()
+    }
+
     private fun hentPeriodebekreftelser(arbeidssokerperiode: Arbeidssokerperiode): List<PeriodebekreftelseResponse> =
         periodebekreftelseRepository
             .findByArbeidssokerperiodeId(
@@ -50,6 +74,11 @@ data class FlexInternalResponse(
 
 data class FlexInternalRequest(
     val fnr: String,
+)
+
+data class UpdateVedtaksperiodeTomRequest(
+    val id: String,
+    val vedtaksperiodeTom: LocalDate,
 )
 
 fun Arbeidssokerperiode.tilArbeidssokerperiodeResponse(periodebekreftelser: List<PeriodebekreftelseResponse>): ArbeidssokerperiodeResponse =
