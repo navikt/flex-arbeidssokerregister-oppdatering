@@ -42,7 +42,7 @@ class SykepengesoknadService(
         }
     }
 
-    @Scheduled(fixedDelay = 4, initialDelay = 3600, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 2, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
     fun behandleEnkeltsoknad() {
         periodebekreftelseRepository.save(
             Periodebekreftelse(
