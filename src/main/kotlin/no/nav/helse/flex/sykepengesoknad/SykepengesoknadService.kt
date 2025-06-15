@@ -10,6 +10,7 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -17,6 +18,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -38,6 +40,20 @@ class SykepengesoknadService(
 
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
         }
+    }
+
+    @Scheduled(fixedDelay = 2, initialDelay = 3600, timeUnit = TimeUnit.MINUTES)
+    fun behandleEnkeltsoknad() {
+        periodebekreftelseRepository.save(
+            Periodebekreftelse(
+                arbeidssokerperiodeId = "e85ab677-ed1e-4715-8206-cbdcacedb646",
+                sykepengesoknadId = "c836fa59-ec6a-317b-849a-5963293168ef",
+                fortsattArbeidssoker = null,
+                inntektUnderveis = false,
+                opprettet = Instant.now(),
+                avsluttendeSoknad = false,
+            ),
+        )
     }
 
     private fun behandleVedtaksperiode(soknad: SykepengesoknadDTO) {
