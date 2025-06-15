@@ -132,6 +132,13 @@ class SykepengesoknadService(
         val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == soknad.tom
 
         if (!erAvsluttendeSoknad && soknad.fortsattArbeidssoker == null) {
+            if (soknad.id == "c836fa59-ec6a-317b-849a-5963293168ef" &&
+                soknad.friskTilArbeidVedtakId == "dbb8d3d2-c1dc-40da-a9b0-06c3afe6289d"
+            ) {
+                log.info("Hopper over sjekk for fortsatt arbeidssøker for søknad med id: ${soknad.id} siden vedtaksperioden er endret.")
+                return
+            }
+
             throw PeriodebekreftelseException(
                 "Mangler verdi for fortsattArbeidssoker i søknad: ${soknad.id} med " +
                     "vedtaksperiode: ${soknad.friskTilArbeidVedtakId} og " +
