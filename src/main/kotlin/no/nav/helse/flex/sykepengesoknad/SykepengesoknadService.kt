@@ -42,7 +42,7 @@ class SykepengesoknadService(
         }
     }
 
-    @Scheduled(fixedDelay = 2, initialDelay = 3600, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedDelay = 4, initialDelay = 3600, timeUnit = TimeUnit.MINUTES)
     fun behandleEnkeltsoknad() {
         periodebekreftelseRepository.save(
             Periodebekreftelse(
@@ -53,6 +53,9 @@ class SykepengesoknadService(
                 opprettet = Instant.now(),
                 avsluttendeSoknad = false,
             ),
+        )
+        log.info(
+            "Lagret periodebekreftelse for søknad med id: c836fa59-ec6a-317b-849a-5963293168ef og arbeidssokerperiodeId: e85ab677-ed1e-4715-8206-cbdcacedb646",
         )
     }
 
