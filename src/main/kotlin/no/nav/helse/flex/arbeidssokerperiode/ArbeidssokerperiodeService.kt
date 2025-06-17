@@ -22,20 +22,14 @@ class ArbeidssokerperiodeService(
             return
         }
 
-        val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findByArbeidssokerperiodeId(periode.id.toString())
-
-        // Behandler ikke ukjente periode i arbeidssøkerregisteret.
-        if (arbeidssokerperiode == null) {
-            return
-        }
-
-        // Behandler ikke en allerede avsluttet arbeidssøkerperiode.
-        if (arbeidssokerperiode.avsluttetMottatt != null) {
-            return
-        }
-
-        prosesserPeriode(arbeidssokerperiode, periode)
+        arbeidssokerperiodeRepository
+            .findByArbeidssokerperiodeId(periode.id.toString())
+            .forEach { arbeidssokerperiode ->
+                // Hopper over arbeidssøkerperioder hvor vi alerede har mottatt avsluttet periode fra arbeidsøkerregisteret.
+                if (arbeidssokerperiode.avsluttetMottatt == null) {
+                    prosesserPeriode(arbeidssokerperiode, periode)
+                }
+            }
     }
 
     private fun prosesserPeriode(
