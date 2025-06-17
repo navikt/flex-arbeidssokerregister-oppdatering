@@ -12,7 +12,7 @@ import java.time.LocalDate
 interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, String> {
     fun findByVedtaksperiodeId(vedtaksperiodeId: String): Arbeidssokerperiode?
 
-    fun findByArbeidssokerperiodeId(id: String): Arbeidssokerperiode?
+    fun findByArbeidssokerperiodeId(id: String): List<Arbeidssokerperiode>
 
     fun findByFnr(string: String): List<Arbeidssokerperiode>?
 }
