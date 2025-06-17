@@ -1,6 +1,7 @@
 package no.nav.helse.flex.arbeidssokerregister
 
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
 import no.nav.helse.flex.logger
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class ArbeidssokerperiodeListener(
     private val arbeidssokerperiodeService: ArbeidssokerperiodeService,
+    private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
 
@@ -27,9 +29,19 @@ class ArbeidssokerperiodeListener(
         acknowledgment: Acknowledgment,
     ) {
         cr.value().also {
-            arbeidssokerperiodeService.behandlePeriode(it)
+            try {
+                arbeidssokerperiodeService.behandlePeriode(it)
+            } catch (e: Exception) {
+                log.error(
+                    "Feil ved behandling av periode fra arbeidssøkerregisteret: ${it.id} med startdato: ${it.startet.tidspunkt} og sluttdato: ${it.avsluttet.tidspunkt}.",
+                    e,
+                )
+                if (environmentToggles.erProduksjon()) {
+                    throw e
+                }
+            }
+            acknowledgment.acknowledge()
         }
-        acknowledgment.acknowledge()
     }
 }
 
