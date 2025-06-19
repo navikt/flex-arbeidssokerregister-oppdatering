@@ -40,23 +40,42 @@ class FlexInternalController(
 
     @PutMapping("/arbeidssokerperioder/oppdater-tom")
     fun updateVedtaksperiodeTom(
-        @RequestBody request: UpdateVedtaksperiodeTomRequest,
+        @RequestBody request: OppdatertVedtaksperiodeTomRequest,
     ): ResponseEntity<Void> {
         clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
 
-        val arbeidssokerperiodeOptional = arbeidssokerperiodeRepository.findById(request.id)
+        val arbeidssokerperiode =
+            arbeidssokerperiodeRepository
+                .findById(request.id)
+                .orElse(null) ?: return ResponseEntity.notFound().build()
 
-        if (!arbeidssokerperiodeOptional.isPresent) {
-            return ResponseEntity.notFound().build()
-        }
-
-        val arbeidssokerperiode = arbeidssokerperiodeOptional.get()
-        val updatedArbeidssokerperiode =
-            arbeidssokerperiode.copy(
+        arbeidssokerperiode
+            .copy(
                 vedtaksperiodeTom = request.vedtaksperiodeTom,
-            )
+            ).also {
+                arbeidssokerperiodeRepository.save(it)
+            }
 
-        arbeidssokerperiodeRepository.save(updatedArbeidssokerperiode)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PutMapping("/arbeidssokerperioder/oppdater-arbeidssokerperiode-id")
+    fun updateArbeidssokerperiodeId(
+        @RequestBody request: OppdaterArbeidssokerperiodeIdRequest,
+    ): ResponseEntity<Void> {
+        clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+
+        val arbeidssokerperiode =
+            arbeidssokerperiodeRepository
+                .findById(request.id)
+                .orElse(null) ?: return ResponseEntity.notFound().build()
+
+        arbeidssokerperiode
+            .copy(
+                arbeidssokerperiodeId = request.arbeidssokerperiodeId,
+            ).also {
+                arbeidssokerperiodeRepository.save(it)
+            }
 
         return ResponseEntity.noContent().build()
     }
@@ -76,9 +95,14 @@ data class FlexInternalRequest(
     val fnr: String,
 )
 
-data class UpdateVedtaksperiodeTomRequest(
+data class OppdatertVedtaksperiodeTomRequest(
     val id: String,
     val vedtaksperiodeTom: LocalDate,
+)
+
+data class OppdaterArbeidssokerperiodeIdRequest(
+    val id: String,
+    val arbeidssokerperiodeId: String,
 )
 
 fun Arbeidssokerperiode.tilArbeidssokerperiodeResponse(periodebekreftelser: List<PeriodebekreftelseResponse>): ArbeidssokerperiodeResponse =
