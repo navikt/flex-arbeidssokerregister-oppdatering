@@ -28,7 +28,7 @@ class FlexInternalController(
     fun hentArbeidsokerperioder(
         @RequestBody request: FlexInternalRequest,
     ): ResponseEntity<FlexInternalResponse> {
-        clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+        validerFlexInternalClient()
 
         val arbeidssokerperioder =
             arbeidssokerperiodeRepository.findByFnr(request.fnr)?.map {
@@ -42,19 +42,16 @@ class FlexInternalController(
     fun updateVedtaksperiodeTom(
         @RequestBody request: OppdatertVedtaksperiodeTomRequest,
     ): ResponseEntity<Void> {
-        clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+        validerFlexInternalClient()
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository
                 .findById(request.id)
                 .orElse(null) ?: return ResponseEntity.notFound().build()
 
-        arbeidssokerperiode
-            .copy(
-                vedtaksperiodeTom = request.vedtaksperiodeTom,
-            ).also {
-                arbeidssokerperiodeRepository.save(it)
-            }
+        arbeidssokerperiode.copy(vedtaksperiodeTom = request.vedtaksperiodeTom).also {
+            arbeidssokerperiodeRepository.save(it)
+        }
 
         return ResponseEntity.noContent().build()
     }
@@ -63,21 +60,22 @@ class FlexInternalController(
     fun updateArbeidssokerperiodeId(
         @RequestBody request: OppdaterArbeidssokerperiodeIdRequest,
     ): ResponseEntity<Void> {
-        clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+        validerFlexInternalClient()
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository
                 .findById(request.id)
                 .orElse(null) ?: return ResponseEntity.notFound().build()
 
-        arbeidssokerperiode
-            .copy(
-                arbeidssokerperiodeId = request.arbeidssokerperiodeId,
-            ).also {
-                arbeidssokerperiodeRepository.save(it)
-            }
+        arbeidssokerperiode.copy(arbeidssokerperiodeId = request.arbeidssokerperiodeId).also {
+            arbeidssokerperiodeRepository.save(it)
+        }
 
         return ResponseEntity.noContent().build()
+    }
+
+    private fun validerFlexInternalClient() {
+        clientValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
     }
 
     private fun hentPeriodebekreftelser(arbeidssokerperiode: Arbeidssokerperiode): List<PeriodebekreftelseResponse> =
