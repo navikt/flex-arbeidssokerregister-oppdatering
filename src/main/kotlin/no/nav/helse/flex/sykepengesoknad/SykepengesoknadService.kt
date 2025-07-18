@@ -40,6 +40,18 @@ class SykepengesoknadService(
         }
     }
 
+    fun sendPaaVegneAvStartMelding(
+        arbeidssokerperiode: Arbeidssokerperiode,
+        vedtaksperiode: FriskTilArbeidVedtaksperiode,
+    ) = paaVegneAvProducer.send(
+        PaaVegneAvStartMelding(
+            kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
+            arbeidssokerperiodeId = arbeidssokerperiode.id!!,
+            arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
+            beregnGraceMS(vedtaksperiode.tom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
+        ),
+    )
+
     private fun behandleVedtaksperiode(soknad: SykepengesoknadDTO) {
         if (soknad.ignorerArbeidssokerregister == true) {
             log.info(
@@ -84,14 +96,7 @@ class SykepengesoknadService(
                 ),
             )
 
-        paaVegneAvProducer.send(
-            PaaVegneAvStartMelding(
-                kafkaKey = kafkaRecordKey,
-                arbeidssokerperiodeId = lagretArbeidssokerperiode.id!!,
-                arbeidssokerregisterPeriodeId = arbeidsokerperiodeResponse.periodeId,
-                beregnGraceMS(vedtaksperiode.tom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
-            ),
-        )
+        sendPaaVegneAvStartMelding(lagretArbeidssokerperiode, vedtaksperiode)
 
         log.info(
             "Opprettet arbeidssøkerperiode: ${lagretArbeidssokerperiode.id} for " +
@@ -151,7 +156,7 @@ class SykepengesoknadService(
             ),
         )
 
-        // Vi sender PaaVegneAStoppMelding hvis søknaden er siste i perioden eller bruker har svart at hen ikke vil
+        // Vi sender PaaVegneAvStoppMelding hvis søknaden er siste i perioden eller bruker har svart at hen ikke vil
         // fortsette å være Friskmeldt til Arbeidsformidling. Vi frasier oss da ansvaret for innsending av
         // Periodebekreftelser, men melder ikke bruker ut av Arbeidssøkerregisteret.
         if (erAvsluttendeSoknad || soknad.fortsattArbeidssoker == false) {
@@ -188,16 +193,14 @@ class SykepengesoknadService(
         bekreftelseProducer.send(bekreftelseMelding)
     }
 
-    private fun sendPaaVegneAvStoppMelding(arbeidssokerperiode: Arbeidssokerperiode) {
-        val paaVegneAvMelding =
+    private fun sendPaaVegneAvStoppMelding(arbeidssokerperiode: Arbeidssokerperiode) =
+        paaVegneAvProducer.send(
             PaaVegneAvStoppMelding(
                 kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
                 arbeidssokerperiodeId = arbeidssokerperiode.id!!,
                 arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-            )
-
-        paaVegneAvProducer.send(paaVegneAvMelding)
-    }
+            ),
+        )
 
     private fun erNyVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) =
         arbeidssokerperiodeRepository.findByVedtaksperiodeId(vedtaksperiode.vedtaksperiodeId) == null
