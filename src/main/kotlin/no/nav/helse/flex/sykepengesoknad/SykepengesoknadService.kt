@@ -10,6 +10,7 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -17,6 +18,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -38,6 +40,20 @@ class SykepengesoknadService(
 
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
         }
+    }
+
+    @Scheduled(initialDelay = 2, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
+    fun sendPaaVegneAvForBruker() {
+        val lagretArbeidssokerperiode = arbeidssokerperiodeRepository.findByVedtaksperiodeId("59848823-b001-4454-b958-960818c31d32")!!
+
+        paaVegneAvProducer.send(
+            PaaVegneAvStartMelding(
+                kafkaKey = lagretArbeidssokerperiode.kafkaRecordKey!!,
+                arbeidssokerperiodeId = lagretArbeidssokerperiode.id!!,
+                arbeidssokerregisterPeriodeId = lagretArbeidssokerperiode.arbeidssokerperiodeId!!,
+                beregnGraceMS(lagretArbeidssokerperiode.vedtaksperiodeTom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
+            ),
+        )
     }
 
     private fun behandleVedtaksperiode(soknad: SykepengesoknadDTO) {
