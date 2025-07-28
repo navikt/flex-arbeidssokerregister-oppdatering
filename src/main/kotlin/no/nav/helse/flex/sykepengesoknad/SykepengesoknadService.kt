@@ -10,7 +10,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -18,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -39,30 +37,6 @@ class SykepengesoknadService(
             soknad.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(soknad)
 
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
-        }
-    }
-
-    @Scheduled(initialDelay = 2, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
-    fun sendPaaVegneAvForBruker() {
-        val arbeidssokerperioder =
-            listOf(
-                "219ec45b-46ad-49b3-bbfd-4914aad95adf",
-                "dbb8d3d2-c1dc-40da-a9b0-06c3afe6289d",
-                "9f8be6e9-db0b-4474-963e-ebb40700223d",
-            )
-
-        arbeidssokerperioder.forEach {
-            val lagretArbeidssokerperiode =
-                arbeidssokerperiodeRepository.findByVedtaksperiodeId(it)!!
-
-            paaVegneAvProducer.send(
-                PaaVegneAvStartMelding(
-                    kafkaKey = lagretArbeidssokerperiode.kafkaRecordKey!!,
-                    arbeidssokerperiodeId = lagretArbeidssokerperiode.id!!,
-                    arbeidssokerregisterPeriodeId = lagretArbeidssokerperiode.arbeidssokerperiodeId!!,
-                    beregnGraceMS(lagretArbeidssokerperiode.vedtaksperiodeTom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
-                ),
-            )
         }
     }
 
