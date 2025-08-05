@@ -26,6 +26,7 @@ import java.util.*
 
 class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
     private val vedtaksperiodeId = UUID.randomUUID().toString()
+    private val kafkaRecordKey = -1111L
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -41,6 +42,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
             arbeidssokerperiodeRepository.save(
                 Arbeidssokerperiode(
                     fnr = FNR,
+                    kafkaRecordKey = kafkaRecordKey,
                     vedtaksperiodeId = vedtaksperiodeId,
                     vedtaksperiodeFom = LocalDate.now().minusMonths(1),
                     vedtaksperiodeTom = LocalDate.now().plusMonths(2),
@@ -210,6 +212,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
             arbeidssokerperiodeRepository.save(
                 Arbeidssokerperiode(
                     fnr = FNR,
+                    kafkaRecordKey = kafkaRecordKey,
                     vedtaksperiodeId = vedtaksperiodeId,
                     vedtaksperiodeFom = LocalDate.now().minusMonths(1),
                     vedtaksperiodeTom = LocalDate.now().plusMonths(2),
@@ -227,6 +230,13 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
 
         arbeidssokerperiodeRepository.findById(lagretArbeidssokerperiode.id).get().also {
             it.arbeidssokerperiodeId `should be equal to` newArbeidssokerperiodeId
+        }
+
+        paaVegneAvConsumer.waitForRecords(1).single().also {
+            it.key() `should be equal to` kafkaRecordKey
+            it.value().also { paaVegneAv ->
+                paaVegneAv.periodeId `should be equal to` UUID.fromString(newArbeidssokerperiodeId)
+            }
         }
     }
 

@@ -6,6 +6,9 @@ import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
 import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
+import no.nav.helse.flex.sykepengesoknad.SOKNAD_DEAKTIVERES_ETTER_MAANEDER
+import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
+import no.nav.helse.flex.sykepengesoknad.beregnGraceMS
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,6 +26,7 @@ class FlexInternalController(
     private val clientValidation: ClientValidation,
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
     private val periodebekreftelseRepository: PeriodebekreftelseRepository,
+    private val sykepengesoknadService: SykepengesoknadService,
 ) {
     @PostMapping("/arbeidssokerperioder")
     fun hentArbeidsokerperioder(
@@ -67,9 +71,15 @@ class FlexInternalController(
                 .findById(request.id)
                 .orElse(null) ?: return ResponseEntity.notFound().build()
 
-        arbeidssokerperiode.copy(arbeidssokerperiodeId = request.arbeidssokerperiodeId).also {
-            arbeidssokerperiodeRepository.save(it)
-        }
+        val oppdatertArbeidssokerperiode =
+            arbeidssokerperiode.copy(arbeidssokerperiodeId = request.arbeidssokerperiodeId).also {
+                arbeidssokerperiodeRepository.save(it)
+            }
+
+        sykepengesoknadService.sendPaaVegneAvStartMelding(
+            oppdatertArbeidssokerperiode,
+            beregnGraceMS(oppdatertArbeidssokerperiode.vedtaksperiodeTom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
+        )
 
         return ResponseEntity.noContent().build()
     }
