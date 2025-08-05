@@ -42,13 +42,13 @@ class SykepengesoknadService(
 
     fun sendPaaVegneAvStartMelding(
         arbeidssokerperiode: Arbeidssokerperiode,
-        vedtaksperiode: FriskTilArbeidVedtaksperiode,
+        graceMs: Long,
     ) = paaVegneAvProducer.send(
         PaaVegneAvStartMelding(
             kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
             arbeidssokerperiodeId = arbeidssokerperiode.id!!,
             arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-            beregnGraceMS(vedtaksperiode.tom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
+            graceMS = graceMs,
         ),
     )
 
@@ -96,7 +96,10 @@ class SykepengesoknadService(
                 ),
             )
 
-        sendPaaVegneAvStartMelding(lagretArbeidssokerperiode, vedtaksperiode)
+        sendPaaVegneAvStartMelding(
+            lagretArbeidssokerperiode,
+            beregnGraceMS(vedtaksperiode.tom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER),
+        )
 
         log.info(
             "Opprettet arbeidssøkerperiode: ${lagretArbeidssokerperiode.id} for " +
