@@ -6,8 +6,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
-    kotlin("plugin.spring") version "2.1.21"
-    kotlin("jvm") version "2.1.21"
+    kotlin("plugin.spring") version "2.2.10"
+    kotlin("jvm") version "2.2.10"
 }
 
 group = "no.nav.helse.flex"

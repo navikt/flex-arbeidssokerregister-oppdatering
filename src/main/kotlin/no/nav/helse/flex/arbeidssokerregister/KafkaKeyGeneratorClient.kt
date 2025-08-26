@@ -7,7 +7,7 @@ import org.springframework.web.client.RestClient
 
 @Component
 class KafkaKeyGeneratorClient(
-    @Qualifier("kafkaKeyGeneratorRestClient")
+    @param:Qualifier("kafkaKeyGeneratorRestClient")
     val restClient: RestClient,
 ) {
     fun hentKafkaKey(request: KafkaKeyGeneratorRequest) =
