@@ -34,9 +34,19 @@ class SykepengesoknadService(
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
         when {
+            soknad.erSendtSelvstendigeOgFrilansere() -> logNaringsdrivendeInfo(soknad)
+
             soknad.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(soknad)
 
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
+        }
+    }
+
+    private fun logNaringsdrivendeInfo(soknad: SykepengesoknadDTO) {
+        soknad.selvstendigNaringsdrivende?.ventetid?.let {
+            log.info(
+                "Mottok ${soknad.type} søknad: ${soknad.id} med ventetid: $it",
+            )
         }
     }
 
@@ -215,6 +225,9 @@ class SykepengesoknadService(
 
     private fun SykepengesoknadDTO.erFremtidigFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.FREMTIDIG
+
+    private fun SykepengesoknadDTO.erSendtSelvstendigeOgFrilansere() =
+        type == SoknadstypeDTO.SELVSTENDIGE_OG_FRILANSERE && status == SoknadsstatusDTO.SENDT
 
     private fun SykepengesoknadDTO.erSendtFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.SENDT
