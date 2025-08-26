@@ -20,7 +20,7 @@ const val FJORDEN_DAGER = EN_DAG_I_MS * 14
 
 @Component
 class ArbeidssokerperiodePaaVegneAvProducer(
-    @Qualifier("avroKafkaProducer")
+    @param:Qualifier("avroKafkaProducer")
     val kafkaProducer: Producer<Long, PaaVegneAv>,
 ) {
     private val log = logger()
