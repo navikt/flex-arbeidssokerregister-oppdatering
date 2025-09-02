@@ -71,7 +71,7 @@ spec:
       rules:
         - application: paw-kafka-key-generator
           namespace: paw
-        - application: paw-arbeidssoekerregisteret-api-oppslag
+        - application: paw-arbeidssoekerregisteret-api-oppslag-v2
           namespace: paw
   env:
   {{#each env}}
