@@ -4,12 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: daily
-      time: "03:00"
-    open-pull-requests-limit: 10
+      time: "04:00"
+    open-pull-requests-limit: 15
 
   - package-ecosystem: gradle
     directory: "/"
     schedule:
       interval: daily
-      time: "03:00"
-    open-pull-requests-limit: 10
+      time: "04:00"
+    open-pull-requests-limit: 15
