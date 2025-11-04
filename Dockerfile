@@ -1,7 +1,7 @@
-FROM gcr.io/distroless/java21-debian12@sha256:c298bfc8c8b1aa3d7b03480dcf52001a90d66d966f6a8d8997ae837d3982be3f
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-25
 
 ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=65.0 -XX:+UseParallelGC -XX:ActiveProcessorCount=2"
 
 COPY build/libs/app.jar /app/
 WORKDIR /app
-CMD ["app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
