@@ -57,11 +57,21 @@ class ArbeidssokerperiodePaaVegneAvProducer(
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
 
+        val stopp =
+            if (paaVegneAvMelding.arbeidssokerperiodeId == "7ff8d622-ab77-40d4-a6ca-a98e32f376ba" &&
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId == "6ba36b7e-0d3d-4304-820d-dd63888330c0"
+            ) {
+                Stopp(true)
+                log.info("Sendt Stopp med fristBrutt = true for arbeidssokerperiode: ${paaVegneAvMelding.arbeidssokerperiodeId}")
+            } else {
+                Stopp()
+            }
+
         val paaVegneAv =
             PaaVegneAv(
                 UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
-                Stopp(),
+                stopp,
             )
 
         Span.current().addEvent(
