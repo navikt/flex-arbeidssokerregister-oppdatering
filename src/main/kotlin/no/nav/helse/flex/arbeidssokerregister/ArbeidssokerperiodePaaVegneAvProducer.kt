@@ -40,7 +40,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
             "PaaVegneAvStartMelding",
             Attributes.of(
                 AttributeKey.stringKey("periodeId"),
-                paaVegneAvMelding.arbeidssokerregisterPeriodeId.toString(),
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId,
                 AttributeKey.stringKey("graceMs"),
                 paaVegneAvMelding.graceMS.toString(),
             ),
