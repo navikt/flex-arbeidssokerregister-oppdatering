@@ -61,7 +61,7 @@ class ArbeidssokerperiodePaaVegneAvProducer(
             PaaVegneAv(
                 UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
-                Stopp(),
+                Stopp(true),
             )
 
         Span.current().addEvent(
