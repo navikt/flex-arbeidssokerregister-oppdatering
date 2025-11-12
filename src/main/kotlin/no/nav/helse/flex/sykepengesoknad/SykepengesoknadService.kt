@@ -125,19 +125,16 @@ class SykepengesoknadService(
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository.findByVedtaksperiodeId(soknad.friskTilArbeidVedtakId!!)
-
-        if (arbeidssokerperiode == null) {
-            throw PeriodebekreftelseException(
-                "Fant ikke arbeidssøkerperiode for søknad: ${soknad.id} med " +
-                    "vedtaksperiode: ${soknad.friskTilArbeidVedtakId}.",
-            )
-        }
+                ?: throw PeriodebekreftelseException(
+                    "Fant ikke arbeidssøkerperiode for søknad: ${soknad.id} med " +
+                        "vedtaksperiode: ${soknad.friskTilArbeidVedtakId}.",
+                )
 
         if (periodebekreftelseRepository.findBySykepengesoknadId(soknad.id) != null) {
             return
         }
 
-        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom == soknad.tom
+        val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom.isEqual(soknad.tom)
 
         if (!erAvsluttendeSoknad && soknad.fortsattArbeidssoker == null) {
             throw PeriodebekreftelseException(
