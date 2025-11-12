@@ -25,7 +25,7 @@ class ArbeidssokerperiodeService(
         arbeidssokerperiodeRepository
             .findByArbeidssokerperiodeId(periode.id.toString())
             .forEach { arbeidssokerperiode ->
-                // Hopper over arbeidssøkerperioder hvor vi alerede har mottatt avsluttet periode fra arbeidsøkerregisteret.
+                // Hopper over arbeidssøkerperioder hvor vi allerede har mottatt avsluttet periode fra arbeidsøkerregisteret.
                 if (arbeidssokerperiode.avsluttetMottatt == null) {
                     prosesserPeriode(arbeidssokerperiode, periode)
                 }
