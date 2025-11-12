@@ -54,6 +54,34 @@ class ArbeidssokerperiodePaaVegneAvProducer(
     }
 
     @WithSpan
+    fun sendFristBrutt(paaVegneAvMelding: PaaVegneAvStoppMelding) {
+        val kafkaKey = paaVegneAvMelding.kafkaKey
+
+        val paaVegneAv =
+            PaaVegneAv(
+                UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
+                Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
+                Stopp(true),
+            )
+
+        Span.current().addEvent(
+            "PaaVegneAvStoppMelding",
+            Attributes.of(
+                AttributeKey.stringKey("periodeId"),
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId,
+                AttributeKey.stringKey("fristBrutt"),
+                true.toString(),
+            ),
+        )
+        sendKafkaMelding(kafkaKey, paaVegneAv)
+
+        log.info(
+            "Publisert PaaVegneAvStoppMelding for arbeidsøkerperiode: ${paaVegneAvMelding.arbeidssokerperiodeId} " +
+                "og periode i arbeidssøkerregisteret: ${paaVegneAvMelding.arbeidssokerregisterPeriodeId}.",
+        )
+    }
+
+    @WithSpan
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
 
