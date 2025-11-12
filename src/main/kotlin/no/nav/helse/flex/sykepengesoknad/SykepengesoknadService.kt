@@ -1,7 +1,6 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
@@ -11,7 +10,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -19,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -31,23 +28,8 @@ class SykepengesoknadService(
     private val periodebekreftelseRepository: PeriodebekreftelseRepository,
     private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
     private val bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer,
-    private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 5, fixedDelay = 86400, timeUnit = TimeUnit.MINUTES)
-    fun sendPaaVegneAvStoppMeldingForEnkeltbruker() {
-        if (environmentToggles.erProduksjon()) {
-            arbeidssokerperiodeRepository
-                .findByVedtaksperiodeId("9e5d8199-2685-4048-b69b-b467cee90353")!!
-                .also { arbeidssokerperiode ->
-                    sendPaaVegneAvStoppMelding(arbeidssokerperiode)
-                    log.info(
-                        "Sendt PaaVegneAvStoppMelding for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
-                    )
-                }
-        }
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
