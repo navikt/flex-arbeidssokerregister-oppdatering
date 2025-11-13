@@ -35,7 +35,28 @@ class SykepengesoknadService(
 ) {
     private val log = logger()
 
-    @Scheduled(initialDelay = 5, fixedDelay = 86400, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 4, fixedDelay = 86400, timeUnit = TimeUnit.MINUTES)
+    fun sendPaaVegneAvStartEnkeltbruker() {
+        if (environmentToggles.erProduksjon()) {
+            arbeidssokerperiodeRepository
+                .findByVedtaksperiodeId("9e5d8199-2685-4048-b69b-b467cee90353")!!
+                .also { arbeidssokerperiode ->
+                    paaVegneAvProducer.send(
+                        PaaVegneAvStartMelding(
+                            kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
+                            arbeidssokerperiodeId = arbeidssokerperiode.id!!,
+                            arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
+                            graceMS = 86400 * 1000,
+                        ),
+                    )
+                    log.info(
+                        "Sendt PaaVegneAvStartMelding for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                    )
+                }
+        }
+    }
+
+    @Scheduled(initialDelay = 8, fixedDelay = 86400, timeUnit = TimeUnit.MINUTES)
     fun sendPaaVegneAvStoppMeldingForEnkeltbruker() {
         if (environmentToggles.erProduksjon()) {
             arbeidssokerperiodeRepository
