@@ -46,7 +46,7 @@ class SykepengesoknadService(
                             kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
                             arbeidssokerperiodeId = arbeidssokerperiode.id!!,
                             arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-                            graceMS = 86400 * 1000,
+                            graceMS = FJORDEN_DAGER,
                         ),
                     )
                     log.info(
