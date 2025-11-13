@@ -11,7 +11,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -19,7 +18,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -34,47 +32,6 @@ class SykepengesoknadService(
     private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 4, fixedDelay = 86400, timeUnit = TimeUnit.MINUTES)
-    fun sendPaaVegneAvStartEnkeltbruker() {
-        if (environmentToggles.erProduksjon()) {
-            arbeidssokerperiodeRepository
-                .findByVedtaksperiodeId("9e5d8199-2685-4048-b69b-b467cee90353")!!
-                .also { arbeidssokerperiode ->
-                    paaVegneAvProducer.send(
-                        PaaVegneAvStartMelding(
-                            kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-                            arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                            arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-                            graceMS = FJORDEN_DAGER,
-                        ),
-                    )
-                    log.info(
-                        "Sendt PaaVegneAvStartMelding for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
-                    )
-                }
-        }
-    }
-
-    @Scheduled(initialDelay = 8, fixedDelay = 86400, timeUnit = TimeUnit.MINUTES)
-    fun sendPaaVegneAvStoppMeldingForEnkeltbruker() {
-        if (environmentToggles.erProduksjon()) {
-            arbeidssokerperiodeRepository
-                .findByVedtaksperiodeId("9e5d8199-2685-4048-b69b-b467cee90353")!!
-                .also { arbeidssokerperiode ->
-                    paaVegneAvProducer.sendFristBrutt(
-                        PaaVegneAvStoppMelding(
-                            kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-                            arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                            arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-                        ),
-                    )
-                    log.info(
-                        "Sendt PaaVegneAvStoppMelding for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
-                    )
-                }
-        }
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
@@ -201,8 +158,8 @@ class SykepengesoknadService(
             ),
         )
 
-        // Vi sender PaaVegneAvStoppMelding hvis søknaden er siste i perioden eller bruker har svart at hen ikke vil
-        // fortsette å være Friskmeldt til Arbeidsformidling. Vi frasier oss da ansvaret for innsending av
+        // Sender PaaVegneAvStoppMelding hvis søknaden er siste i perioden eller bruker har svart at hen ikke vil
+        // fortsette å være Friskmeldt til Arbeidsformidling. Applikasjonen sier da fra seg ansvaret for innsending av
         // Periodebekreftelser, men melder ikke bruker ut av Arbeidssøkerregisteret.
         if (erAvsluttendeSoknad || soknad.fortsattArbeidssoker == false) {
             val avsluttetAarsak = if (erAvsluttendeSoknad) AvsluttetAarsak.AVSLUTTET_PERIODE else AvsluttetAarsak.BRUKER
