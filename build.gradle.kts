@@ -33,7 +33,7 @@ ext["okhttp3"] = "4.12" // Token-support tester trenger MockWebServer.
 
 val tokenSupportVersion = "5.0.37"
 val testContainersVersion = "2.0.2"
-val logstashLogbackEncoderVersion = "8.1"
+val logstashLogbackEncoderVersion = "9.0"
 val kluentVersion = "1.73"
 val confluentVersion = "8.1.0"
 val avroVersion = "1.12.1"
