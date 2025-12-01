@@ -39,8 +39,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.kafka.KafkaContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.Duration
 import java.time.Instant
@@ -178,7 +178,7 @@ abstract class FellesTestOppsett {
             .toList()
 }
 
-private class PostgreSQLContainer17 : PostgreSQLContainer<PostgreSQLContainer17>("postgres:17-alpine")
+private class PostgreSQLContainer17 : PostgreSQLContainer("postgres:17-alpine")
 
 private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
     createMockResponse().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
