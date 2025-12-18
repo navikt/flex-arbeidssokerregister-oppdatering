@@ -35,6 +35,10 @@ class SykepengesoknadService(
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
+        if (soknad.fnr == "65870075396") {
+            log.info("Mottok publisert søknad ${soknad.id} med status ${soknad.status}")
+        }
+
         when {
             soknad.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(soknad)
 
