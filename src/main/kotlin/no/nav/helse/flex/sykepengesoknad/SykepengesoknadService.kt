@@ -11,7 +11,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -19,7 +18,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -34,14 +32,6 @@ class SykepengesoknadService(
     private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 3, fixedDelay = 3600, timeUnit = TimeUnit.MINUTES)
-    fun slettArbeidssokerperiode() {
-        listOf("e8a2b2fa-de87-4381-b674-973bdefb4dd0", "c7c68aa6-3460-460b-9b84-5da05d73a043").forEach {
-            arbeidssokerperiodeRepository.deleteById(it)
-            log.info("Slettet arbeidssokerperiode med id: $it.")
-        }
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
