@@ -42,7 +42,7 @@ val arbeidssokerregisteretSchemaVersion = "1.25.03.10.2-1"
 val bekreftelsesmeldingSchemaVersion = "1.25.03.26.32-1"
 val bekreftelsePaaVegneAvSchemaVersion = "1.25.03.26.32-1"
 
-val opentelemetryApiVersion = "1.57.0"
+val opentelemetryApiVersion = "1.58.0"
 val opentelemetryInstrumentationVersion = "2.23.0"
 
 dependencies {
