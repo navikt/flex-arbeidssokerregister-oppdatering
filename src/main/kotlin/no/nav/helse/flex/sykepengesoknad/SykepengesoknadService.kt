@@ -45,7 +45,7 @@ class SykepengesoknadService(
                     arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
                 ),
             )
-            arbeidssokerperiodeRepository.delete(arbeidssokerperiode)
+            arbeidssokerperiodeRepository.deleteById(arbeidssokerperiodeId)
             log.info("Slettet arbeidssøkerperiode: $arbeidssokerperiodeId.")
         } else {
             log.warn("Fant ikke arbeidssøkerperiode: $arbeidssokerperiodeId for sletting.")
