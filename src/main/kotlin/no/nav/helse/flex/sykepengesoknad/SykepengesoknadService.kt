@@ -1,6 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
@@ -10,7 +11,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -18,7 +18,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -30,27 +29,9 @@ class SykepengesoknadService(
     private val periodebekreftelseRepository: PeriodebekreftelseRepository,
     private val paaVegneAvProducer: ArbeidssokerperiodePaaVegneAvProducer,
     private val bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer,
+    private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 4, fixedDelay = 86_400, timeUnit = TimeUnit.MINUTES)
-    fun slettArbeidssokerperiode() {
-        val arbeidssokerperiodeId = "44e17be4-5633-4e73-affc-22f14c03eb3e"
-        val arbeidssokerperiode = arbeidssokerperiodeRepository.findById(arbeidssokerperiodeId).orElse(null)
-        if (arbeidssokerperiode != null) {
-            paaVegneAvProducer.send(
-                PaaVegneAvStoppMelding(
-                    kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-                    arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                    arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-                ),
-            )
-            arbeidssokerperiodeRepository.deleteById(arbeidssokerperiodeId)
-            log.info("Slettet arbeidssøkerperiode: $arbeidssokerperiodeId.")
-        } else {
-            log.warn("Fant ikke arbeidssøkerperiode: $arbeidssokerperiodeId for sletting.")
-        }
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
