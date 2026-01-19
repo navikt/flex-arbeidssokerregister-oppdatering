@@ -35,7 +35,7 @@ class SykepengesoknadService(
 
     @Scheduled(initialDelay = 4, fixedDelay = 86_400, timeUnit = TimeUnit.MINUTES)
     fun slettArbeidssokerperiode() {
-        val arbeidssokerperiodeId = "d12f2c6f-3e9c-4aa5-95c4-70205a36d1f0"
+        val arbeidssokerperiodeId = "44e17be4-5633-4e73-affc-22f14c03eb3e"
         val arbeidssokerperiode = arbeidssokerperiodeRepository.findById(arbeidssokerperiodeId).orElse(null)
         if (arbeidssokerperiode != null) {
             paaVegneAvProducer.send(
