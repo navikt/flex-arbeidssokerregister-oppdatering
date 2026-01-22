@@ -40,7 +40,7 @@ class SykepengesoknadService(
 
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
 
-            soknad.erUtgattSoknad() -> behandleUtgattSoknad(soknad)
+            soknad.erUtgaattFriskTilArbeidSoknad() -> behandleUtgattSoknad(soknad)
         }
     }
 
@@ -161,8 +161,8 @@ class SykepengesoknadService(
         )
 
         // Sender PaaVegneAvStoppMelding hvis søknaden er siste i perioden eller bruker har svart at hen ikke vil
-        // fortsette å være Friskmeldt til Arbeidsformidling. Applikasjonen disse fra seg ansvaret for innsending av
-        // Periodebekreftelser, men melder ikke bruker ut av Arbeidssøkerregisteret.
+        // fortsette å være Friskmeldt til Arbeidsformidling. Applikasjonen sier da fra fra seg ansvaret for
+        // innsending av Periodebekreftelser, men melder ikke bruker ut av Arbeidssøkerregisteret.
         if (erAvsluttendeSoknad || soknad.fortsattArbeidssoker == false) {
             val avsluttetAarsak = if (erAvsluttendeSoknad) AvsluttetAarsak.AVSLUTTET_PERIODE else AvsluttetAarsak.BRUKER
             arbeidssokerperiode.lagreAvsluttetAarsak(avsluttetAarsak)
@@ -233,7 +233,7 @@ class SykepengesoknadService(
     private fun SykepengesoknadDTO.erSendtFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.SENDT
 
-    private fun SykepengesoknadDTO.erUtgattSoknad() =
+    private fun SykepengesoknadDTO.erUtgaattFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.UTGAATT
 
     private fun Arbeidssokerperiode.lagreAvsluttetAarsak(avsluttetAarsak: AvsluttetAarsak) {
