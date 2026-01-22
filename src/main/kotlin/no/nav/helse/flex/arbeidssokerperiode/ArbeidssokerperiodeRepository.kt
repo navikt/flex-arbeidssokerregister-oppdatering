@@ -39,4 +39,5 @@ data class Arbeidssokerperiode(
 enum class AvsluttetAarsak {
     BRUKER,
     AVSLUTTET_PERIODE,
+    UTGAATT,
 }
