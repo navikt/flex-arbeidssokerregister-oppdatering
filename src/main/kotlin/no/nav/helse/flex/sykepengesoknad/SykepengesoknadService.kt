@@ -184,11 +184,9 @@ class SykepengesoknadService(
             .findByFnr(soknad.fnr)
             ?.filter { it.sendtAvsluttet == null && it.avsluttetAarsak != AvsluttetAarsak.UTGAATT }
             ?.forEach {
-                // Om lagring av avsluttende årsak skulle feile er det uproblematisk at det sendes PaaVegneAvStoppMelding flere ganger.
+                it.lagreAvsluttetAarsak(AvsluttetAarsak.UTGAATT)
                 sendPaaVegneAvStoppMelding(it)
                 log.info("Sendte PaaVegneAvStoppMelding for arbeidssøkerperiode: ${it.id} grunnet UTGATT søknad: ${soknad.id}.")
-
-                it.lagreAvsluttetAarsak(AvsluttetAarsak.UTGAATT)
             }
     }
 
