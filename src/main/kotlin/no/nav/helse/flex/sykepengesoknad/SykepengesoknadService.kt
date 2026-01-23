@@ -39,6 +39,8 @@ class SykepengesoknadService(
             soknad.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(soknad)
 
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
+
+            soknad.erUtgaattFriskTilArbeidSoknad() -> behandleUtgattSoknad(soknad)
         }
     }
 
@@ -159,8 +161,8 @@ class SykepengesoknadService(
         )
 
         // Sender PaaVegneAvStoppMelding hvis søknaden er siste i perioden eller bruker har svart at hen ikke vil
-        // fortsette å være Friskmeldt til Arbeidsformidling. Applikasjonen sier da fra seg ansvaret for innsending av
-        // Periodebekreftelser, men melder ikke bruker ut av Arbeidssøkerregisteret.
+        // fortsette å være Friskmeldt til Arbeidsformidling. Applikasjonen sier da fra fra seg ansvaret for
+        // innsending av Periodebekreftelser, men melder ikke bruker ut av Arbeidssøkerregisteret.
         if (erAvsluttendeSoknad || soknad.fortsattArbeidssoker == false) {
             val avsluttetAarsak = if (erAvsluttendeSoknad) AvsluttetAarsak.AVSLUTTET_PERIODE else AvsluttetAarsak.BRUKER
             arbeidssokerperiode.lagreAvsluttetAarsak(avsluttetAarsak)
@@ -175,6 +177,17 @@ class SykepengesoknadService(
                 "arbeidssøkerperiode: ${arbeidssokerperiode.id} og periode i " +
                 "arbeidssøkerregisteret: ${arbeidssokerperiode.arbeidssokerperiodeId}.",
         )
+    }
+
+    private fun behandleUtgattSoknad(soknad: SykepengesoknadDTO) {
+        arbeidssokerperiodeRepository
+            .findByFnr(soknad.fnr)
+            ?.filter { it.sendtAvsluttet == null && it.avsluttetAarsak != AvsluttetAarsak.UTGAATT }
+            ?.forEach {
+                it.lagreAvsluttetAarsak(AvsluttetAarsak.UTGAATT)
+                sendPaaVegneAvStoppMelding(it)
+                log.info("Sendte PaaVegneAvStoppMelding for arbeidssøkerperiode: ${it.id} grunnet UTGATT søknad: ${soknad.id}.")
+            }
     }
 
     private fun sendBekreftelseMelding(
@@ -217,6 +230,9 @@ class SykepengesoknadService(
 
     private fun SykepengesoknadDTO.erSendtFriskTilArbeidSoknad() =
         type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.SENDT
+
+    private fun SykepengesoknadDTO.erUtgaattFriskTilArbeidSoknad() =
+        type == SoknadstypeDTO.FRISKMELDT_TIL_ARBEIDSFORMIDLING && status == SoknadsstatusDTO.UTGAATT
 
     private fun Arbeidssokerperiode.lagreAvsluttetAarsak(avsluttetAarsak: AvsluttetAarsak) {
         arbeidssokerperiodeRepository.save(
