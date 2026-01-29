@@ -11,7 +11,6 @@ import no.nav.helse.flex.objectMapper
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -19,7 +18,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 
 const val SOKNAD_DEAKTIVERES_ETTER_MAANEDER = 4
 
@@ -34,26 +32,6 @@ class SykepengesoknadService(
     private val environmentToggles: EnvironmentToggles,
 ) {
     private val log = logger()
-
-    @Scheduled(initialDelay = 4, fixedDelay = 86_400, timeUnit = TimeUnit.MINUTES)
-    fun slettArbeidssokerperiode() {
-        listOf("87cf55e9-3839-4573-842a-8a43893ff444").forEach {
-            val arbeidssokerperiode = arbeidssokerperiodeRepository.findById(it).orElse(null)
-            if (arbeidssokerperiode != null) {
-                paaVegneAvProducer.send(
-                    PaaVegneAvStoppMelding(
-                        kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-                        arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                        arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-                    ),
-                )
-                arbeidssokerperiodeRepository.deleteById(arbeidssokerperiode.id)
-                log.info("Slettet arbeidssøkerperiode: $it.")
-            } else {
-                log.warn("Fant ikke arbeidssøkerperiode: $it for sletting.")
-            }
-        }
-    }
 
     @Transactional
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
