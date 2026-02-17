@@ -224,7 +224,7 @@ fun lagSoknad(
         inntektUnderveis = inntektUnderveis,
     )
 
-infix fun Instant.`should be within seconds of`(pair: Pair<Int, Instant>) = this.shouldBeWithinSecondsOf(pair.first.toInt() to pair.second)
+infix fun Instant.`should be within seconds of`(pair: Pair<Int, Instant>) = this.shouldBeWithinSecondsOf(pair.first to pair.second)
 
 infix fun Instant.shouldBeWithinSecondsOf(pair: Pair<Int, Instant>) {
     val (seconds, other) = pair

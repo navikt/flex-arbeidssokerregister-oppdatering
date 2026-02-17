@@ -37,7 +37,7 @@ class ArbeidssokerperiodeBekreftelseProducer(
             "BekreftelseMelding",
             Attributes.of(
                 AttributeKey.stringKey("periodeId"),
-                bekreftelseMelding.arbeidssokerregisterPeriodeId.toString(),
+                bekreftelseMelding.arbeidssokerregisterPeriodeId,
                 AttributeKey.stringKey("fortsattArbeidssoker"),
                 bekreftelseMelding.fortsattArbeidssoker.toString(),
                 AttributeKey.stringKey("inntektUnderveis"),
