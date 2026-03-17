@@ -37,9 +37,7 @@ class SykepengesoknadService(
     fun behandleSoknad(soknad: SykepengesoknadDTO) {
         when {
             soknad.erFremtidigFriskTilArbeidSoknad() -> behandleVedtaksperiode(soknad)
-
             soknad.erSendtFriskTilArbeidSoknad() -> behandleBekreftelse(soknad)
-
             soknad.erUtgaattFriskTilArbeidSoknad() -> behandleUtgattSoknad(soknad)
         }
     }
