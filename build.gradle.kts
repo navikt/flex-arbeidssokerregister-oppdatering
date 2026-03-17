@@ -7,7 +7,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     kotlin("plugin.spring") version "2.3.10"
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.3.20"
 }
 
 group = "no.nav.helse.flex"
