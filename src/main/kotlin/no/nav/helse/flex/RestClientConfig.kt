@@ -7,6 +7,7 @@ import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
 import org.apache.hc.client5.http.config.RequestConfig
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager
+import org.apache.hc.core5.util.TimeValue
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,7 +15,6 @@ import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
-import org.apache.hc.core5.util.TimeValue
 import org.springframework.web.client.RestClient
 
 const val REST_CLIENT_CONNECT_TIMEOUT = 5L
