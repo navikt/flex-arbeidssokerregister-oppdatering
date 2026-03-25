@@ -7,7 +7,7 @@ import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
 import org.apache.hc.client5.http.config.RequestConfig
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager
-import org.apache.hc.core5.util.TimeValue
+import org.apache.hc.core5.util.Timeout
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -68,8 +68,8 @@ class RestClientConfig {
         val requestConfig =
             RequestConfig
                 .custom()
-                .setConnectTimeout(TimeValue.ofSeconds(connectTimeout))
-                .setResponseTimeout(TimeValue.ofSeconds(readTimeout))
+                .setConnectTimeout(Timeout.ofSeconds(connectTimeout))
+                .setResponseTimeout(Timeout.ofSeconds(readTimeout))
                 .build()
 
         val httpClient =
