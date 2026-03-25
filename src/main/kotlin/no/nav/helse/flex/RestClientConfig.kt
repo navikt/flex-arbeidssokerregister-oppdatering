@@ -14,8 +14,8 @@ import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.apache.hc.core5.util.TimeValue
 import org.springframework.web.client.RestClient
-import java.util.concurrent.TimeUnit
 
 const val REST_CLIENT_CONNECT_TIMEOUT = 5L
 const val REST_CLIENT_API_READ_TIMEOUT = 10L
@@ -68,8 +68,8 @@ class RestClientConfig {
         val requestConfig =
             RequestConfig
                 .custom()
-                .setConnectTimeout(connectTimeout, TimeUnit.SECONDS)
-                .setResponseTimeout(readTimeout, TimeUnit.SECONDS)
+                .setConnectTimeout(TimeValue.ofSeconds(connectTimeout))
+                .setResponseTimeout(TimeValue.ofSeconds(readTimeout))
                 .build()
 
         val httpClient =
