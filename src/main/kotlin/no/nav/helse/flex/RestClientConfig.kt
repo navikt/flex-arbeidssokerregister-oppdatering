@@ -4,8 +4,10 @@ import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
+import org.apache.hc.client5.http.config.RequestConfig
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager
+import org.apache.hc.core5.util.Timeout
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,7 +16,6 @@ import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestClient
-import java.time.Duration
 
 const val REST_CLIENT_CONNECT_TIMEOUT = 5L
 const val REST_CLIENT_API_READ_TIMEOUT = 10L
@@ -64,17 +65,21 @@ class RestClientConfig {
                 defaultMaxPerRoute = 10
             }
 
+        val requestConfig =
+            RequestConfig
+                .custom()
+                .setConnectTimeout(Timeout.ofSeconds(connectTimeout))
+                .setResponseTimeout(Timeout.ofSeconds(readTimeout))
+                .build()
+
         val httpClient =
             HttpClientBuilder
                 .create()
                 .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
                 .build()
 
-        val requestFactory =
-            HttpComponentsClientHttpRequestFactory(httpClient).apply {
-                setConnectTimeout(Duration.ofSeconds(connectTimeout))
-                setReadTimeout(Duration.ofSeconds(readTimeout))
-            }
+        val requestFactory = HttpComponentsClientHttpRequestFactory(httpClient)
 
         return RestClient
             .builder()
