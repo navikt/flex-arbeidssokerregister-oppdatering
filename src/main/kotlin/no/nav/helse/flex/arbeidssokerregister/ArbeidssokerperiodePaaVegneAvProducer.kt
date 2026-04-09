@@ -57,6 +57,13 @@ class ArbeidssokerperiodePaaVegneAvProducer(
     fun send(paaVegneAvMelding: PaaVegneAvStoppMelding) {
         val kafkaKey = paaVegneAvMelding.kafkaKey
 
+        if (paaVegneAvMelding.arbeidssokerperiodeId == "5dc4bf9d-b758-48ce-9ac8-290056b77389") {
+            log.info(
+                "paaVegneAvMelding.arbeidssokerregisterPeriodeId = {}",
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId,
+            )
+        }
+
         val paaVegneAv =
             PaaVegneAv(
                 UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
