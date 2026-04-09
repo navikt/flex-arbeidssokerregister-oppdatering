@@ -60,13 +60,13 @@ class ArbeidssokerperiodePaaVegneAvProducer(
         if (paaVegneAvMelding.arbeidssokerperiodeId == "5dc4bf9d-b758-48ce-9ac8-290056b77389") {
             log.info(
                 "paaVegneAvMelding.arbeidssokerregisterPeriodeId = {}",
-                paaVegneAvMelding.arbeidssokerregisterPeriodeId,
+                paaVegneAvMelding.arbeidssokerregisterPeriodeId.trim(),
             )
         }
 
         val paaVegneAv =
             PaaVegneAv(
-                UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId),
+                UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId.trim()),
                 Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
                 Stopp(),
             )
