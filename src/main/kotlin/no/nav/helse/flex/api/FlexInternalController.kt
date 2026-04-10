@@ -72,7 +72,7 @@ class FlexInternalController(
                 .orElse(null) ?: return ResponseEntity.notFound().build()
 
         val oppdatertArbeidssokerperiode =
-            arbeidssokerperiode.copy(arbeidssokerperiodeId = request.arbeidssokerperiodeId).also {
+            arbeidssokerperiode.copy(arbeidssokerperiodeId = request.arbeidssokerperiodeId.trim()).also {
                 arbeidssokerperiodeRepository.save(it)
             }
 
