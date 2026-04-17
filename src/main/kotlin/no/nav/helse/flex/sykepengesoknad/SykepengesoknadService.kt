@@ -139,11 +139,6 @@ class SykepengesoknadService(
         val erAvsluttendeSoknad = arbeidssokerperiode.vedtaksperiodeTom.isEqual(soknad.tom)
 
         if (!erAvsluttendeSoknad && soknad.fortsattArbeidssoker == null) {
-            if (soknad.id == "8933516c-5675-34a8-b406-eacfce21a713") {
-                log.warn("Søknad med id ${soknad.id} har manglende fortsattArbeidssoker, men kaster ikke feil.")
-                return
-            }
-
             throw PeriodebekreftelseException(
                 "Mangler verdi for fortsattArbeidssoker i søknad: ${soknad.id} med " +
                     "vedtaksperiode: ${soknad.friskTilArbeidVedtakId} og " +
