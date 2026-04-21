@@ -183,6 +183,34 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
+    fun `Oppdaterer vedtaksperiodeFom for en arbeidssokerperiode`() {
+        val initialFomDate = LocalDate.now().minusMonths(2)
+        val newFomDate = LocalDate.now().minusMonths(3)
+
+        val lagretArbeidssokerperiode =
+            arbeidssokerperiodeRepository.save(
+                Arbeidssokerperiode(
+                    fnr = FNR,
+                    vedtaksperiodeId = vedtaksperiodeId,
+                    vedtaksperiodeFom = initialFomDate,
+                    vedtaksperiodeTom = LocalDate.now().plusMonths(1),
+                    opprettet = Instant.now(),
+                ),
+            )
+
+        oppdaterArbeidssokerperiodeFom(
+            OppdatertVedtaksperiodeFomRequest(
+                id = lagretArbeidssokerperiode.id!!,
+                vedtaksperiodeFom = newFomDate,
+            ),
+        )
+
+        arbeidssokerperiodeRepository.findById(lagretArbeidssokerperiode.id).get().also {
+            it.vedtaksperiodeFom `should be equal to` newFomDate
+        }
+    }
+
+    @Test
     fun `Returnerer 404 når arbeidssokerperiode ikke finnes`() {
         val nonExistentId = UUID.randomUUID().toString()
         val updateRequest =
@@ -195,6 +223,27 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
             .perform(
                 MockMvcRequestBuilders
                     .put("/api/v1/flex/arbeidssokerperioder/oppdater-tom")
+                    .header(
+                        "Authorization",
+                        "Bearer ${skapAzureJwt("flex-internal-frontend-client-id", "99999999999")}",
+                    ).contentType(MediaType.APPLICATION_JSON)
+                    .content(updateRequest.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    @Test
+    fun `Returnerer 404 når arbeidssokerperiode ikke finnes ved oppdatering av vedtaksperiodeFom`() {
+        val nonExistentId = UUID.randomUUID().toString()
+        val updateRequest =
+            OppdatertVedtaksperiodeFomRequest(
+                id = nonExistentId,
+                vedtaksperiodeFom = LocalDate.now().minusMonths(3),
+            )
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/flex/arbeidssokerperioder/oppdater-fom")
                     .header(
                         "Authorization",
                         "Bearer ${skapAzureJwt("flex-internal-frontend-client-id", "99999999999")}",
@@ -273,6 +322,19 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
             .perform(
                 MockMvcRequestBuilders
                     .put("/api/v1/flex/arbeidssokerperioder/oppdater-tom")
+                    .header(
+                        "Authorization",
+                        "Bearer ${skapAzureJwt("flex-internal-frontend-client-id", "99999999999")}",
+                    ).contentType(MediaType.APPLICATION_JSON)
+                    .content(request.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isNoContent)
+    }
+
+    private fun oppdaterArbeidssokerperiodeFom(request: OppdatertVedtaksperiodeFomRequest) {
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .put("/api/v1/flex/arbeidssokerperioder/oppdater-fom")
                     .header(
                         "Authorization",
                         "Bearer ${skapAzureJwt("flex-internal-frontend-client-id", "99999999999")}",

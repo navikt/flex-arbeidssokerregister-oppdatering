@@ -60,6 +60,24 @@ class FlexInternalController(
         return ResponseEntity.noContent().build()
     }
 
+    @PutMapping("/arbeidssokerperioder/oppdater-fom")
+    fun updateVedtaksperiodeFom(
+        @RequestBody request: OppdatertVedtaksperiodeFomRequest,
+    ): ResponseEntity<Void> {
+        validerFlexInternalClient()
+
+        val arbeidssokerperiode =
+            arbeidssokerperiodeRepository
+                .findById(request.id)
+                .orElse(null) ?: return ResponseEntity.notFound().build()
+
+        arbeidssokerperiode.copy(vedtaksperiodeFom = request.vedtaksperiodeFom).also {
+            arbeidssokerperiodeRepository.save(it)
+        }
+
+        return ResponseEntity.noContent().build()
+    }
+
     @PutMapping("/arbeidssokerperioder/oppdater-arbeidssokerperiode-id")
     fun updateArbeidssokerperiodeId(
         @RequestBody request: OppdaterArbeidssokerperiodeIdRequest,
@@ -106,6 +124,11 @@ data class FlexInternalRequest(
 data class OppdatertVedtaksperiodeTomRequest(
     val id: String,
     val vedtaksperiodeTom: LocalDate,
+)
+
+data class OppdatertVedtaksperiodeFomRequest(
+    val id: String,
+    val vedtaksperiodeFom: LocalDate,
 )
 
 data class OppdaterArbeidssokerperiodeIdRequest(
