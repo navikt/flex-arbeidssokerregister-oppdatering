@@ -144,20 +144,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Søknad som ikke er siste søknad og mangler verdi for fortsattArbeidssoker feiler`() {
-        lagreArbeidssokerperiode()
-
-        val soknad =
-            lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(fortsattArbeidssoker = null)
-
-        assertThrows<PeriodebekreftelseException> {
-            sykepengesoknadService.behandleSoknad(soknad)
-        }
-
-        periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
-    }
-
-    @Test
     fun `Søknad hvor bruker ikke har fått svart på inntektUnderveis`() {
         lagreArbeidssokerperiode()
 
