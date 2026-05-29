@@ -142,7 +142,7 @@ class SykepengesoknadService(
             log.warn(
                 "Mangler verdi for fortsattArbeidssoker i søknad: ${soknad.id} med soknad.tom: ${soknad.tom}, " +
                     "vedtaksperiode: ${soknad.friskTilArbeidVedtakId} og arbeidssokerperiode: ${arbeidssokerperiode.id} " +
-                    "med vedtaksperiode.tom: ${{ arbeidssokerperiode.vedtaksperiodeTom }}. Verdien skal kun mangle på " +
+                    "med vedtaksperiode.tom: ${arbeidssokerperiode.vedtaksperiodeTom}. Verdien skal kun mangle på " +
                     "siste søknad i perioden, men dette kan endre seg ved korrigeriner av perioden.",
             )
         }
