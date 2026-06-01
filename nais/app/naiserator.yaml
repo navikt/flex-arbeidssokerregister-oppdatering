@@ -65,6 +65,10 @@ spec:
         flags:
           - name: cloudsql.logical_decoding
             value: "on"
+        {{#each db_flags}}
+          - name: {{@key}}
+            value: "{{this}}"
+        {{/each}}
   accessPolicy:
     inbound:
       rules:
