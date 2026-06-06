@@ -104,15 +104,15 @@ class TestKafkaConfig(
     fun arbeidssokerperiodeStoppConsumer() = lagConsumer("arbeidssokerperiodestopp-consumer")
 
     @Bean
-    fun <T> arbeidssokerperiodeConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
+    fun <T : Any> arbeidssokerperiodeConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
         lagAvroConsumer(mockSchemaRegistryClient, "arbeidssokerperiode-consumer")
 
     @Bean
-    fun <T> bekreftelseConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
+    fun <T : Any> bekreftelseConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
         lagAvroConsumer(mockSchemaRegistryClient, "bekreftelse-consumer")
 
     @Bean
-    fun <T> paaVegneAvConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
+    fun <T : Any> paaVegneAvConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
         lagAvroConsumer(mockSchemaRegistryClient, "paavegneav-consumer")
 
     @Bean
@@ -125,7 +125,7 @@ class TestKafkaConfig(
 
     // Brukes både i tester og som Producer i klassene som testes sånn at MockSchemaRegistryClient brukes.
     @Bean("avroKafkaProducer")
-    fun <T> avroKafkaProducer(mockSchemaRegistryClient: MockSchemaRegistryClient): Producer<Long, T> {
+    fun <T : Any> avroKafkaProducer(mockSchemaRegistryClient: MockSchemaRegistryClient): Producer<Long, T> {
         @Suppress("UNCHECKED_CAST")
         return DefaultKafkaProducerFactory(
             mapOf(
@@ -139,17 +139,17 @@ class TestKafkaConfig(
 
     // Erstatter ConcurrentKafkaListenerContainerFactory i klassene som testes sånn at MockSchemaRegistryClient brukes.
     @Bean("avroKafkaListenerContainerFactory")
-    fun <T> avroKafkaListenerContainerFactory(
+    fun avroKafkaListenerContainerFactory(
         kafkaErrorHandler: KafkaErrorHandler,
         mockSchemaRegistryClient: MockSchemaRegistryClient,
-    ) = ConcurrentKafkaListenerContainerFactory<Long, T>().also {
-        @Suppress("UNCHECKED_CAST")
-        it.consumerFactory =
+    ) = ConcurrentKafkaListenerContainerFactory<Long, Any>().also {
+        it.setConsumerFactory(
             DefaultKafkaConsumerFactory(
                 lagAvroDeserializerConfig(),
                 LongDeserializer(),
-                KafkaAvroDeserializer(mockSchemaRegistryClient) as Deserializer<T>,
-            )
+                KafkaAvroDeserializer(mockSchemaRegistryClient) as Deserializer<Any>,
+            ),
+        )
         it.setCommonErrorHandler(kafkaErrorHandler)
         it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
     }
@@ -163,12 +163,12 @@ class TestKafkaConfig(
             StringDeserializer(),
         ).createConsumer()
 
-    private fun <T> lagAvroConsumer(
+    private fun <T : Any> lagAvroConsumer(
         mockSchemaRegistryClient: MockSchemaRegistryClient,
         groupId: String,
     ) = lagAvroConsumerFactory<T>(mockSchemaRegistryClient, lagAvroDeserializerConfig(groupId)).createConsumer()
 
-    private fun <T> lagAvroConsumerFactory(
+    private fun <T : Any> lagAvroConsumerFactory(
         mockSchemaRegistryClient: MockSchemaRegistryClient,
         avroDeserializerConfig: Map<String, Any>,
     ) = DefaultKafkaConsumerFactory(
