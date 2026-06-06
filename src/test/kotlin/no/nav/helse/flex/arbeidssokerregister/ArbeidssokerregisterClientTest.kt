@@ -1,8 +1,8 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import mockwebserver3.MockResponse
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
-import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -14,7 +14,7 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
             """[{"periodeId":"ec135a7e-f694-48fe-a65d-336fe7f923b1","startet":{"tidspunkt":"2025-01-01T00:00:00.000Z","utfoertAv":{"type":"SLUTTBRUKER","id":"11111111111"},"kilde":"paw-arbeidssokerregisteret-api-inngang","aarsak":"Test","tidspunktFraKilde":null},"avsluttet":null}]"""
 
         arbeidssokerperiodeMockWebServer.enqueue(
-            MockResponse().setBody(periode),
+            MockResponse.Builder().body(periode).build(),
         )
 
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR)).single().also {
@@ -26,7 +26,7 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
 
         arbeidssokerperiodeMockWebServer.takeRequest().also {
             it.method `should be equal to` "POST"
-            it.path `should be equal to` "/api/v1/veileder/arbeidssoekerperioder?siste=true"
+            it.target `should be equal to` "/api/v1/veileder/arbeidssoekerperioder?siste=true"
             it.headers["Authorization"]!!.startsWith("Bearer") `should be equal to` true
         }
     }
@@ -37,8 +37,10 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
             """[{"periodeId":"04a78565-a5ae-43ee-8e44-42893060995a","startet":{"tidspunkt":"2025-01-01T00:00:00.000Z","utfoertAv":{"type":"SLUTTBRUKER","id":"11111111111"},"kilde":"paw-arbeidssokerregisteret-api-inngang","aarsak":"Test","tidspunktFraKilde":null},"avsluttet":{"tidspunkt":"2025-02-02T00:00:00.000Z","utfoertAv":{"type":"SYSTEM","id":"paw-arbeidssoekerregisteret-bekreftelse-utgang"},"kilde":"paw.arbeidssoekerregisteret.bekreftelse-utgang","aarsak":"Utløpt","tidspunktFraKilde":null}}]"""
 
         val mockResponse =
-            MockResponse()
-                .setBody(periode)
+            MockResponse
+                .Builder()
+                .body(periode)
+                .build()
         arbeidssokerperiodeMockWebServer.enqueue(mockResponse)
 
         val response =

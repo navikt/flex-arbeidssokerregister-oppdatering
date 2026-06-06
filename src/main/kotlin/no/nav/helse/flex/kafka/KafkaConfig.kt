@@ -93,7 +93,7 @@ class KafkaConfig(
                     ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
                 ) + consumerConfig + brokerConfig + securityConfig
 
-            it.consumerFactory = DefaultKafkaConsumerFactory(consumerConfig)
+            it.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfig))
             it.setCommonErrorHandler(kafkaErrorHandler)
             it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
         }
@@ -111,7 +111,7 @@ class KafkaConfig(
     @Bean("avroKafkaListenerContainerFactory")
     @ConditionalOnMissingBean(name = ["avroKafkaListenerContainerFactory"])
     fun <T> avroKafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler) =
-        ConcurrentKafkaListenerContainerFactory<Long, T>().also {
+        ConcurrentKafkaListenerContainerFactory<Long, Any>().also {
             val consumerConfig =
                 mapOf(
                     ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to LongDeserializer::class.java,
@@ -119,7 +119,7 @@ class KafkaConfig(
                     KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG to true,
                 ) + consumerConfig + brokerConfig + securityConfig + schemaRegistryConfig
 
-            it.consumerFactory = DefaultKafkaConsumerFactory(consumerConfig)
+            it.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfig))
             it.setCommonErrorHandler(kafkaErrorHandler)
             it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
         }
@@ -127,8 +127,8 @@ class KafkaConfig(
     // Navngir for å hjelpe Spring med mathcing siden vi bruker generiske parametere.
     @Bean("avroKafkaProducer")
     @ConditionalOnMissingBean(name = ["avroKafkaProducer"])
-    fun <T> avroKafkaProducer(): Producer<Long, T> =
-        DefaultKafkaProducerFactory<Long, T>(
+    fun <T> avroKafkaProducer(): Producer<Long, Any> =
+        DefaultKafkaProducerFactory<Long, Any>(
             mapOf(
                 KEY_SERIALIZER_CLASS_CONFIG to LongSerializer::class.java,
                 VALUE_SERIALIZER_CLASS_CONFIG to KafkaAvroSerializer::class.java,

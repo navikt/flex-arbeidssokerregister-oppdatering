@@ -1,5 +1,6 @@
 package no.nav.helse.flex.sykepengesoknad
 
+import mockwebserver3.MockResponse
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
@@ -14,7 +15,6 @@ import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
-import okhttp3.mockwebserver.MockResponse
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.amshove.kluent.shouldHaveSize
@@ -52,11 +52,11 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         val arbeidssokerperiodeId = UUID.randomUUID().toString()
 
         kafkaKeyGeneratorMockWebServer.enqueue(
-            MockResponse().setBody(KafkaKeyGeneratorResponse(1000L).serialisertTilString()),
+            MockResponse.Builder().body(KafkaKeyGeneratorResponse(1000L).serialisertTilString()).build(),
         )
 
         arbeidssokerperiodeMockWebServer.enqueue(
-            MockResponse().setBody(lagArbeidsokerperiodeResponse(arbeidssokerperiodeId).serialisertTilString()),
+            MockResponse.Builder().body(lagArbeidsokerperiodeResponse(arbeidssokerperiodeId).serialisertTilString()).build(),
         )
 
         sykepengesoknadService.behandleSoknad(soknad)

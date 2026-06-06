@@ -1,6 +1,5 @@
 package no.nav.helse.flex.sykepengesoknad
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
@@ -11,6 +10,7 @@ import no.nav.helse.flex.serialisertTilString
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 import java.util.*
 
