@@ -40,7 +40,7 @@ val avroVersion = "1.12.1"
 val sykepengesoknadKafkaVersion = "2026.07.28-13.22-138bf702"
 val arbeidssokerregisteretSchemaVersion = "1.25.03.10.2-1"
 val bekreftelsesmeldingSchemaVersion = "1.25.03.26.32-1"
-val bekreftelsePaaVegneAvSchemaVersion = "1.25.03.26.32-1"
+val bekreftelsePaaVegneAvSchemaVersion = "1.26.05.04.35-1"
 
 val opentelemetryApiVersion = "1.64.0"
 val opentelemetryInstrumentationVersion = "2.30.0"
