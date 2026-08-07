@@ -1,0 +1,1 @@
+SELECT PG_DROP_REPLICATION_SLOT('flex_arbeidssokerregister_oppdatering_replication') FROM pg_replication_slots;
