@@ -1,0 +1,1 @@
+DROP PUBLICATION flex_arbeidssokerregister_oppdatering_publication;
