@@ -57,8 +57,6 @@ spec:
         databases:
           - name: flex-arbeidssokerregister-oppdatering-db
             envVarPrefix: DB
-            users:
-              - name: bigquery-datastream
         maintenance:
           day: 2
           hour: 2
