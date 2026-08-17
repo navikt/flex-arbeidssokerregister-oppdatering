@@ -29,7 +29,7 @@ val schema: Configuration by configurations.creating {
     isTransitive = false
 }
 
-val tokenSupportVersion = "6.0.11"
+val tokenSupportVersion = "6.0.12"
 val mockWebServerVersion = "5.2.1"
 val testContainersVersion = "2.0.5"
 val logstashLogbackEncoderVersion = "9.0"
