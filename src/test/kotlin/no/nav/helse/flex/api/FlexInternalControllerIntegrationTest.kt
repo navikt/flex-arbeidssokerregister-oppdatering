@@ -1,6 +1,5 @@
 package no.nav.helse.flex.api
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
@@ -19,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset

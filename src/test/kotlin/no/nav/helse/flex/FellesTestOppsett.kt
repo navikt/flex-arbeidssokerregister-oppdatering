@@ -1,5 +1,9 @@
 package no.nav.helse.flex
 
+import mockwebserver3.MockResponse
+import mockwebserver3.MockWebServer
+import mockwebserver3.QueueDispatcher
+import mockwebserver3.RecordedRequest
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeService
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC
@@ -21,10 +25,6 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import okhttp3.mockwebserver.QueueDispatcher
-import okhttp3.mockwebserver.RecordedRequest
 import org.amshove.kluent.should
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -34,10 +34,11 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics
+import org.springframework.boot.micrometer.tracing.test.autoconfigure.AutoConfigureTracing
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint
 import org.springframework.http.MediaType
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.postgresql.PostgreSQLContainer
@@ -54,7 +55,8 @@ const val VEDTAKSPERIODE_ID = "52198b00-c980-4a68-832f-42b2c21316a2"
 @SpringBootTest(classes = [Application::class])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE, printOnlyOnFailure = false)
-@AutoConfigureObservability
+@AutoConfigureMetrics
+@AutoConfigureTracing
 @EnableMockOAuth2Server
 abstract class FellesTestOppsett {
     @Autowired
@@ -135,12 +137,14 @@ abstract class FellesTestOppsett {
 
         val kafkaKeyGeneratorMockWebServer =
             MockWebServer().apply {
+                start()
                 System.setProperty("KAFKA_KEY_GENERATOR_URL", "http://localhost:$port")
                 dispatcher = KafkaKeyGeneratorMockDispatcher
             }
 
         val arbeidssokerperiodeMockWebServer =
             MockWebServer().apply {
+                start()
                 System.setProperty("ARBEIDSSOEKERREGISTERET_API_URL", "http://localhost:$port")
                 dispatcher = ArbeidssokerperiodeMockDispatcher
             }
@@ -181,7 +185,7 @@ abstract class FellesTestOppsett {
 private class PostgreSQLContainer17 : PostgreSQLContainer("postgres:17-alpine")
 
 private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
-    createMockResponse().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+    createMockResponse().newBuilder().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE).build()
 
 object KafkaKeyGeneratorMockDispatcher : QueueDispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
@@ -189,7 +193,7 @@ object KafkaKeyGeneratorMockDispatcher : QueueDispatcher() {
             return withContentTypeApplicationJson { responseQueue.take() }
         }
 
-        return MockResponse().setResponseCode(404)
+        return MockResponse.Builder().code(404).build()
     }
 }
 
@@ -199,7 +203,7 @@ object ArbeidssokerperiodeMockDispatcher : QueueDispatcher() {
             return withContentTypeApplicationJson { responseQueue.take() }
         }
 
-        return MockResponse().setResponseCode(404)
+        return MockResponse.Builder().code(404).build()
     }
 }
 

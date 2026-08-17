@@ -1,11 +1,11 @@
 package no.nav.helse.flex.api
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.api.OIDCIssuer.AZUREATOR
 import no.nav.helse.flex.objectMapper
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import tools.jackson.module.kotlin.readValue
 
 @Component
 class ClientValidation(

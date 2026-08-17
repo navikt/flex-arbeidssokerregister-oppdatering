@@ -1,6 +1,5 @@
 package no.nav.helse.flex.sykepengesoknad
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.EnvironmentToggles
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
@@ -13,6 +12,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import tools.jackson.module.kotlin.readValue
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
