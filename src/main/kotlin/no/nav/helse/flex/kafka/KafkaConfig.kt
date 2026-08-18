@@ -110,8 +110,10 @@ class KafkaConfig(
     // Navngir for å hjelpe Spring med mathcing siden vi bruker Generics.
     @Bean("avroKafkaListenerContainerFactory")
     @ConditionalOnMissingBean(name = ["avroKafkaListenerContainerFactory"])
-    fun <T> avroKafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler) =
-        ConcurrentKafkaListenerContainerFactory<Long, Any>().also {
+    fun <T : Any> avroKafkaListenerContainerFactory(
+        kafkaErrorHandler: KafkaErrorHandler,
+    ): ConcurrentKafkaListenerContainerFactory<Long, T> =
+        ConcurrentKafkaListenerContainerFactory<Long, T>().also {
             val consumerConfig =
                 mapOf(
                     ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to LongDeserializer::class.java,
