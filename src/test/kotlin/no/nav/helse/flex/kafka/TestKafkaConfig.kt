@@ -139,20 +139,21 @@ class TestKafkaConfig(
 
     // Erstatter ConcurrentKafkaListenerContainerFactory i klassene som testes sånn at MockSchemaRegistryClient brukes.
     @Bean("avroKafkaListenerContainerFactory")
-    fun avroKafkaListenerContainerFactory(
+    fun <T : Any> avroKafkaListenerContainerFactory(
         kafkaErrorHandler: KafkaErrorHandler,
         mockSchemaRegistryClient: MockSchemaRegistryClient,
-    ) = ConcurrentKafkaListenerContainerFactory<Long, Any>().also {
-        it.setConsumerFactory(
-            DefaultKafkaConsumerFactory(
-                lagAvroDeserializerConfig(),
-                LongDeserializer(),
-                KafkaAvroDeserializer(mockSchemaRegistryClient) as Deserializer<Any>,
-            ),
-        )
-        it.setCommonErrorHandler(kafkaErrorHandler)
-        it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
-    }
+    ): ConcurrentKafkaListenerContainerFactory<Long, T> =
+        ConcurrentKafkaListenerContainerFactory<Long, T>().also {
+            it.setConsumerFactory(
+                DefaultKafkaConsumerFactory(
+                    lagAvroDeserializerConfig(),
+                    LongDeserializer(),
+                    KafkaAvroDeserializer(mockSchemaRegistryClient) as Deserializer<T>,
+                ),
+            )
+            it.setCommonErrorHandler(kafkaErrorHandler)
+            it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
+        }
 
     private fun lagConsumer(groupId: String): Consumer<String, String> =
         DefaultKafkaConsumerFactory(
