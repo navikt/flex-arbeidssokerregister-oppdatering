@@ -25,9 +25,10 @@ repositories {
     }
 }
 
-val schema: Configuration by configurations.creating {
-    isTransitive = false
-}
+val schema =
+    configurations.create("schema") {
+        isTransitive = false
+    }
 
 val tokenSupportVersion = "6.0.12"
 val mockWebServerVersion = "5.4.0"
@@ -43,7 +44,9 @@ val bekreftelsePaaVegneAvSchemaVersion = "1.26.05.04.35-1"
 val opentelemetryApiVersion = "1.65.0"
 val opentelemetryInstrumentationVersion = "2.30.0"
 
-configurations.implementation.get().extendsFrom(schema)
+configurations.named("implementation") {
+    extendsFrom(schema)
+}
 
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
@@ -52,15 +55,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-kafka")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
-
-    implementation("tools.jackson.module:jackson-module-kotlin")
-    implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
-    implementation("org.hibernate.validator:hibernate-validator")
+    implementation("org.postgresql:postgresql")
     implementation("org.apache.httpcomponents.client5:httpclient5")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("org.hibernate.validator:hibernate-validator")
     implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
@@ -81,10 +82,6 @@ dependencies {
     testImplementation("org.awaitility:awaitility")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
-}
-
-ktlint {
-    version.set("1.8.0")
 }
 
 kotlin {
