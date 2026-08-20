@@ -31,7 +31,7 @@ val schema =
     }
 
 val tokenSupportVersion = "6.0.12"
-val mockWebServerVersion = "5.4.0"
+val mockWebServerVersion = "5.5.0"
 val testContainersVersion = "2.0.5"
 val logstashLogbackEncoderVersion = "9.0"
 val kluentVersion = "1.73"
