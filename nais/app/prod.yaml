@@ -7,9 +7,10 @@ azureTenant: nav.no
 cpu: 100m
 memory: 768Mi
 db_flags:
-  cloudsql.enable_pgaudit: "true"
+  cloudsql.enable_pgaudit: "on"
   pgaudit.log: 'write,ddl,role'
   pgaudit.log_parameter: "on"
+  pgaudit.log_relation: "on"
 env:
   SPRING_PROFILES_ACTIVE: default
   KAFKA_KEY_GENERATOR_AAD_CLIENT_ID: prod-gcp.paw.paw-kafka-key-generator
