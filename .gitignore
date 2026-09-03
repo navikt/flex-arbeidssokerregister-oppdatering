@@ -13,8 +13,4 @@ src/generated
 
 # OS specific
 .DS_Store
-
-.junie/
-.claude/
-CLAUDE.md
 AGENTS.md
