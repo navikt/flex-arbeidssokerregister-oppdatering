@@ -12,7 +12,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.stereotype.Component
 import tools.jackson.module.kotlin.readValue
 import java.time.Instant
-import java.util.*
 
 @Component
 class ArbeidssokerperiodeStoppProducer(
@@ -49,8 +48,6 @@ data class StoppMelding(
     val fnr: String,
     val avsluttetTidspunkt: Instant,
 )
-
-internal fun String.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(this.toByteArray()).toString()
 
 internal fun String.tilArbeidssokerperiodeStoppMelding(): StoppMelding = objectMapper.readValue(this)
 
