@@ -15,43 +15,49 @@ import java.time.Instant
 import java.util.*
 
 @Component
-class ArbeidssokerperiodeStoppProducer(
+class ArbeidssokerperiodeStartStoppProducer(
     private val kafkaProducer: Producer<String, String>,
 ) {
     private val log = logger()
 
     @WithSpan
-    fun send(stoppMelding: StoppMelding) {
+    fun send(startStoppMelding: StartStoppMelding) {
         Span.current().addEvent(
-            "StoppMelding",
+            "StartStoppMelding",
             Attributes.of(
                 AttributeKey.stringKey("vedtaksperiodeId"),
-                stoppMelding.vedtaksperiodeId,
-                AttributeKey.stringKey("avsluttetTidspunkt"),
-                stoppMelding.avsluttetTidspunkt.toString(),
+                startStoppMelding.vedtaksperiodeId,
+                AttributeKey.stringKey("tidspunkt"),
+                startStoppMelding.tidspunkt.toString(),
             ),
         )
 
         kafkaProducer.send(
             ProducerRecord(
-                ARBEIDSSOKERPERIODE_STOPP_TOPIC,
-                stoppMelding.fnr.asProducerRecordKey(),
-                stoppMelding.serialisertTilString(),
+                ARBEIDSSOKERPERIODE_START_STOPP_TOPIC,
+                startStoppMelding.fnr.asProducerRecordKey(),
+                startStoppMelding.serialisertTilString(),
             ),
         )
 
-        log.info("Publisert StoppMelding for vedtaksperiode: ${stoppMelding.vedtaksperiodeId}.")
+        log.info("Publisert StartStoppMelding for vedtaksperiode: ${startStoppMelding.vedtaksperiodeId}.")
     }
 }
 
-data class StoppMelding(
+data class StartStoppMelding(
+    val operation: StartStop,
     val vedtaksperiodeId: String,
     val fnr: String,
-    val avsluttetTidspunkt: Instant,
+    val tidspunkt: Instant,
 )
+
+enum class StartStop {
+    START,
+    STOPP,
+}
 
 internal fun String.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(this.toByteArray()).toString()
 
-internal fun String.tilArbeidssokerperiodeStoppMelding(): StoppMelding = objectMapper.readValue(this)
+internal fun String.tilArbeidssokerperiodeStartStoppMelding(): StartStoppMelding = objectMapper.readValue(this)
 
-const val ARBEIDSSOKERPERIODE_STOPP_TOPIC = "flex.arbeidssokerregister-stopp-topic"
+const val ARBEIDSSOKERPERIODE_START_STOPP_TOPIC = "flex.arbeidssokerregister-start-stopp-topic"
