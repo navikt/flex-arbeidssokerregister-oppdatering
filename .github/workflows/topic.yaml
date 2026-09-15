@@ -20,6 +20,12 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: nais/topics/arbeidssokerregister-stopp-topic.yaml
           VARS: nais/topics/dev.json
+      - name: Deploy topic arbeidssokerregister-start-stopp-topic to dev-gcp
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: nais/topics/arbeidssokerregister-start-stopp-topic.yaml
+          VARS: nais/topics/dev.json
 
   deploy-topic-to-prod:
     if: github.ref_name == 'main'
@@ -35,4 +41,10 @@ jobs:
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/topics/arbeidssokerregister-stopp-topic.yaml
+          VARS: nais/topics/prod.json
+      - name: Deploy topic arbeidssokerregister-start-stopp-topic to prod-gcp
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: nais/topics/arbeidssokerregister-start-stopp-topic.yaml
           VARS: nais/topics/prod.json
