@@ -1,7 +1,10 @@
 package no.nav.helse.flex.arbeidssokerperiode
 
 import no.nav.helse.flex.logger
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStartStoppProducer
 import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
+import no.nav.helse.flex.sykepengesoknad.StartStop
+import no.nav.helse.flex.sykepengesoknad.StartStoppMelding
 import no.nav.helse.flex.sykepengesoknad.StoppMelding
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import org.springframework.stereotype.Service
@@ -12,6 +15,7 @@ import java.time.Instant
 class ArbeidssokerperiodeService(
     private val arbeidssokerperiodeRepository: ArbeidssokerperiodeRepository,
     private val arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer,
+    private val arbeidssokerperiodeStartStoppProducer: ArbeidssokerperiodeStartStoppProducer,
 ) {
     private val log = logger()
 
@@ -50,6 +54,16 @@ class ArbeidssokerperiodeService(
                 avsluttetTidspunkt = arbeidssokerregisterPeriode.avsluttet.tidspunkt,
             ),
         )
+
+        arbeidssokerperiodeStartStoppProducer.send(
+            StartStoppMelding(
+                operation = StartStop.STOPP,
+                vedtaksperiodeId = arbeidssokerperiode.vedtaksperiodeId,
+                fnr = arbeidssokerperiode.fnr,
+                tidspunkt = arbeidssokerregisterPeriode.avsluttet.tidspunkt,
+            )
+        )
+
         log.info(
             "Avsluttet arbeidssøkerperiode: ${arbeidssokerperiode.id} for " +
                 "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId} og " +

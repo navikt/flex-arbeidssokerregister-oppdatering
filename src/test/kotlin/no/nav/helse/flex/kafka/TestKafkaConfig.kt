@@ -9,6 +9,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC
 import no.nav.helse.flex.arbeidssokerregister.ARBEIDSSOKERPERIODE_TOPIC
+import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_START_STOPP_TOPIC
 import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
 import no.nav.helse.flex.sykepengesoknad.SYKEPENGESOKNAD_TOPIC
 import no.nav.helse.flex.testdata.TESTDATA_RESET_TOPIC
@@ -86,6 +87,12 @@ class TestKafkaConfig(
             .build()
 
     @Bean
+    fun lagArbeidsokerperiodeStartStoppTopic(): NewTopic =
+        TopicBuilder
+            .name(ARBEIDSSOKERPERIODE_START_STOPP_TOPIC)
+            .build()
+
+    @Bean
     fun mockSchemaRegistryClient(): MockSchemaRegistryClient =
         MockSchemaRegistryClient().also {
             it.register(
@@ -102,6 +109,9 @@ class TestKafkaConfig(
 
     @Bean
     fun arbeidssokerperiodeStoppConsumer() = lagConsumer("arbeidssokerperiodestopp-consumer")
+
+    @Bean
+    fun arbeidssokerperiodeStartStoppConsumer() = lagConsumer("arbeidssokerperiodestartstopp-consumer")
 
     @Bean
     fun <T : Any> arbeidssokerperiodeConsumer(mockSchemaRegistryClient: MockSchemaRegistryClient): Consumer<Long, T> =
