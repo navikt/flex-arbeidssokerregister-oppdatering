@@ -31,7 +31,7 @@ import java.util.UUID
 class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     @AfterEach
     fun verifiserAtTopicErTomt() {
-        arbeidssokerperiodeStoppConsumer.fetchRecords().size `should be equal to` 0
+        arbeidssokerperiodeStartStoppConsumer.fetchRecords().size `should be equal to` 0
     }
 
     private val soknad = lagSoknad()

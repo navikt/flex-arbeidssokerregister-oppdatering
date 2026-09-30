@@ -4,7 +4,7 @@ import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.asProducerRecordKey
-import no.nav.helse.flex.sykepengesoknad.tilArbeidssokerperiodeStoppMelding
+import no.nav.helse.flex.sykepengesoknad.tilArbeidssokerperiodeStartStoppMelding
 import no.nav.helse.flex.sykepengesoknad.toInstantAtStartOfDay
 import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
@@ -48,13 +48,13 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             it.vedtaksperiodeTom `should be equal to` vedtaksperiodeTom
         }
 
-        arbeidssokerperiodeStoppConsumer.waitForRecords(1).single().also { consumerRecord ->
+        arbeidssokerperiodeStartStoppConsumer.waitForRecords(1).single().also { consumerRecord ->
             consumerRecord.key() `should be equal to` FNR.asProducerRecordKey()
 
-            consumerRecord.value().tilArbeidssokerperiodeStoppMelding().also {
+            consumerRecord.value().tilArbeidssokerperiodeStartStoppMelding().also {
                 it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
                 it.fnr `should be equal to` FNR
-                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+                it.tidspunkt `should be equal to` avsluttetTidspunkt
             }
         }
     }
@@ -87,13 +87,13 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
         }
 
-        arbeidssokerperiodeStoppConsumer.waitForRecords(1).single().also { consumerRecord ->
+        arbeidssokerperiodeStartStoppConsumer.waitForRecords(1).single().also { consumerRecord ->
             consumerRecord.key() `should be equal to` FNR.asProducerRecordKey()
 
-            consumerRecord.value().tilArbeidssokerperiodeStoppMelding().also {
+            consumerRecord.value().tilArbeidssokerperiodeStartStoppMelding().also {
                 it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
                 it.fnr `should be equal to` FNR
-                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+                it.tidspunkt `should be equal to` avsluttetTidspunkt
             }
         }
     }
@@ -128,10 +128,10 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             arbeidssokerperiode.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
         }
 
-        arbeidssokerperiodeStoppConsumer.waitForRecords(2).also { consumerRecords ->
+        arbeidssokerperiodeStartStoppConsumer.waitForRecords(2).also { consumerRecords ->
             consumerRecords.size `should be equal to` 2
 
-            val vedtaksperiodeIds = consumerRecords.map { it.value().tilArbeidssokerperiodeStoppMelding().vedtaksperiodeId }
+            val vedtaksperiodeIds = consumerRecords.map { it.value().tilArbeidssokerperiodeStartStoppMelding().vedtaksperiodeId }
             vedtaksperiodeIds.containsAll(listOf(vedtaksperiodeId, vedtaksperiodeId2)) `should be equal to` true
         }
     }

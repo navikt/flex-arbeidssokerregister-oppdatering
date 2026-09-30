@@ -12,8 +12,8 @@ import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeBekreftelseProd
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodePaaVegneAvProducer
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerregisterClient
 import no.nav.helse.flex.arbeidssokerregister.KafkaKeyGeneratorClient
-import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_STOPP_TOPIC
-import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStoppProducer
+import no.nav.helse.flex.sykepengesoknad.ARBEIDSSOKERPERIODE_START_STOPP_TOPIC
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeStartStoppProducer
 import no.nav.helse.flex.sykepengesoknad.Periode
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
@@ -66,7 +66,7 @@ abstract class FellesTestOppsett {
     lateinit var arbeidssokerregisterClient: ArbeidssokerregisterClient
 
     @Autowired
-    lateinit var arbeidssokerperiodeStoppConsumer: Consumer<String, String>
+    lateinit var arbeidssokerperiodeStartStoppConsumer: Consumer<String, String>
 
     @Autowired
     lateinit var testdataResetConsumer: Consumer<String, String>
@@ -81,7 +81,7 @@ abstract class FellesTestOppsett {
     lateinit var kafkaProducer: Producer<String, String>
 
     @Autowired
-    lateinit var arbeidssokerperiodeStoppProducer: ArbeidssokerperiodeStoppProducer
+    lateinit var arbeidssokerperiodeStartStoppProducer: ArbeidssokerperiodeStartStoppProducer
 
     @Autowired
     lateinit var bekreftelseProducer: ArbeidssokerperiodeBekreftelseProducer
@@ -106,10 +106,10 @@ abstract class FellesTestOppsett {
 
     @BeforeAll
     fun subscribeToTopics() {
-        arbeidssokerperiodeStoppConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_STOPP_TOPIC)
         bekreftelseConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_BEKREFTELSE_TOPIC)
         paaVegneAvConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_PAA_VEGNE_AV_TOPIC)
         testdataResetConsumer.subscribeToTopics(TESTDATA_RESET_TOPIC)
+        arbeidssokerperiodeStartStoppConsumer.subscribeToTopics(ARBEIDSSOKERPERIODE_START_STOPP_TOPIC)
     }
 
     @BeforeAll
