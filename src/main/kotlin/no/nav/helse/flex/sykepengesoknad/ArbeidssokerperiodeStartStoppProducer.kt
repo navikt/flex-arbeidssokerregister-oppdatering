@@ -25,6 +25,8 @@ class ArbeidssokerperiodeStartStoppProducer(
         Span.current().addEvent(
             "StartStoppMelding",
             Attributes.of(
+                AttributeKey.stringKey("operation"),
+                startStoppMelding.operation.toString(),
                 AttributeKey.stringKey("vedtaksperiodeId"),
                 startStoppMelding.vedtaksperiodeId,
                 AttributeKey.stringKey("tidspunkt"),
@@ -40,7 +42,10 @@ class ArbeidssokerperiodeStartStoppProducer(
             ),
         )
 
-        log.info("Publisert StartStoppMelding for vedtaksperiode: ${startStoppMelding.vedtaksperiodeId}.")
+        log.info(
+            "Publisert StartStoppMelding med operation: ${startStoppMelding.operation} for " +
+                "vedtaksperiode: ${startStoppMelding.vedtaksperiodeId}.",
+        )
     }
 }
 
