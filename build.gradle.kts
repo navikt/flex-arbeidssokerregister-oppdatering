@@ -42,7 +42,7 @@ val arbeidssokerregisteretSchemaVersion = "1.25.03.10.2-1"
 val bekreftelsesmeldingSchemaVersion = "1.26.05.04.35-1"
 val bekreftelsePaaVegneAvSchemaVersion = "1.26.05.04.35-1"
 val opentelemetryApiVersion = "1.66.0"
-val opentelemetryInstrumentationVersion = "2.31.1"
+val opentelemetryInstrumentationVersion = "2.32.0"
 
 configurations.named("implementation") {
     extendsFrom(schema)
