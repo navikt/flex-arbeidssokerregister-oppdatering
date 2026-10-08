@@ -30,12 +30,10 @@ class TestdataResetListener(
         acknowledgment: Acknowledgment,
     ) {
         val fnr = cr.value()
-        arbeidssokerperiodeRepository.findByFnr(fnr)?.let {
-            it.forEach {
-                val antall = periodebekreftelseRepository.deleteByArbeidssokerperiodeId(it.id!!)
-                arbeidssokerperiodeRepository.delete(it)
-                log.info("Slettet arbeidssokerperiode: ${it.id} og $antall tilhørerende periodebekreftelser.")
-            }
+        arbeidssokerperiodeRepository.findByFnr(fnr).forEach {
+            val antall = periodebekreftelseRepository.deleteByArbeidssokerperiodeId(it.id!!)
+            arbeidssokerperiodeRepository.delete(it)
+            log.info("Slettet arbeidssokerperiode: ${it.id} og $antall tilhørerende periodebekreftelser.")
         }
         acknowledgment.acknowledge()
     }
