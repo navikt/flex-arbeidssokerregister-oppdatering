@@ -35,9 +35,9 @@ class FlexInternalController(
         validerFlexInternalClient()
 
         val arbeidssokerperioder =
-            arbeidssokerperiodeRepository.findByFnr(request.fnr)?.map {
+            arbeidssokerperiodeRepository.findByFnr(request.fnr).map {
                 it.tilArbeidssokerperiodeResponse(hentPeriodebekreftelser(it))
-            } ?: emptyList()
+            }
 
         return ResponseEntity.ok(FlexInternalResponse(arbeidssokerperioder))
     }
