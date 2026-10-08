@@ -45,14 +45,7 @@ class SykepengesoknadService(
     fun sendPaaVegneAvStartMelding(
         arbeidssokerperiode: Arbeidssokerperiode,
         graceMs: Long,
-    ) = paaVegneAvProducer.send(
-        PaaVegneAvStartMelding(
-            kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-            arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-            arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
-            graceMS = graceMs,
-        ),
-    )
+    ) = paaVegneAvProducer.send(arbeidssokerperiode.tilPaaVegneAvStartMelding(graceMs))
 
     private fun behandleVedtaksperiode(soknad: SykepengesoknadDTO) {
         if (soknad.ignorerArbeidssokerregister == true) {
@@ -180,8 +173,8 @@ class SykepengesoknadService(
     private fun behandleUtgattSoknad(soknad: SykepengesoknadDTO) {
         arbeidssokerperiodeRepository
             .findByFnr(soknad.fnr)
-            ?.filter { it.sendtAvsluttet == null && it.avsluttetAarsak != AvsluttetAarsak.UTGAATT }
-            ?.forEach {
+            .filter { it.sendtAvsluttet == null && it.avsluttetAarsak != AvsluttetAarsak.UTGAATT }
+            .forEach {
                 it.lagreAvsluttetAarsak(AvsluttetAarsak.UTGAATT)
                 sendPaaVegneAvStoppMelding(it)
                 log.info("Sendte PaaVegneAvStoppMelding for arbeidssøkerperiode: ${it.id} grunnet UTGATT søknad: ${soknad.id}.")
