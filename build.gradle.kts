@@ -41,7 +41,7 @@ val sykepengesoknadKafkaVersion = "2026.10.12-15.08-be710154"
 val arbeidssokerregisteretSchemaVersion = "1.25.03.10.2-1"
 val bekreftelsesmeldingSchemaVersion = "1.26.05.04.35-1"
 val bekreftelsePaaVegneAvSchemaVersion = "1.26.05.04.35-1"
-val opentelemetryApiVersion = "1.66.0"
+val opentelemetryApiVersion = "1.67.0"
 val opentelemetryInstrumentationVersion = "2.32.0"
 
 configurations.named("implementation") {
