@@ -33,7 +33,7 @@ class ArbeidssokerperiodeListener(
                 arbeidssokerperiodeService.behandlePeriode(it)
             } catch (e: Exception) {
                 log.error(
-                    "Feil ved behandling av periode fra arbeidssøkerregisteret: ${it.id} med startdato: ${it.startet.tidspunkt} og sluttdato: ${it.avsluttet.tidspunkt}.",
+                    "Feil ved behandling av periode fra arbeidssøkerregisteret: ${it.id} med startdato: ${it.startet.tidspunkt} og sluttdato: ${it.avsluttet?.tidspunkt}.",
                     e,
                 )
                 if (environmentToggles.erProduksjon()) {

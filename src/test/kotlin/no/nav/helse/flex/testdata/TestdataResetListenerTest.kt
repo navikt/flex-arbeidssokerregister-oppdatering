@@ -53,7 +53,7 @@ class TestdataResetListenerTest : FellesTestOppsett() {
         repeat(2) {
             periodebekreftelseRepository.save(
                 Periodebekreftelse(
-                    arbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr(FNR)!!.single().id!!,
+                    arbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr(FNR).single().id!!,
                     sykepengesoknadId = UUID.randomUUID().toString(),
                     fortsattArbeidssoker = true,
                     inntektUnderveis = false,
@@ -64,7 +64,7 @@ class TestdataResetListenerTest : FellesTestOppsett() {
 
         periodebekreftelseRepository.save(
             Periodebekreftelse(
-                arbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr("22222222222")!!.single().id!!,
+                arbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr("22222222222").single().id!!,
                 sykepengesoknadId = UUID.randomUUID().toString(),
                 fortsattArbeidssoker = true,
                 inntektUnderveis = false,
@@ -81,7 +81,7 @@ class TestdataResetListenerTest : FellesTestOppsett() {
     @Order(3)
     fun `Sletter data for èn bruker ved mottatt melding om testdata reset`() {
         val key = UUID.randomUUID().toString()
-        val ikkeSlettetArbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr("22222222222")!!.single().id
+        val ikkeSlettetArbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr("22222222222").single().id
 
         kafkaProducer.send(ProducerRecord(TESTDATA_RESET_TOPIC, key, FNR)).get()
 

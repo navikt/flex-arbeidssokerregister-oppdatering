@@ -4,6 +4,7 @@ import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.logger
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
@@ -100,6 +101,14 @@ data class PaaVegneAvStartMelding(
     val arbeidssokerregisterPeriodeId: String,
     val graceMS: Long,
 )
+
+fun Arbeidssokerperiode.tilPaaVegneAvStartMelding(graceMS: Long) =
+    PaaVegneAvStartMelding(
+        kafkaKey = kafkaRecordKey!!,
+        arbeidssokerperiodeId = id!!,
+        arbeidssokerregisterPeriodeId = arbeidssokerperiodeId!!,
+        graceMS = graceMS,
+    )
 
 data class PaaVegneAvStoppMelding(
     val kafkaKey: Long,

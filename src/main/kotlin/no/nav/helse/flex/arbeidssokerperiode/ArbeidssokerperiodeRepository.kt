@@ -14,7 +14,7 @@ interface ArbeidssokerperiodeRepository : CrudRepository<Arbeidssokerperiode, St
 
     fun findByArbeidssokerperiodeId(id: String): List<Arbeidssokerperiode>
 
-    fun findByFnr(string: String): List<Arbeidssokerperiode>?
+    fun findByFnr(fnr: String): List<Arbeidssokerperiode>
 }
 
 @Table("arbeidssokerperiode")
