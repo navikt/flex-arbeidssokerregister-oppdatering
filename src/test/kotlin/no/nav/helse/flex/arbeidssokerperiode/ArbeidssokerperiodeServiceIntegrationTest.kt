@@ -23,6 +23,8 @@ import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import java.time.Instant
 import java.time.LocalDate
 import java.util.*
@@ -42,7 +44,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     private val kafkaRecordKey = -3771L
 
     @Nested
-    inner class AvsluttetPeriode {
+    inner class AvsluttetArbeidssokerregisterPeriode {
         @Test
         fun `Avslutter arbeidssøkerperiode med samme periode`() {
             lagreArbeidssokerperiode()
@@ -84,7 +86,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         fun `Avslutter alle arbeidssøkerperioder med samme periode`() {
             lagreArbeidssokerperiode()
             val vedtaksperiodeId2 = UUID.randomUUID().toString()
-            lagreArbeidssokerperiode(vedtaksperiodeId2)
+            lagreArbeidssokerperiode(vedtaksperiodeId = vedtaksperiodeId2)
 
             behandleAvsluttetPeriode(arbeidssokerregisterperiodeId)
 
@@ -105,7 +107,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     }
 
     @Nested
-    inner class StartetPeriode {
+    inner class StartetArbeidssokerregisterPeriode {
         @Test
         fun `Restarter avsluttet arbeidssøkerperiode med ny periode`() {
             val avsluttetArbeidssokerperiode = lagreAvsluttetArbeidssokerperiode()
@@ -137,8 +139,30 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
             repeat(2) { behandleStartetPeriode(nyArbeidssokerregisterperiodeId) }
 
-            paaVegneAvConsumer.waitForRecords(1).single()
-            arbeidssokerperiodeStartStoppConsumer.waitForRecords(1).single()
+            hentArbeidssokerperiodeMedPeriodeId(nyArbeidssokerregisterperiodeId).avsluttetMottatt.shouldBeNull()
+
+            verifiserPaaVegneAvStartMelding(nyArbeidssokerregisterperiodeId)
+            verifiserStartStoppMelding(StartStop.START, startetTidspunkt)
+            verifiserIngenMeldingerSendt()
+        }
+
+        @Test
+        fun `Avslutter restartet arbeidssøkerperiode når ny periode avsluttes`() {
+            val avsluttetArbeidssokerperiode = lagreAvsluttetArbeidssokerperiode()
+            val nyArbeidssokerregisterperiodeId = UUID.randomUUID().toString()
+
+            behandleStartetPeriode(nyArbeidssokerregisterperiodeId)
+            verifiserPaaVegneAvStartMelding(nyArbeidssokerregisterperiodeId)
+            verifiserStartStoppMelding(StartStop.START, startetTidspunkt)
+
+            behandleAvsluttetPeriode(nyArbeidssokerregisterperiodeId)
+
+            hentArbeidssokerperiode(avsluttetArbeidssokerperiode.id!!).also {
+                it.arbeidssokerperiodeId `should be equal to` nyArbeidssokerregisterperiodeId
+                it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
+                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+            }
+            verifiserStartStoppMelding(StartStop.STOPP, avsluttetTidspunkt)
         }
 
         @Test
@@ -168,10 +192,15 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         }
 
         @Test
-        fun `Restarter ikke når arbeidssøkerperiode ikke finnes`() {
+        fun `Restarter ikke når bruker ikke har arbeidssøkerperioder`() {
+            val annenBrukersArbeidssokerperiode = lagreAvsluttetArbeidssokerperiode(fnr = "22222222222")
+
             behandleStartetPeriode(UUID.randomUUID().toString())
 
-            arbeidssokerperiodeRepository.findAll().shouldBeEmpty()
+            hentArbeidssokerperiode(annenBrukersArbeidssokerperiode.id!!).also {
+                it.arbeidssokerperiodeId `should be equal to` arbeidssokerregisterperiodeId
+                it.avsluttetMottatt.shouldNotBeNull()
+            }
             verifiserIngenMeldingerSendt()
         }
 
@@ -185,11 +214,12 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             verifiserIngenMeldingerSendt()
         }
 
-        @Test
-        fun `Restarter ikke når siste arbeidssøkerperiode er avsluttet av bruker`() {
+        @ParameterizedTest
+        @EnumSource(AvsluttetAarsak::class)
+        fun `Restarter ikke når siste arbeidssøkerperiode er avsluttet av oss`(avsluttetAarsak: AvsluttetAarsak) {
             lagreAvsluttetArbeidssokerperiode(
                 sendtAvsluttet = Instant.now(),
-                avsluttetAarsak = AvsluttetAarsak.BRUKER,
+                avsluttetAarsak = avsluttetAarsak,
             )
 
             behandleStartetPeriode(UUID.randomUUID().toString())
@@ -228,7 +258,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         }
 
         @Test
-        fun `Restarter kun siste arbeidssøkerperiode`() {
+        fun `Restarter kun siste arbeidssøkerperiode hvis bruker har fler`() {
             val eldreArbeidssokerperiode =
                 lagreAvsluttetArbeidssokerperiode(
                     vedtaksperiodeId = UUID.randomUUID().toString(),
@@ -251,6 +281,30 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
             verifiserPaaVegneAvStartMelding(nyArbeidssokerregisterperiodeId)
             verifiserStartStoppMelding(StartStop.START, startetTidspunkt)
+        }
+
+        @Test
+        fun `Restarter ikke eldre eldre arbeidssøkerperiode selv om siste periode ikke kan restartes`() {
+            val eldreArbeidssokerperiode =
+                lagreAvsluttetArbeidssokerperiode(
+                    vedtaksperiodeId = UUID.randomUUID().toString(),
+                    vedtaksperiodeTom = vedtaksperiodeTom.minusMonths(1),
+                )
+            val sisteArbeidssokerperiode =
+                lagreAvsluttetArbeidssokerperiode(
+                    sendtAvsluttet = Instant.now(),
+                    avsluttetAarsak = AvsluttetAarsak.BRUKER,
+                )
+
+            behandleStartetPeriode(UUID.randomUUID().toString())
+
+            listOf(eldreArbeidssokerperiode, sisteArbeidssokerperiode).forEach { lagret ->
+                hentArbeidssokerperiode(lagret.id!!).also {
+                    it.arbeidssokerperiodeId `should be equal to` arbeidssokerregisterperiodeId
+                    it.avsluttetMottatt.shouldNotBeNull()
+                }
+            }
+            verifiserIngenMeldingerSendt()
         }
     }
 
@@ -299,6 +353,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
     }
 
     private fun lagreArbeidssokerperiode(
+        fnr: String = FNR,
         vedtaksperiodeId: String = this.vedtaksperiodeId,
         vedtaksperiodeTom: LocalDate = this.vedtaksperiodeTom,
         avsluttetMottatt: Instant? = null,
@@ -307,7 +362,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         avsluttetAarsak: AvsluttetAarsak? = null,
     ): Arbeidssokerperiode =
         Arbeidssokerperiode(
-            fnr = FNR,
+            fnr = fnr,
             vedtaksperiodeId = vedtaksperiodeId,
             vedtaksperiodeFom = vedtaksperiodeFom,
             vedtaksperiodeTom = vedtaksperiodeTom,
@@ -322,12 +377,14 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         ).let(arbeidssokerperiodeRepository::save)
 
     private fun lagreAvsluttetArbeidssokerperiode(
+        fnr: String = FNR,
         vedtaksperiodeId: String = this.vedtaksperiodeId,
         vedtaksperiodeTom: LocalDate = this.vedtaksperiodeTom,
         sendtAvsluttet: Instant? = null,
         avsluttetAarsak: AvsluttetAarsak? = null,
     ): Arbeidssokerperiode =
         lagreArbeidssokerperiode(
+            fnr = fnr,
             vedtaksperiodeId = vedtaksperiodeId,
             vedtaksperiodeTom = vedtaksperiodeTom,
             avsluttetMottatt = Instant.now(),

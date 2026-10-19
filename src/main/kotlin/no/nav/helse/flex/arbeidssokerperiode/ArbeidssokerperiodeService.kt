@@ -34,26 +34,43 @@ class ArbeidssokerperiodeService(
     }
 
     private fun behandleStartetPeriode(arbeidssokerregisterPeriode: Periode) {
-        val arbeidssokerperiode = finnRestartbarArbeidssokerperiode(arbeidssokerregisterPeriode) ?: return
-
-        if (arbeidssokerperiode.tomErEldreEnn(PERIODE_TOM_MAX_ALDER_MAANEDER)) {
-            log.info(
-                "Restarter ikke avsluttet arbeidssøkerperiode: ${arbeidssokerperiode.id} for " +
-                    "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId} med " +
-                    "vedtaksperiode.tom: ${arbeidssokerperiode.vedtaksperiodeTom} siden den er eldre enn " +
-                    "$PERIODE_TOM_MAX_ALDER_MAANEDER måneder. Ny periode i arbeidssøkerregisteret: ${arbeidssokerregisterPeriode.id}.",
-            )
-            return
+        finnRestartbarArbeidssokerperiode(arbeidssokerregisterPeriode)?.let {
+            restartArbeidssokerperiode(it, arbeidssokerregisterPeriode)
         }
-
-        restartArbeidssokerperiode(arbeidssokerperiode, arbeidssokerregisterPeriode)
     }
 
-    private fun finnRestartbarArbeidssokerperiode(arbeidssokerregisterPeriode: Periode): Arbeidssokerperiode? =
-        arbeidssokerperiodeRepository
-            .findByFnr(arbeidssokerregisterPeriode.identitetsnummer)
-            .maxByOrNull { it.vedtaksperiodeTom }
-            ?.takeIf { it.kanRestartesMed(arbeidssokerregisterPeriode) }
+    // Restarter kun siste arbeidssøkerperiode for en gitt bruker hvis vi har mottatt avsluttet periode fra
+    // arbeidssøkerregisteret og ikke har sendt PaaVegneAv, samtidig som den ikke allerede er restartet og
+    // vedtaksperiode.tom ikke er for gammel.
+    private fun finnRestartbarArbeidssokerperiode(arbeidssokerregisterPeriode: Periode): Arbeidssokerperiode? {
+        val sisteArbeidssokerperiode =
+            arbeidssokerperiodeRepository
+                .findByFnr(arbeidssokerregisterPeriode.identitetsnummer)
+                .maxByOrNull { it.vedtaksperiodeTom }
+
+        if (sisteArbeidssokerperiode == null) {
+            log.info(
+                "Fant ingen arbeidssøkerperiode som kan restartes for ny periode i " +
+                    "arbeidssøkerregisteret: ${arbeidssokerregisterPeriode.id}.",
+            )
+            return null
+        }
+
+        val aarsak = sisteArbeidssokerperiode.aarsakTilAtIkkeRestartbar(arbeidssokerregisterPeriode)
+        if (aarsak != null) {
+            log.info(
+                "Mottok ny periode i arbeidssøkerregisteret: ${arbeidssokerregisterPeriode.id}, men  " +
+                    "restarter ikke arbeidssøkerperiode: ${sisteArbeidssokerperiode.id} for " +
+                    "vedtaksperiode: ${sisteArbeidssokerperiode.vedtaksperiodeId} med " +
+                    "vedtaksperiode.tom: ${sisteArbeidssokerperiode.vedtaksperiodeTom} og eksisterende periode i " +
+                    "arbeidssøkerregisteret: ${sisteArbeidssokerperiode.arbeidssokerperiodeId}. " +
+                    "Årsak: $aarsak - ${aarsak.beskrivelse}",
+            )
+            return null
+        }
+
+        return sisteArbeidssokerperiode
+    }
 
     private fun restartArbeidssokerperiode(
         arbeidssokerperiode: Arbeidssokerperiode,
@@ -75,7 +92,11 @@ class ArbeidssokerperiodeService(
             ),
         )
 
-        sendStartStoppMelding(StartStop.START, restartetArbeidssokerperiode, arbeidssokerregisterPeriode.startet.tidspunkt)
+        sendStartStoppMelding(
+            StartStop.START,
+            restartetArbeidssokerperiode,
+            arbeidssokerregisterPeriode.startet.tidspunkt,
+        )
 
         log.info(
             "Restartet arbeidssøkerperiode: ${restartetArbeidssokerperiode.id} for " +
@@ -127,11 +148,31 @@ class ArbeidssokerperiodeService(
         ),
     )
 
-    private fun Arbeidssokerperiode.kanRestartesMed(arbeidssokerregisterPeriode: Periode): Boolean =
-        erAvsluttetAvArbeidssokerregisteret() && arbeidssokerperiodeId != arbeidssokerregisterPeriode.id.toString()
+    private fun Arbeidssokerperiode.aarsakTilAtIkkeRestartbar(arbeidssokerregisterPeriode: Periode): IkkeRestartbarAarsak? =
+        when {
+            harIkkeMottattAvsluttetFraArbeidssokerregisteret() -> IkkeRestartbarAarsak.IKKE_MOTTATT_AVSLUTTET
+            harSendtPaaVegneAvAvsluttet() -> IkkeRestartbarAarsak.SENDT_PAA_VEGNE_AV_STOPP
+            erAlleredeRestartet(arbeidssokerregisterPeriode) -> IkkeRestartbarAarsak.ALLEREDE_RESTARTET
+            periodensTomErEldreEnn(PERIODE_TOM_MAX_ALDER_MAANEDER) -> IkkeRestartbarAarsak.VEDTAKSPERIODE_FOR_GAMMEL
+            else -> null
+        }
 
-    private fun Arbeidssokerperiode.erAvsluttetAvArbeidssokerregisteret() = avsluttetMottatt != null && sendtAvsluttet == null
+    private fun Arbeidssokerperiode.harIkkeMottattAvsluttetFraArbeidssokerregisteret() = avsluttetMottatt == null
 
-    private fun Arbeidssokerperiode.tomErEldreEnn(maaneder: Int) =
+    private fun Arbeidssokerperiode.harSendtPaaVegneAvAvsluttet() = sendtAvsluttet != null
+
+    private fun Arbeidssokerperiode.erAlleredeRestartet(arbeidssokerregisterPeriode: Periode) =
+        arbeidssokerperiodeId == arbeidssokerregisterPeriode.id.toString()
+
+    private fun Arbeidssokerperiode.periodensTomErEldreEnn(maaneder: Int) =
         vedtaksperiodeTom.isBefore(LocalDate.now().minusMonths(maaneder.toLong()))
+
+    private enum class IkkeRestartbarAarsak(
+        val beskrivelse: String,
+    ) {
+        IKKE_MOTTATT_AVSLUTTET("Har ikke mottatt avsluttet periode fra arbeidssøkerregisteret."),
+        SENDT_PAA_VEGNE_AV_STOPP("Har sendt PaaVegneAvStopp-melding for for perioden."),
+        ALLEREDE_RESTARTET("Perioden er allerede restartet av ny periode i arbeidssøkerregisteret."),
+        VEDTAKSPERIODE_FOR_GAMMEL("Vedtaksperiode.tom er eldre enn $PERIODE_TOM_MAX_ALDER_MAANEDER måneder."),
+    }
 }
