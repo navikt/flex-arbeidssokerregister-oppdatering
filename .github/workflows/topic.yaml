@@ -14,12 +14,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@main
-      - name: Deploy topic arbeidssokerregister-stopp-topic to dev-gcp
-        uses: nais/deploy/actions/deploy@v3
-        env:
-          CLUSTER: dev-gcp
-          RESOURCE: nais/topics/arbeidssokerregister-stopp-topic.yaml
-          VARS: nais/topics/dev.json
       - name: Deploy topic arbeidssokerregister-start-stopp-topic to dev-gcp
         uses: nais/deploy/actions/deploy@v3
         env:
@@ -36,12 +30,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@main
-      - name: Deploy topic arbeidssokerregister-stopp-topic to prod-gcp
-        uses: nais/deploy/actions/deploy@v3
-        env:
-          CLUSTER: prod-gcp
-          RESOURCE: nais/topics/arbeidssokerregister-stopp-topic.yaml
-          VARS: nais/topics/prod.json
       - name: Deploy topic arbeidssokerregister-start-stopp-topic to prod-gcp
         uses: nais/deploy/actions/deploy@v3
         env:
