@@ -46,30 +46,22 @@ class ArbeidssokerperiodeService(
         val sisteArbeidssokerperiode =
             arbeidssokerperiodeRepository
                 .findByFnr(arbeidssokerregisterPeriode.identitetsnummer)
-                .maxByOrNull { it.vedtaksperiodeTom }
+                .maxByOrNull { it.vedtaksperiodeTom } ?: return null
 
-        if (sisteArbeidssokerperiode == null) {
-            log.info(
-                "Fant ingen arbeidssøkerperiode som kan restartes for ny periode i " +
-                    "arbeidssøkerregisteret: ${arbeidssokerregisterPeriode.id}.",
-            )
-            return null
+        return when (val aarsak = sisteArbeidssokerperiode.aarsakTilAtIkkeRestartbar(arbeidssokerregisterPeriode)) {
+            null -> sisteArbeidssokerperiode
+            else -> {
+                log.info(
+                    "Mottok ny periode i arbeidssøkerregisteret: ${arbeidssokerregisterPeriode.id}, men  " +
+                        "restarter ikke arbeidssøkerperiode: ${sisteArbeidssokerperiode.id} for " +
+                        "vedtaksperiode: ${sisteArbeidssokerperiode.vedtaksperiodeId} med " +
+                        "vedtaksperiode.tom: ${sisteArbeidssokerperiode.vedtaksperiodeTom} og eksisterende periode i " +
+                        "arbeidssøkerregisteret: ${sisteArbeidssokerperiode.arbeidssokerperiodeId}. " +
+                        "Årsak: $aarsak - ${aarsak.beskrivelse}",
+                )
+                null
+            }
         }
-
-        val aarsak = sisteArbeidssokerperiode.aarsakTilAtIkkeRestartbar(arbeidssokerregisterPeriode)
-        if (aarsak != null) {
-            log.info(
-                "Mottok ny periode i arbeidssøkerregisteret: ${arbeidssokerregisterPeriode.id}, men  " +
-                    "restarter ikke arbeidssøkerperiode: ${sisteArbeidssokerperiode.id} for " +
-                    "vedtaksperiode: ${sisteArbeidssokerperiode.vedtaksperiodeId} med " +
-                    "vedtaksperiode.tom: ${sisteArbeidssokerperiode.vedtaksperiodeTom} og eksisterende periode i " +
-                    "arbeidssøkerregisteret: ${sisteArbeidssokerperiode.arbeidssokerperiodeId}. " +
-                    "Årsak: $aarsak - ${aarsak.beskrivelse}",
-            )
-            return null
-        }
-
-        return sisteArbeidssokerperiode
     }
 
     private fun restartArbeidssokerperiode(
