@@ -5,6 +5,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
+import org.apache.avro.util.ClassSecurityValidator
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -31,6 +32,12 @@ import org.springframework.kafka.listener.ContainerProperties.AckMode
 const val JAVA_KEYSTORE = "JKS"
 const val PKCS12 = "PKCS12"
 
+private val trustedAvroPackages =
+    listOf(
+        "no.nav.paw.arbeidssokerregisteret.api",
+        "no.nav.paw.bekreftelse",
+    )
+
 @Configuration
 class KafkaConfig(
     @param:Value("\${KAFKA_BROKERS}") private val kafkaBrokers: String,
@@ -43,6 +50,17 @@ class KafkaConfig(
     @param:Value("\${KAFKA_SCHEMA_REGISTRY_USER}") private val schemaRegistryUsername: String,
     @param:Value("\${KAFKA_SCHEMA_REGISTRY_PASSWORD}") private val schemaRegistryPassword: String,
 ) {
+    init {
+        ClassSecurityValidator.setGlobal(
+            ClassSecurityValidator.composite(
+                ClassSecurityValidator.DEFAULT,
+                { clazz ->
+                    trustedAvroPackages.any { clazz.name.startsWith("$it.") }
+                },
+            ),
+        )
+    }
+
     val brokerConfig =
         mapOf(
             BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
