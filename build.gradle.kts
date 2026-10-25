@@ -5,7 +5,7 @@ plugins {
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
+    id("avro-codegen")
     kotlin("plugin.spring") version "2.4.10"
     kotlin("jvm") version "2.4.10"
 }
@@ -25,11 +25,6 @@ repositories {
     }
 }
 
-val schema =
-    configurations.create("schema") {
-        isTransitive = false
-    }
-
 val tokenSupportVersion = "6.0.12"
 val mockWebServerVersion = "5.5.0"
 val testContainersVersion = "2.0.5"
@@ -44,14 +39,11 @@ val bekreftelsePaaVegneAvSchemaVersion = "1.26.05.04.35-1"
 val opentelemetryApiVersion = "1.67.0"
 val opentelemetryInstrumentationVersion = "2.32.0"
 
-configurations.named("implementation") {
-    extendsFrom(schema)
-}
-
 dependencies {
     schema("no.nav.paw.arbeidssokerregisteret.api:main-avro-schema:$arbeidssokerregisteretSchemaVersion")
     schema("no.nav.paw.arbeidssokerregisteret.api:bekreftelsesmelding-schema:$bekreftelsesmeldingSchemaVersion")
     schema("no.nav.paw.arbeidssokerregisteret.api:bekreftelse-paavegneav-schema:$bekreftelsePaaVegneAvSchemaVersion")
+    avroTools("org.apache.avro:avro-tools:$avroVersion")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -110,19 +102,5 @@ tasks {
 tasks {
     bootJar {
         archiveFileName = "app.jar"
-    }
-}
-
-tasks {
-    generateAvroProtocol {
-        schema.forEach {
-            source(zipTree(it))
-        }
-    }
-}
-
-tasks {
-    runKtlintCheckOverTestSourceSet {
-        dependsOn(generateTestAvroJava)
     }
 }
