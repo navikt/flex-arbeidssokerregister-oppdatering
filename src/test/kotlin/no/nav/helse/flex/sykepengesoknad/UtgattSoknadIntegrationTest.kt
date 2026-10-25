@@ -1,5 +1,7 @@
 package no.nav.helse.flex.sykepengesoknad
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
@@ -9,8 +11,6 @@ import no.nav.helse.flex.lagSoknad
 import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be equal to`
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.MethodOrderer
@@ -30,7 +30,7 @@ class UtgattSoknadIntegrationTest : FellesTestOppsett() {
 
     @AfterAll
     fun verifiserAtTopicErTomt() {
-        paaVegneAvConsumer.fetchRecords().size `should be equal to` 0
+        paaVegneAvConsumer.fetchRecords().size shouldBe 0
     }
 
     @Test
@@ -41,14 +41,14 @@ class UtgattSoknadIntegrationTest : FellesTestOppsett() {
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).get().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
-            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.UTGAATT
+            it.avsluttetAarsak shouldBe AvsluttetAarsak.UTGAATT
         }
 
         paaVegneAvConsumer.waitForRecords(1).single().also { consumerRecord ->
-            consumerRecord.key() `should be equal to` lagretPeriode.kafkaRecordKey
+            consumerRecord.key() shouldBe lagretPeriode.kafkaRecordKey
             consumerRecord.value().also {
-                it.periodeId.toString() `should be equal to` lagretPeriode.arbeidssokerperiodeId
-                (it.handling as Stopp) `should not be equal to` null
+                it.periodeId.toString() shouldBe lagretPeriode.arbeidssokerperiodeId
+                (it.handling as Stopp) shouldNotBe null
             }
         }
     }
@@ -62,10 +62,10 @@ class UtgattSoknadIntegrationTest : FellesTestOppsett() {
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).get().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
-            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.UTGAATT
+            it.avsluttetAarsak shouldBe AvsluttetAarsak.UTGAATT
         }
 
-        paaVegneAvConsumer.fetchRecords(Duration.ofSeconds(1)).also { records -> records.size `should be equal to` 1 }
+        paaVegneAvConsumer.fetchRecords(Duration.ofSeconds(1)).also { records -> records.size shouldBe 1 }
     }
 
     @Test
@@ -84,7 +84,7 @@ class UtgattSoknadIntegrationTest : FellesTestOppsett() {
         sykepengesoknadService.behandleSoknad(utgattSoknad)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).get().also {
-            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.BRUKER
+            it.avsluttetAarsak shouldBe AvsluttetAarsak.BRUKER
         }
     }
 

@@ -1,5 +1,8 @@
 package no.nav.helse.flex.sykepengesoknad
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
@@ -11,9 +14,6 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be equal to`
-import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -29,7 +29,7 @@ import kotlin.jvm.optionals.toList
 class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     @AfterEach
     fun verifiserAtTopicErTomt() {
-        bekreftelseConsumer.fetchRecords().size `should be equal to` 0
+        bekreftelseConsumer.fetchRecords().size shouldBe 0
         slettFraDatabase()
     }
 
@@ -66,7 +66,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
-            it.sendtAvsluttet `should be equal to` null
+            it.sendtAvsluttet shouldBe null
         }
 
         verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
@@ -87,14 +87,14 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
-            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.BRUKER
+            it.avsluttetAarsak shouldBe AvsluttetAarsak.BRUKER
         }
 
         paaVegneAvConsumer.waitForRecords(1).single().also { consumerRecord ->
-            consumerRecord.key() `should be equal to` lagretPeriode.kafkaRecordKey
+            consumerRecord.key() shouldBe lagretPeriode.kafkaRecordKey
             consumerRecord.value().also {
-                it.periodeId.toString() `should be equal to` lagretPeriode.arbeidssokerperiodeId
-                (it.handling as Stopp) `should not be equal to` null
+                it.periodeId.toString() shouldBe lagretPeriode.arbeidssokerperiodeId
+                (it.handling as Stopp) shouldNotBe null
             }
         }
     }
@@ -112,7 +112,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
-            it.sendtAvsluttet `should be equal to` null
+            it.sendtAvsluttet shouldBe null
         }
 
         verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
@@ -129,7 +129,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             sykepengesoknadService.behandleSoknad(soknad)
         }
 
-        periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
+        periodebekreftelseRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -140,7 +140,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             sykepengesoknadService.behandleSoknad(soknad)
         }
 
-        periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
+        periodebekreftelseRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -153,7 +153,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         sykepengesoknadService.behandleSoknad(soknad)
 
         periodebekreftelseRepository.findAll().toList().single().also {
-            it.inntektUnderveis `should be equal to` null
+            it.inntektUnderveis shouldBe null
         }
 
         verifiserBekreftelseKafkaMelding(soknad = soknad, inntektUnderveis = false)
@@ -167,7 +167,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(status = SoknadsstatusDTO.NY)
         sykepengesoknadService.behandleSoknad(soknad)
 
-        periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
+        periodebekreftelseRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -203,14 +203,14 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
             it.sendtAvsluttet!! `should be within seconds of` (1 to Instant.now())
-            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.AVSLUTTET_PERIODE
+            it.avsluttetAarsak shouldBe AvsluttetAarsak.AVSLUTTET_PERIODE
         }
 
         paaVegneAvConsumer.waitForRecords(1).single().also { consumerRecord ->
-            consumerRecord.key() `should be equal to` lagretPeriode.kafkaRecordKey
+            consumerRecord.key() shouldBe lagretPeriode.kafkaRecordKey
             consumerRecord.value().also {
-                it.periodeId.toString() `should be equal to` lagretPeriode.arbeidssokerperiodeId
-                (it.handling as Stopp) `should not be equal to` null
+                it.periodeId.toString() shouldBe lagretPeriode.arbeidssokerperiodeId
+                (it.handling as Stopp) shouldNotBe null
             }
         }
     }
@@ -226,7 +226,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
             ).copy(type = SoknadstypeDTO.ARBEIDSTAKERE)
         sykepengesoknadService.behandleSoknad(soknad)
 
-        periodebekreftelseRepository.findAll().toList().size `should be equal to` 0
+        periodebekreftelseRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -245,7 +245,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         verifiserLagretPeriodebekreftelse(lagretPeriode, soknad, fortsattArbeidssoker, inntektUnderveis)
 
         arbeidssokerperiodeRepository.findById(lagretPeriode.id!!).toList().single().also {
-            it.sendtAvsluttet `should be equal to` null
+            it.sendtAvsluttet shouldBe null
         }
 
         verifiserBekreftelseKafkaMelding(soknad, inntektUnderveis)
@@ -253,12 +253,12 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
 
     @Test
     fun konverterOsloDatoTilInstantSommertid() {
-        LocalDate.of(2025, 5, 10).toInstantAtStartOfDayOsloTid().toString() `should be equal to` "2025-05-09T22:00:00Z"
+        LocalDate.of(2025, 5, 10).toInstantAtStartOfDayOsloTid().toString() shouldBe "2025-05-09T22:00:00Z"
     }
 
     @Test
     fun konverterOsloDatoTilInstantVintertid() {
-        LocalDate.of(2025, 1, 10).toInstantAtStartOfDayOsloTid().toString() `should be equal to` "2025-01-09T23:00:00Z"
+        LocalDate.of(2025, 1, 10).toInstantAtStartOfDayOsloTid().toString() shouldBe "2025-01-09T23:00:00Z"
     }
 
     private fun lagreArbeidssokerperiode(): Arbeidssokerperiode =
@@ -306,13 +306,13 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         avsluttendeSoknad: Boolean? = false,
     ) {
         periodebekreftelseRepository.findAll().toList().single().also {
-            it.id `should not be equal to` null
-            it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiode.id
-            it.sykepengesoknadId `should be equal to` soknad.id
-            it.fortsattArbeidssoker `should be equal to` fortsattArbeidssoker
-            it.inntektUnderveis `should be equal to` inntektUnderveis
+            it.id shouldNotBe null
+            it.arbeidssokerperiodeId shouldBe arbeidssokerperiode.id
+            it.sykepengesoknadId shouldBe soknad.id
+            it.fortsattArbeidssoker shouldBe fortsattArbeidssoker
+            it.inntektUnderveis shouldBe inntektUnderveis
             it.opprettet `should be within seconds of` (1 to Instant.now())
-            it.avsluttendeSoknad `should be equal to` avsluttendeSoknad
+            it.avsluttendeSoknad shouldBe avsluttendeSoknad
         }
     }
 
@@ -321,20 +321,20 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         inntektUnderveis: Boolean,
     ) {
         bekreftelseConsumer.waitForRecords(1).single().also { consumerRecord ->
-            consumerRecord.key() `should be equal to` -3771L
+            consumerRecord.key() shouldBe -3771L
             consumerRecord.value().also { bekreftelse ->
-                bekreftelse.periodeId.toString() `should be equal to` arbeidssokerperiodeId
-                bekreftelse.bekreftelsesloesning.toString() `should be equal to` "FRISKMELDT_TIL_ARBEIDSFORMIDLING"
+                bekreftelse.periodeId.toString() shouldBe arbeidssokerperiodeId
+                bekreftelse.bekreftelsesloesning.toString() shouldBe "FRISKMELDT_TIL_ARBEIDSFORMIDLING"
                 bekreftelse.svar.also { svar ->
                     svar.sendtInnAv.also { metadata ->
-                        metadata.utfoertAv.type.toString() `should be equal to` "SLUTTBRUKER"
-                        metadata.utfoertAv.id `should be equal to` FNR
+                        metadata.utfoertAv.type.toString() shouldBe "SLUTTBRUKER"
+                        metadata.utfoertAv.id shouldBe FNR
                     }
-                    svar.gjelderFra `should be equal to` soknad.fom!!.toInstantAtStartOfDayOsloTid()
-                    svar.gjelderTil `should be equal to` soknad.tom!!.plusDays(1).toInstantAtStartOfDayOsloTid()
+                    svar.gjelderFra shouldBe soknad.fom!!.toInstantAtStartOfDayOsloTid()
+                    svar.gjelderTil shouldBe soknad.tom!!.plusDays(1).toInstantAtStartOfDayOsloTid()
                     // Vi sender Bekreftelser kun når bruker vil fortsette å være arbeidssøker.
-                    svar.vilFortsetteSomArbeidssoeker `should be equal to` true
-                    svar.harJobbetIDennePerioden `should be equal to` inntektUnderveis
+                    svar.vilFortsetteSomArbeidssoeker shouldBe true
+                    svar.harJobbetIDennePerioden shouldBe inntektUnderveis
                 }
             }
         }

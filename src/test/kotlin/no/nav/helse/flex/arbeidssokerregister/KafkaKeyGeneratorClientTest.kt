@@ -1,10 +1,10 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.kotest.matchers.shouldBe
 import mockwebserver3.MockResponse
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.serialisertTilString
-import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.web.client.HttpClientErrorException
@@ -17,12 +17,12 @@ class KafkaKeyGeneratorClientTest : FellesTestOppsett() {
             MockResponse.Builder().body(KafkaKeyGeneratorResponse(1000L).serialisertTilString()).build(),
         )
 
-        kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(FNR))!!.key `should be equal to` 1000
+        kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(FNR))!!.key shouldBe 1000
 
         kafkaKeyGeneratorMockWebServer.takeRequest().also {
-            it.method `should be equal to` "POST"
-            it.target `should be equal to` "/api/v1/record-key"
-            it.headers["Authorization"]!!.startsWith("Bearer") `should be equal to` true
+            it.method shouldBe "POST"
+            it.target shouldBe "/api/v1/record-key"
+            it.headers["Authorization"]!!.startsWith("Bearer") shouldBe true
         }
     }
 

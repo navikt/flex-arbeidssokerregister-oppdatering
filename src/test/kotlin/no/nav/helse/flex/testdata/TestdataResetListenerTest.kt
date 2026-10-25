@@ -1,10 +1,10 @@
 package no.nav.helse.flex.testdata
 
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
-import org.amshove.kluent.`should be equal to`
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -43,7 +43,7 @@ class TestdataResetListenerTest : FellesTestOppsett() {
         )
 
         arbeidssokerperiodeRepository.findAll().toList().also {
-            it.size `should be equal to` 2
+            it.size shouldBe 2
         }
     }
 
@@ -73,7 +73,7 @@ class TestdataResetListenerTest : FellesTestOppsett() {
         )
 
         periodebekreftelseRepository.findAll().toList().also {
-            it.size `should be equal to` 3
+            it.size shouldBe 3
         }
     }
 
@@ -86,16 +86,16 @@ class TestdataResetListenerTest : FellesTestOppsett() {
         kafkaProducer.send(ProducerRecord(TESTDATA_RESET_TOPIC, key, FNR)).get()
 
         testdataResetConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` key
-            it.value() `should be equal to` FNR
+            it.key() shouldBe key
+            it.value() shouldBe FNR
         }
 
         periodebekreftelseRepository.findAll().toList().single().also {
-            it.arbeidssokerperiodeId `should be equal to` ikkeSlettetArbeidssokerperiodeId
+            it.arbeidssokerperiodeId shouldBe ikkeSlettetArbeidssokerperiodeId
         }
 
         arbeidssokerperiodeRepository.findAll().toList().single().also {
-            it.fnr `should be equal to` "22222222222"
+            it.fnr shouldBe "22222222222"
         }
     }
 }

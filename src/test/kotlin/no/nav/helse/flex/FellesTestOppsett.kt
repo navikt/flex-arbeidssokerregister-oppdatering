@@ -1,5 +1,6 @@
 package no.nav.helse.flex
 
+import io.kotest.matchers.shouldBe
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.QueueDispatcher
@@ -25,7 +26,6 @@ import no.nav.paw.bekreftelse.melding.v1.Bekreftelse
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
-import org.amshove.kluent.should
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.Producer
@@ -233,5 +233,5 @@ infix fun Instant.`should be within seconds of`(pair: Pair<Int, Instant>) = this
 infix fun Instant.shouldBeWithinSecondsOf(pair: Pair<Int, Instant>) {
     val (seconds, other) = pair
     val difference = abs(this.epochSecond - other.epochSecond)
-    this.should { difference <= seconds }
+    (difference <= seconds) shouldBe true
 }
