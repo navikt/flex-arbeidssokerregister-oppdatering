@@ -1,5 +1,11 @@
 package no.nav.helse.flex.arbeidssokerperiode
 
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.`should be within seconds of`
@@ -14,12 +20,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.shouldBeEmpty
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldHaveSize
-import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -53,9 +53,9 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
             hentArbeidssokerperiodeMedPeriodeId(arbeidssokerregisterperiodeId).also {
                 it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
-                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
-                it.vedtaksperiodeFom `should be equal to` vedtaksperiodeFom
-                it.vedtaksperiodeTom `should be equal to` vedtaksperiodeTom
+                it.avsluttetTidspunkt shouldBe avsluttetTidspunkt
+                it.vedtaksperiodeFom shouldBe vedtaksperiodeFom
+                it.vedtaksperiodeTom shouldBe vedtaksperiodeTom
             }
 
             verifiserStartStoppMelding(StartStop.STOPP, avsluttetTidspunkt)
@@ -69,7 +69,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
             hentArbeidssokerperiodeMedPeriodeId(arbeidssokerregisterperiodeId).also {
                 it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
-                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+                it.avsluttetTidspunkt shouldBe avsluttetTidspunkt
             }
 
             verifiserStartStoppMelding(StartStop.STOPP, avsluttetTidspunkt)
@@ -94,7 +94,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
                 it shouldHaveSize 2
                 it.forEach { arbeidssokerperiode ->
                     arbeidssokerperiode.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
-                    arbeidssokerperiode.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+                    arbeidssokerperiode.avsluttetTidspunkt shouldBe avsluttetTidspunkt
                 }
             }
 
@@ -116,16 +116,16 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             behandleStartetPeriode(nyArbeidssokerregisterperiodeId)
 
             hentArbeidssokerperiode(avsluttetArbeidssokerperiode.id!!).also {
-                it.arbeidssokerperiodeId `should be equal to` nyArbeidssokerregisterperiodeId
+                it.arbeidssokerperiodeId shouldBe nyArbeidssokerregisterperiodeId
                 it.avsluttetMottatt.shouldBeNull()
                 it.avsluttetTidspunkt.shouldBeNull()
                 it.sendtAvsluttet.shouldBeNull()
                 it.avsluttetAarsak.shouldBeNull()
                 it.sendtPaaVegneAv!! `should be within seconds of` (1 to Instant.now())
-                it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
-                it.vedtaksperiodeFom `should be equal to` vedtaksperiodeFom
-                it.vedtaksperiodeTom `should be equal to` vedtaksperiodeTom
-                it.kafkaRecordKey `should be equal to` kafkaRecordKey
+                it.vedtaksperiodeId shouldBe vedtaksperiodeId
+                it.vedtaksperiodeFom shouldBe vedtaksperiodeFom
+                it.vedtaksperiodeTom shouldBe vedtaksperiodeTom
+                it.kafkaRecordKey shouldBe kafkaRecordKey
             }
 
             verifiserPaaVegneAvStartMelding(nyArbeidssokerregisterperiodeId)
@@ -158,9 +158,9 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             behandleAvsluttetPeriode(nyArbeidssokerregisterperiodeId)
 
             hentArbeidssokerperiode(avsluttetArbeidssokerperiode.id!!).also {
-                it.arbeidssokerperiodeId `should be equal to` nyArbeidssokerregisterperiodeId
+                it.arbeidssokerperiodeId shouldBe nyArbeidssokerregisterperiodeId
                 it.avsluttetMottatt!! `should be within seconds of` (1 to Instant.now())
-                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+                it.avsluttetTidspunkt shouldBe avsluttetTidspunkt
             }
             verifiserStartStoppMelding(StartStop.STOPP, avsluttetTidspunkt)
         }
@@ -173,7 +173,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
             hentArbeidssokerperiodeMedPeriodeId(arbeidssokerregisterperiodeId).also {
                 it.avsluttetMottatt.shouldNotBeNull()
-                it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
+                it.avsluttetTidspunkt shouldBe avsluttetTidspunkt
             }
             verifiserIngenMeldingerSendt()
         }
@@ -198,7 +198,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             behandleStartetPeriode(UUID.randomUUID().toString())
 
             hentArbeidssokerperiode(annenBrukersArbeidssokerperiode.id!!).also {
-                it.arbeidssokerperiodeId `should be equal to` arbeidssokerregisterperiodeId
+                it.arbeidssokerperiodeId shouldBe arbeidssokerregisterperiodeId
                 it.avsluttetMottatt.shouldNotBeNull()
             }
             verifiserIngenMeldingerSendt()
@@ -249,7 +249,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             behandleStartetPeriode(nyArbeidssokerregisterperiodeId)
 
             hentArbeidssokerperiode(avsluttetArbeidssokerperiode.id!!).also {
-                it.arbeidssokerperiodeId `should be equal to` nyArbeidssokerregisterperiodeId
+                it.arbeidssokerperiodeId shouldBe nyArbeidssokerregisterperiodeId
                 it.avsluttetMottatt.shouldBeNull()
             }
 
@@ -270,12 +270,12 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
             behandleStartetPeriode(nyArbeidssokerregisterperiodeId)
 
             hentArbeidssokerperiode(sisteArbeidssokerperiode.id!!).also {
-                it.arbeidssokerperiodeId `should be equal to` nyArbeidssokerregisterperiodeId
+                it.arbeidssokerperiodeId shouldBe nyArbeidssokerregisterperiodeId
                 it.avsluttetMottatt.shouldBeNull()
             }
 
             hentArbeidssokerperiode(eldreArbeidssokerperiode.id!!).also {
-                it.arbeidssokerperiodeId `should be equal to` arbeidssokerregisterperiodeId
+                it.arbeidssokerperiodeId shouldBe arbeidssokerregisterperiodeId
                 it.avsluttetMottatt.shouldNotBeNull()
             }
 
@@ -300,7 +300,7 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
 
             listOf(eldreArbeidssokerperiode, sisteArbeidssokerperiode).forEach { lagret ->
                 hentArbeidssokerperiode(lagret.id!!).also {
-                    it.arbeidssokerperiodeId `should be equal to` arbeidssokerregisterperiodeId
+                    it.arbeidssokerperiodeId shouldBe arbeidssokerregisterperiodeId
                     it.avsluttetMottatt.shouldNotBeNull()
                 }
             }
@@ -324,13 +324,13 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         tidspunkt: Instant,
     ) {
         arbeidssokerperiodeStartStoppConsumer.waitForRecords(1).single().also { consumerRecord ->
-            consumerRecord.key() `should be equal to` FNR.asProducerRecordKey()
+            consumerRecord.key() shouldBe FNR.asProducerRecordKey()
 
             consumerRecord.value().tilArbeidssokerperiodeStartStoppMelding().also {
-                it.operation `should be equal to` operation
-                it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
-                it.fnr `should be equal to` FNR
-                it.tidspunkt `should be equal to` tidspunkt
+                it.operation shouldBe operation
+                it.vedtaksperiodeId shouldBe vedtaksperiodeId
+                it.fnr shouldBe FNR
+                it.tidspunkt shouldBe tidspunkt
             }
         }
     }
@@ -340,9 +340,9 @@ class ArbeidssokerperiodeServiceIntegrationTest : FellesTestOppsett() {
         vedtaksperiodeTom: LocalDate = this.vedtaksperiodeTom,
     ) {
         paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` kafkaRecordKey
-            it.value().periodeId `should be equal to` UUID.fromString(arbeidssokerregisterperiodeId)
-            (it.value().handling as Start).graceMS `should be equal to`
+            it.key() shouldBe kafkaRecordKey
+            it.value().periodeId shouldBe UUID.fromString(arbeidssokerregisterperiodeId)
+            (it.value().handling as Start).graceMS shouldBe
                 beregnGraceMS(vedtaksperiodeTom, SOKNAD_DEAKTIVERES_ETTER_MAANEDER)
         }
     }

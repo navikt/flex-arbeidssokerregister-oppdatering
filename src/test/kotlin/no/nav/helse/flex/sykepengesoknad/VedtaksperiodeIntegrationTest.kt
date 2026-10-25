@@ -1,5 +1,8 @@
 package no.nav.helse.flex.sykepengesoknad
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import mockwebserver3.MockResponse
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
@@ -15,9 +18,6 @@ import no.nav.helse.flex.`should be within seconds of`
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be equal to`
-import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
@@ -31,7 +31,7 @@ import java.util.UUID
 class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     @AfterEach
     fun verifiserAtTopicErTomt() {
-        arbeidssokerperiodeStartStoppConsumer.fetchRecords().size `should be equal to` 0
+        arbeidssokerperiodeStartStoppConsumer.fetchRecords().size shouldBe 0
     }
 
     private val soknad = lagSoknad()
@@ -62,22 +62,22 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         sykepengesoknadService.behandleSoknad(soknad)
 
         arbeidssokerperiodeRepository.findAll().toList().single().also {
-            it.vedtaksperiodeId `should be equal to` VEDTAKSPERIODE_ID
-            it.kafkaRecordKey `should be equal to` 1000L
-            it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiodeId
+            it.vedtaksperiodeId shouldBe VEDTAKSPERIODE_ID
+            it.kafkaRecordKey shouldBe 1000L
+            it.arbeidssokerperiodeId shouldBe arbeidssokerperiodeId
             it.sendtPaaVegneAv!! `should be within seconds of` (1 to Instant.now())
         }
 
-        kafkaKeyGeneratorMockWebServer.takeRequest() `should not be equal to` null
-        arbeidssokerperiodeMockWebServer.takeRequest() `should not be equal to` null
+        kafkaKeyGeneratorMockWebServer.takeRequest() shouldNotBe null
+        arbeidssokerperiodeMockWebServer.takeRequest() shouldNotBe null
 
         paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` 1000L
+            it.key() shouldBe 1000L
             it.value().also {
-                it.periodeId.toString() `should be equal to` arbeidssokerperiodeId
+                it.periodeId.toString() shouldBe arbeidssokerperiodeId
                 (it.handling as Start).let { s ->
-                    s.intervalMS `should be equal to` FJORDEN_DAGER
-                    s.graceMS `should be equal to` 10368000000
+                    s.intervalMS shouldBe FJORDEN_DAGER
+                    s.graceMS shouldBe 10368000000
                 }
             }
         }
@@ -89,7 +89,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
         // Simulerer dobbel innsending av samme søknad.
         sykepengesoknadService.behandleSoknad(soknad)
 
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 1
+        arbeidssokerperiodeRepository.findAll().toList().size shouldBe 1
     }
 
     @Test
@@ -99,7 +99,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
         sykepengesoknadService.behandleSoknad(soknad.copy(status = SoknadsstatusDTO.NY))
 
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
+        arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -109,7 +109,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
         sykepengesoknadService.behandleSoknad(soknad.copy(type = SoknadstypeDTO.ARBEIDSTAKERE))
 
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
+        arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -121,7 +121,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
             sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
         }
 
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
+        arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
@@ -133,7 +133,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
             sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
         }
 
-        arbeidssokerperiodeRepository.findAll().toList().size `should be equal to` 0
+        arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     private fun lagArbeidsokerperiodeResponse(

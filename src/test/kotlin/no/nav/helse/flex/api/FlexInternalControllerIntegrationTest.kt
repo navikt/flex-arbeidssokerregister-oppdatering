@@ -1,5 +1,6 @@
 package no.nav.helse.flex.api
 
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
@@ -9,7 +10,6 @@ import no.nav.helse.flex.serialisertTilString
 import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
-import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,9 +64,9 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
 
         objectMapper.readValue<FlexInternalResponse>(hentArbeidssokerperioder()).also { flexInternalResponse ->
             flexInternalResponse.arbeidssokerperioder.single().also { arbeidssokerperiodeResponse ->
-                arbeidssokerperiodeResponse.vedtaksperiodeId `should be equal to` vedtaksperiodeId
+                arbeidssokerperiodeResponse.vedtaksperiodeId shouldBe vedtaksperiodeId
                 arbeidssokerperiodeResponse.periodebekreftelser!!.forEach {
-                    it.arbeidssokerperiodeId `should be equal to` lagretArbeidssokerperiode.id!!
+                    it.arbeidssokerperiodeId shouldBe lagretArbeidssokerperiode.id!!
                 }
             }
         }
@@ -86,8 +86,8 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
 
         objectMapper.readValue<FlexInternalResponse>(hentArbeidssokerperioder()).also { flexInternalResponse ->
             flexInternalResponse.arbeidssokerperioder.single().also {
-                it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
-                it.periodebekreftelser!!.size `should be equal to` 0
+                it.vedtaksperiodeId shouldBe vedtaksperiodeId
+                it.periodebekreftelser!!.size shouldBe 0
             }
         }
     }
@@ -115,12 +115,12 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
                 opprettet = periodeBekreftelseOpprettet,
                 avsluttendeSoknad = true,
             ).tilPeriodebekreftelseResponse().also {
-                it.arbeidssokerperiodeId `should be equal to` arbeidssokerperiodeId
-                it.sykepengesoknadId `should be equal to` sykepengesoknadId
-                it.fortsattArbeidssoker `should be equal to` true
-                it.inntektUnderveis `should be equal to` true
-                it.opprettet `should be equal to` periodeBekreftelseOpprettet
-                it.avsluttendeSoknad `should be equal to` true
+                it.arbeidssokerperiodeId shouldBe arbeidssokerperiodeId
+                it.sykepengesoknadId shouldBe sykepengesoknadId
+                it.fortsattArbeidssoker shouldBe true
+                it.inntektUnderveis shouldBe true
+                it.opprettet shouldBe periodeBekreftelseOpprettet
+                it.avsluttendeSoknad shouldBe true
             }
 
         Arbeidssokerperiode(
@@ -138,19 +138,19 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
             sendtAvsluttet = sendtAvsluttet,
             avsluttetAarsak = AvsluttetAarsak.AVSLUTTET_PERIODE,
         ).tilArbeidssokerperiodeResponse(listOf(periodebekreftelseResponse)).also {
-            it.id `should be equal to` arbeidssokerperiodeId
-            it.fnr `should be equal to` FNR
-            it.vedtaksperiodeId `should be equal to` vedtaksperiodeId
-            it.vedtaksperiodeFom `should be equal to` LocalDate.now().minusMonths(1)
-            it.vedtaksperiodeTom `should be equal to` LocalDate.now().plusMonths(2)
-            it.opprettet `should be equal to` arbeidssokerperiodeOpprettet
-            it.arbeidssokerperiodeId `should be equal to` arbeidssokerregisterPeriodeId
-            it.sendtPaaVegneAv `should be equal to` sendtPaaVegneAv
-            it.avsluttetMottatt `should be equal to` avsluttetMottatt
-            it.avsluttetTidspunkt `should be equal to` avsluttetTidspunkt
-            it.sendtAvsluttet `should be equal to` sendtAvsluttet
-            it.avsluttetAarsak `should be equal to` AvsluttetAarsak.AVSLUTTET_PERIODE
-            it.periodebekreftelser!!.single() `should be equal to` periodebekreftelseResponse
+            it.id shouldBe arbeidssokerperiodeId
+            it.fnr shouldBe FNR
+            it.vedtaksperiodeId shouldBe vedtaksperiodeId
+            it.vedtaksperiodeFom shouldBe LocalDate.now().minusMonths(1)
+            it.vedtaksperiodeTom shouldBe LocalDate.now().plusMonths(2)
+            it.opprettet shouldBe arbeidssokerperiodeOpprettet
+            it.arbeidssokerperiodeId shouldBe arbeidssokerregisterPeriodeId
+            it.sendtPaaVegneAv shouldBe sendtPaaVegneAv
+            it.avsluttetMottatt shouldBe avsluttetMottatt
+            it.avsluttetTidspunkt shouldBe avsluttetTidspunkt
+            it.sendtAvsluttet shouldBe sendtAvsluttet
+            it.avsluttetAarsak shouldBe AvsluttetAarsak.AVSLUTTET_PERIODE
+            it.periodebekreftelser!!.single() shouldBe periodebekreftelseResponse
         }
     }
 
@@ -178,7 +178,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
         )
 
         arbeidssokerperiodeRepository.findById(lagretArbeidssokerperiode.id).get().also {
-            it.vedtaksperiodeTom `should be equal to` newTomDate
+            it.vedtaksperiodeTom shouldBe newTomDate
         }
     }
 
@@ -206,7 +206,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
         )
 
         arbeidssokerperiodeRepository.findById(lagretArbeidssokerperiode.id).get().also {
-            it.vedtaksperiodeFom `should be equal to` newFomDate
+            it.vedtaksperiodeFom shouldBe newFomDate
         }
     }
 
@@ -278,13 +278,13 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
         )
 
         arbeidssokerperiodeRepository.findById(lagretArbeidssokerperiode.id).get().also {
-            it.arbeidssokerperiodeId `should be equal to` newArbeidssokerperiodeId
+            it.arbeidssokerperiodeId shouldBe newArbeidssokerperiodeId
         }
 
         paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` kafkaRecordKey
+            it.key() shouldBe kafkaRecordKey
             it.value().also { paaVegneAv ->
-                paaVegneAv.periodeId `should be equal to` UUID.fromString(newArbeidssokerperiodeId)
+                paaVegneAv.periodeId shouldBe UUID.fromString(newArbeidssokerperiodeId)
             }
         }
     }

@@ -1,9 +1,9 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.kotest.matchers.shouldBe
 import mockwebserver3.MockResponse
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
-import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
@@ -18,16 +18,16 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
         )
 
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR)).single().also {
-            it.periodeId `should be equal to` "ec135a7e-f694-48fe-a65d-336fe7f923b1"
-            it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
-            it.startet.aarsak `should be equal to` "Test"
-            it.avsluttet `should be equal to` null
+            it.periodeId shouldBe "ec135a7e-f694-48fe-a65d-336fe7f923b1"
+            it.startet.tidspunkt shouldBe Instant.parse("2025-01-01T00:00:00.000Z")
+            it.startet.aarsak shouldBe "Test"
+            it.avsluttet shouldBe null
         }
 
         arbeidssokerperiodeMockWebServer.takeRequest().also {
-            it.method `should be equal to` "POST"
-            it.target `should be equal to` "/api/v1/veileder/arbeidssoekerperioder?siste=true"
-            it.headers["Authorization"]!!.startsWith("Bearer") `should be equal to` true
+            it.method shouldBe "POST"
+            it.target shouldBe "/api/v1/veileder/arbeidssoekerperioder?siste=true"
+            it.headers["Authorization"]!!.startsWith("Bearer") shouldBe true
         }
     }
 
@@ -45,14 +45,14 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
 
         val response =
             arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR))
-        response.size `should be equal to` 1
+        response.size shouldBe 1
 
         response.single().also {
-            it.periodeId `should be equal to` "04a78565-a5ae-43ee-8e44-42893060995a"
-            it.startet.tidspunkt `should be equal to` Instant.parse("2025-01-01T00:00:00.000Z")
-            it.startet.aarsak `should be equal to` "Test"
-            it.avsluttet!!.tidspunkt `should be equal to` Instant.parse("2025-02-02T00:00:00.000Z")
-            it.avsluttet.aarsak `should be equal to` "Utløpt"
+            it.periodeId shouldBe "04a78565-a5ae-43ee-8e44-42893060995a"
+            it.startet.tidspunkt shouldBe Instant.parse("2025-01-01T00:00:00.000Z")
+            it.startet.aarsak shouldBe "Test"
+            it.avsluttet!!.tidspunkt shouldBe Instant.parse("2025-02-02T00:00:00.000Z")
+            it.avsluttet.aarsak shouldBe "Utløpt"
         }
     }
 }

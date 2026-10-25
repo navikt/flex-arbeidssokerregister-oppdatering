@@ -1,10 +1,10 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be equal to`
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -21,11 +21,11 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
 
         paaVegneAvProducer.send(paaVegneAvMelding)
 
-        paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` paaVegneAvMelding.kafkaKey
-            it.value().also {
-                it.periodeId `should be equal to` UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId)
-                (it.handling as Start).graceMS `should be equal to` paaVegneAvMelding.graceMS
+        paaVegneAvConsumer.waitForRecords(1).single().also { record ->
+            record.key() shouldBe paaVegneAvMelding.kafkaKey
+            record.value().also {
+                it.periodeId shouldBe UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId)
+                (it.handling as Start).graceMS shouldBe paaVegneAvMelding.graceMS
             }
         }
     }
@@ -42,10 +42,10 @@ class ArbeidssokerperiodePaaVegneAvProducerTest : FellesTestOppsett() {
         paaVegneAvProducer.send(paaVegneAvMelding)
 
         paaVegneAvConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` paaVegneAvMelding.kafkaKey
+            it.key() shouldBe paaVegneAvMelding.kafkaKey
             it.value().also {
-                it.periodeId `should be equal to` UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId)
-                (it.handling as Stopp) `should not be equal to` null
+                it.periodeId shouldBe UUID.fromString(paaVegneAvMelding.arbeidssokerregisterPeriodeId)
+                (it.handling as Stopp) shouldNotBe null
             }
         }
     }

@@ -1,8 +1,8 @@
 package no.nav.helse.flex.arbeidssokerregister
 
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
-import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
@@ -25,8 +25,8 @@ class ArbeidssokerperiodeBekreftelseProducerTest : FellesTestOppsett() {
         bekreftelseProducer.send(bekreftelseMelding)
 
         bekreftelseConsumer.waitForRecords(1).single().also {
-            it.key() `should be equal to` bekreftelseMelding.kafkaKey
-            it.value().periodeId `should be equal to` UUID.fromString(bekreftelseMelding.arbeidssokerregisterPeriodeId)
+            it.key() shouldBe bekreftelseMelding.kafkaKey
+            it.value().periodeId shouldBe UUID.fromString(bekreftelseMelding.arbeidssokerregisterPeriodeId)
         }
     }
 }
