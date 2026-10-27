@@ -121,7 +121,7 @@ abstract class FellesTestOppsett {
 
     companion object {
         init {
-            PostgreSQLContainer17().apply {
+            PostgreSQLContainer18().apply {
                 withCommand("postgres", "-c", "wal_level=logical")
                 start()
                 System.setProperty("spring.datasource.url", "$jdbcUrl&reWriteBatchedInserts=true")
@@ -182,7 +182,7 @@ abstract class FellesTestOppsett {
             .toList()
 }
 
-private class PostgreSQLContainer17 : PostgreSQLContainer("postgres:17-alpine")
+private class PostgreSQLContainer18 : PostgreSQLContainer("postgres:18-alpine")
 
 private fun withContentTypeApplicationJson(createMockResponse: () -> MockResponse): MockResponse =
     createMockResponse().newBuilder().addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE).build()
