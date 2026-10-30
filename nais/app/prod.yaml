@@ -1,9 +1,9 @@
 db_tier: db-custom-1-3840
 db_highAvailability: true
 db_pointInTimeRecovery: true
-db_type: POSTGRES_17
-minReplicas: 1
-maxReplicas: 1
+db_type: POSTGRES_18
+minReplicas: 0
+maxReplicas: 0
 kafkaPool: nav-prod
 azureTenant: nav.no
 cpu: 100m
