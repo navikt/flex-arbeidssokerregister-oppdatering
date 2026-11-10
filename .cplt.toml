@@ -1,3 +1,5 @@
+[propose]
 allow_jvm_attach = true
-allow_localhost_any = true
 
+[propose.allow]
+localhost = [64342]
