@@ -28,6 +28,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.listener.ContainerProperties.AckMode
+import java.time.Duration
 
 const val JAVA_KEYSTORE = "JKS"
 const val PKCS12 = "PKCS12"
@@ -114,6 +115,7 @@ class KafkaConfig(
             it.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfig))
             it.setCommonErrorHandler(kafkaErrorHandler)
             it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
+            it.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(10))
         }
 
     @Bean
@@ -142,6 +144,7 @@ class KafkaConfig(
             it.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfig))
             it.setCommonErrorHandler(kafkaErrorHandler)
             it.containerProperties.ackMode = AckMode.MANUAL_IMMEDIATE
+            it.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(10))
         }
 
     // Navngir for å hjelpe Spring med mathcing siden vi bruker generiske parametere.
