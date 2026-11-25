@@ -7,6 +7,7 @@ import mockwebserver3.MockResponse
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.VEDTAKSPERIODE_ID
+import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.arbeidssokerregister.ArbeidssokerperiodeResponse
 import no.nav.helse.flex.arbeidssokerregister.BrukerResponse
 import no.nav.helse.flex.arbeidssokerregister.FJORDEN_DAGER
@@ -19,25 +20,29 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
+    @BeforeEach
+    @AfterEach
+    fun resetMellomTester() {
+        slettFraDatabase()
+    }
+
     @AfterEach
     fun verifiserAtTopicErTomt() {
         arbeidssokerperiodeStartStoppConsumer.fetchRecords().size shouldBe 0
     }
 
-    private val soknad = lagSoknad()
+    private val periodeFomTom = Periode(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31))
+    private val soknad = lagSoknad(periodeFomTom = periodeFomTom)
 
     @Test
-    @Order(1)
     fun `Søknad med med ignorerArbeidssokerregister satt blir ikke behandlet`() {
         val soknad = lagSoknad().copy(ignorerArbeidssokerregister = true)
 
@@ -47,7 +52,6 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(2)
     fun `Søknad med ny FriskTilArbeid vedtaksperiode blir lagret`() {
         val arbeidssokerperiodeId = UUID.randomUUID().toString()
 
@@ -84,39 +88,33 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(3)
     fun `Søknad med kjent FriskTilArbeid vedtaksperiode blir ikke lagret`() {
-        // Simulerer dobbel innsending av samme søknad.
+        val lagretPeriode = lagreArbeidssokerperiode()
+
         sykepengesoknadService.behandleSoknad(soknad)
 
-        arbeidssokerperiodeRepository.findAll().toList().size shouldBe 1
+        arbeidssokerperiodeRepository.findAll().toList().also {
+            it shouldHaveSize 1
+            it.single().id shouldBe lagretPeriode.id
+        }
     }
 
     @Test
-    @Order(5)
     fun `Kun søknad med status FREMTIDIG blir behandlet`() {
-        arbeidssokerperiodeRepository.deleteAll()
-
         sykepengesoknadService.behandleSoknad(soknad.copy(status = SoknadsstatusDTO.NY))
 
         arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
-    @Order(5)
     fun `Kun søknad med type FRISKMELDT_TIL_ARBEIDSFORMIDLING blir behandlet`() {
-        arbeidssokerperiodeRepository.deleteAll()
-
         sykepengesoknadService.behandleSoknad(soknad.copy(type = SoknadstypeDTO.ARBEIDSTAKERE))
 
         arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
-    @Order(5)
     fun `Søknad som mangler vedtaksperiodeId feiler`() {
-        arbeidssokerperiodeRepository.deleteAll()
-
         assertThrows<Exception> {
             sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
         }
@@ -125,16 +123,27 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(5)
     fun `Søknad som mangler friskTilArbeidVedtakPeriode feiler`() {
-        arbeidssokerperiodeRepository.deleteAll()
-
         assertThrows<Exception> {
             sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
         }
 
         arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
+
+    private fun lagreArbeidssokerperiode(): Arbeidssokerperiode =
+        arbeidssokerperiodeRepository.save(
+            Arbeidssokerperiode(
+                fnr = FNR,
+                vedtaksperiodeId = VEDTAKSPERIODE_ID,
+                vedtaksperiodeFom = periodeFomTom.fom,
+                vedtaksperiodeTom = periodeFomTom.tom,
+                opprettet = Instant.now(),
+                kafkaRecordKey = 1000L,
+                arbeidssokerperiodeId = UUID.randomUUID().toString(),
+                sendtPaaVegneAv = Instant.now(),
+            ),
+        )
 
     private fun lagArbeidsokerperiodeResponse(
         arbeidssokerperiodeId: String,
