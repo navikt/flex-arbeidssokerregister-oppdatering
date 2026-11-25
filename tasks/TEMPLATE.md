@@ -54,8 +54,8 @@ Replace ⬜ with ✅ when a step is done.
 
 | Step | Task                          | Status |
 |------|-------------------------------|--------|
-| 1    | <Short name of step 1>        | ⬜      |
-| 2    | <Short name of step 2>        | ⬜      |
+| 1    | <Short name of step 1>        | ⬜     |
+| 2    | <Short name of step 2>        | ⬜     |
 ```
 
 ## Section rules

@@ -67,6 +67,8 @@ When available, prefer IntelliJ MCP server tools for code intelligence:
 Use `rg` or `grep` for non-source files, such as configuration, logs and documentation.
 Use them for content patterns when the IntelliJ tools are not suitable, return an error, or are unavailable.
 
+## Avro files
+
 On a clean checkout, or when generated Avro classes are missing, run `./gradlew classes` before IntelliJ builds or tests.
 Gradle generates the Avro classes and compiles the main sources without running tests.
 Refresh the Gradle project in IntelliJ after generation.

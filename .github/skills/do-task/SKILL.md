@@ -15,7 +15,8 @@ You verify the step and mark it as done.
 
 1. If the user gives no task file, list the files in `tasks/`.
 2. Ask the user to select a file with the `ask_user` tool.
-3. If the user gives no step number, select the first step with ⬜ in the progress table.
+3. Ask the user to select a step number with the `ask_user` tool.
+4. If the user gives no step number, select the first step with ⬜ in the progress table.
 
 ## Preparation
 
