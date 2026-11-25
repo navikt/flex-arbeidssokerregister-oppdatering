@@ -61,7 +61,8 @@ The existing tests must verify that the behavior does not change.
     `List<PeriodebekreftelseResponse>`. Remove the 3 now-unnecessary `!!` assertions on this field in
     `FlexInternalControllerIntegrationTest`. Expected result: tests compile with `CI=true`.
 13. Change `ArbeidssokerperiodeBekreftelseProducer.lagBekreftelse` to an expression body. Remove the local `val`.
-14. Run `./gradlew test`. Expected result: all tests pass.
+14. Run `./gradlew test`, or run all test classes with IntelliJ when shell Docker access is blocked.
+    Expected result: all tests pass.
 15. Run a search for `!!`, `orElse(null)` and `?: run {` in `src/main`. Expected result: no matches.
 
 ## Notes
@@ -72,6 +73,12 @@ The existing tests must verify that the behavior does not change.
 - In step 12, the JSON output does not change, because the field is never null now.
 - Step 12 also changes 3 test assertions. The non-null type makes their `!!` assertions compiler warnings.
   With `CI=true`, these warnings are errors.
+- Step 14 uses the IntelliJ test runner when shell Docker access is denied.
+  This follows `.github/instructions/tests.instructions.md`.
+- Step 14 verification: all 68 tests passed across 13 test classes.
+  IntelliJ ran the 12 integration test classes. Gradle ran `BeregnGraceMSTest`.
+  Test compilation with `CI=true` and `./gradlew ktlintCheck` also passed.
+- Step 15 verification: no matches for `!!`, `orElse(null)` or `?: run {` in `src/main`.
 
 ## Progress
 
@@ -92,5 +99,5 @@ Replace ⬜ with ✅ when a step is done.
 | 11   | Move `try`-`catch` out of `also`                  | ✅      |
 | 12   | Make `periodebekreftelser` non-null               | ✅      |
 | 13   | Use an expression body in `lagBekreftelse`        | ✅      |
-| 14   | Verify: all tests pass                            | ⬜      |
-| 15   | Verify: no deviations remain                      | ⬜      |
+| 14   | Verify: all tests pass                            | ✅      |
+| 15   | Verify: no deviations remain                      | ✅      |
