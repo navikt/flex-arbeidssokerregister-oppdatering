@@ -1,10 +1,12 @@
 package no.nav.helse.flex.arbeidssokerregister
 
 import no.nav.helse.flex.objectMapper
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.body
 import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 
@@ -24,8 +26,9 @@ class ArbeidssokerregisterClient(
             }.contentType(APPLICATION_JSON)
             .body(request)
             .retrieve()
-            .body(String::class.java)!!
-            .tilArbeidssokerperiodeResponse()
+            .body<String>()
+            ?.tilArbeidssokerperiodeResponse()
+            ?: throw ArbeidssokerperiodeException("Mangler respons fra arbeidssøkerregisteret ved henting av siste arbeidssøkerperiode.")
 
     private fun String.tilArbeidssokerperiodeResponse(): List<ArbeidssokerperiodeResponse> = objectMapper.readValue(this)
 }

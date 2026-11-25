@@ -75,12 +75,12 @@ Replace ⬜ with ✅ when a step is done.
 
 | Step | Task                                              | Status |
 |------|---------------------------------------------------|--------|
-| 1    | Remove `!!` in `SykepengesoknadService`           | ⬜      |
-| 2    | Remove `!!` in `FlexInternalController`           | ⬜      |
-| 3    | Remove `!!` in `PaaVegneAvProducer`               | ⬜      |
-| 4    | Remove `!!` in `ArbeidssokerregisterClient`       | ⬜      |
-| 5    | Remove `!!` in `RestClientConfig`                 | ⬜      |
-| 6    | Remove `!!` in `TestdataResetListener`            | ⬜      |
+| 1    | Remove `!!` in `SykepengesoknadService`           | ✅      |
+| 2    | Remove `!!` in `FlexInternalController`           | ✅      |
+| 3    | Remove `!!` in `PaaVegneAvProducer`               | ✅      |
+| 4    | Remove `!!` in `ArbeidssokerregisterClient`       | ✅      |
+| 5    | Remove `!!` in `RestClientConfig`                 | ✅      |
+| 6    | Remove `!!` in `TestdataResetListener`            | ✅      |
 | 7    | Make dependencies `private`                       | ⬜      |
 | 8    | Use `findByIdOrNull()`                            | ⬜      |
 | 9    | Remove the getter in `EnvironmentToggles`         | ⬜      |

@@ -62,7 +62,7 @@ class SykepengesoknadService(
             return
         }
 
-        val kafkaRecordKey = hentKafkaRecordKey(vedtaksperiode.fnr)
+        val kafkaRecordKey = hentKafkaRecordKey(vedtaksperiode)
 
         // Arbeidssøkerregisteret returnerer tom liste hvis bruker ikke er registrert.
         val arbeidsokerperiodeResponse =
@@ -118,8 +118,12 @@ class SykepengesoknadService(
             return
         }
 
+        val vedtaksperiodeId =
+            soknad.friskTilArbeidVedtakId
+                ?: throw PeriodebekreftelseException("Mangler vedtaksperiodeId for søknad: ${soknad.id}.")
+
         val arbeidssokerperiode =
-            arbeidssokerperiodeRepository.findByVedtaksperiodeId(soknad.friskTilArbeidVedtakId!!)
+            arbeidssokerperiodeRepository.findByVedtaksperiodeId(vedtaksperiodeId)
                 ?: throw PeriodebekreftelseException(
                     "Fant ikke arbeidssøkerperiode for søknad: ${soknad.id} med " +
                         "vedtaksperiode: ${soknad.friskTilArbeidVedtakId}.",
@@ -142,7 +146,11 @@ class SykepengesoknadService(
 
         periodebekreftelseRepository.save(
             Periodebekreftelse(
-                arbeidssokerperiodeId = arbeidssokerperiode.id!!,
+                arbeidssokerperiodeId =
+                    arbeidssokerperiode.id
+                        ?: throw PeriodebekreftelseException(
+                            "Mangler arbeidssøkerperiodeId for søknad: ${soknad.id} med vedtaksperiode: $vedtaksperiodeId.",
+                        ),
                 sykepengesoknadId = soknad.id,
                 fortsattArbeidssoker = soknad.fortsattArbeidssoker,
                 inntektUnderveis = soknad.inntektUnderveis,
@@ -187,12 +195,38 @@ class SykepengesoknadService(
     ) {
         val bekreftelseMelding =
             BekreftelseMelding(
-                kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-                arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
+                kafkaKey =
+                    arbeidssokerperiode.kafkaRecordKey
+                        ?: throw PeriodebekreftelseException(
+                            "Mangler Kafka key for søknad: ${sykepengesoknadDTO.id} med arbeidssøkerperiode: " +
+                                "${arbeidssokerperiode.id} og vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
+                arbeidssokerperiodeId =
+                    arbeidssokerperiode.id
+                        ?: throw PeriodebekreftelseException(
+                            "Mangler arbeidssøkerperiodeId for søknad: ${sykepengesoknadDTO.id} med " +
+                                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
+                arbeidssokerregisterPeriodeId =
+                    arbeidssokerperiode.arbeidssokerperiodeId
+                        ?: throw PeriodebekreftelseException(
+                            "Mangler periodeId i arbeidssøkerregisteret for søknad: ${sykepengesoknadDTO.id} med " +
+                                "arbeidssøkerperiode: ${arbeidssokerperiode.id} og " +
+                                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
                 fnr = sykepengesoknadDTO.fnr,
-                periodeStart = sykepengesoknadDTO.fom!!.toInstantAtStartOfDayOsloTid(),
-                periodeSlutt = sykepengesoknadDTO.tom!!.plusDays(1).toInstantAtStartOfDayOsloTid(),
+                periodeStart =
+                    sykepengesoknadDTO.fom?.toInstantAtStartOfDayOsloTid()
+                        ?: throw PeriodebekreftelseException(
+                            "Mangler fom for søknad: ${sykepengesoknadDTO.id} med " +
+                                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
+                periodeSlutt =
+                    sykepengesoknadDTO.tom?.plusDays(1)?.toInstantAtStartOfDayOsloTid()
+                        ?: throw PeriodebekreftelseException(
+                            "Mangler tom for søknad: ${sykepengesoknadDTO.id} med " +
+                                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
                 inntektUnderveis = sykepengesoknadDTO.inntektUnderveis,
                 fortsattArbeidssoker = true,
             )
@@ -202,16 +236,35 @@ class SykepengesoknadService(
     private fun sendPaaVegneAvStoppMelding(arbeidssokerperiode: Arbeidssokerperiode) =
         paaVegneAvProducer.send(
             PaaVegneAvStoppMelding(
-                kafkaKey = arbeidssokerperiode.kafkaRecordKey!!,
-                arbeidssokerperiodeId = arbeidssokerperiode.id!!,
-                arbeidssokerregisterPeriodeId = arbeidssokerperiode.arbeidssokerperiodeId!!,
+                kafkaKey =
+                    arbeidssokerperiode.kafkaRecordKey
+                        ?: throw ArbeidssokerperiodeException(
+                            "Mangler Kafka key for arbeidssøkerperiode: ${arbeidssokerperiode.id} med " +
+                                "vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
+                arbeidssokerperiodeId =
+                    arbeidssokerperiode.id
+                        ?: throw ArbeidssokerperiodeException(
+                            "Mangler arbeidssøkerperiodeId for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
+                arbeidssokerregisterPeriodeId =
+                    arbeidssokerperiode.arbeidssokerperiodeId
+                        ?: throw ArbeidssokerperiodeException(
+                            "Mangler periodeId i arbeidssøkerregisteret for arbeidssøkerperiode: " +
+                                "${arbeidssokerperiode.id} med vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                        ),
             ),
         )
 
     private fun erNyVedtaksperiode(vedtaksperiode: FriskTilArbeidVedtaksperiode) =
         arbeidssokerperiodeRepository.findByVedtaksperiodeId(vedtaksperiode.vedtaksperiodeId) == null
 
-    private fun hentKafkaRecordKey(fnr: String): Long = kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(fnr))!!.key
+    private fun hentKafkaRecordKey(vedtaksperiode: FriskTilArbeidVedtaksperiode): Long =
+        kafkaKeyGeneratorClient.hentKafkaKey(KafkaKeyGeneratorRequest(vedtaksperiode.fnr))?.key
+            ?: throw ArbeidssokerperiodeException(
+                "Mangler Kafka key for søknad: ${vedtaksperiode.sykepengesoknadId} med " +
+                    "vedtaksperiode: ${vedtaksperiode.vedtaksperiodeId}.",
+            )
 
     private fun hentArbeidssokerperiodeId(fnr: String): List<ArbeidssokerperiodeResponse> =
         arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(fnr))
@@ -250,10 +303,17 @@ class SykepengesoknadService(
     )
 
     fun SykepengesoknadDTO.tilVedtaksperiode(): FriskTilArbeidVedtaksperiode {
-        val periode = this.friskTilArbeidVedtakPeriode!!.tilPeriode()
+        val periode =
+            this.friskTilArbeidVedtakPeriode?.tilPeriode()
+                ?: throw ArbeidssokerperiodeException(
+                    "Mangler friskTilArbeidVedtakPeriode for søknad: ${this.id} med " +
+                        "vedtaksperiode: ${this.friskTilArbeidVedtakId}.",
+                )
         return FriskTilArbeidVedtaksperiode(
             fnr = this.fnr,
-            vedtaksperiodeId = this.friskTilArbeidVedtakId!!,
+            vedtaksperiodeId =
+                this.friskTilArbeidVedtakId
+                    ?: throw ArbeidssokerperiodeException("Mangler vedtaksperiodeId for søknad: ${this.id}."),
             sykepengesoknadId = this.id,
             fom = periode.fom,
             tom = periode.tom,
