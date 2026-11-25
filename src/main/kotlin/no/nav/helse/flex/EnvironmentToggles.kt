@@ -9,6 +9,4 @@ class EnvironmentToggles(
     private val naisClusterName: String,
 ) {
     fun erProduksjon(): Boolean = naisClusterName == "prod-gcp"
-
-    fun naisClusterName(): String = naisClusterName
 }

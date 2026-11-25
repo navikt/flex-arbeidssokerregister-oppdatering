@@ -28,20 +28,19 @@ class ArbeidssokerperiodeListener(
         cr: ConsumerRecord<Long, Periode>,
         acknowledgment: Acknowledgment,
     ) {
-        cr.value().also {
-            try {
-                arbeidssokerperiodeService.behandlePeriode(it)
-            } catch (e: Exception) {
-                log.error(
-                    "Feil ved behandling av periode fra arbeidssøkerregisteret: ${it.id} med startdato: ${it.startet.tidspunkt} og sluttdato: ${it.avsluttet?.tidspunkt}.",
-                    e,
-                )
-                if (environmentToggles.erProduksjon()) {
-                    throw e
-                }
+        val periode = cr.value()
+        try {
+            arbeidssokerperiodeService.behandlePeriode(periode)
+        } catch (e: Exception) {
+            log.error(
+                "Feil ved behandling av periode fra arbeidssøkerregisteret: ${periode.id} med startdato: ${periode.startet.tidspunkt} og sluttdato: ${periode.avsluttet?.tidspunkt}.",
+                e,
+            )
+            if (environmentToggles.erProduksjon()) {
+                throw e
             }
-            acknowledgment.acknowledge()
         }
+        acknowledgment.acknowledge()
     }
 }
 

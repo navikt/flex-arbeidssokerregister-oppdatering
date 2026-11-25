@@ -25,12 +25,13 @@ class KafkaErrorHandler :
         consumer: Consumer<*, *>,
         container: MessageListenerContainer,
     ) {
-        records.firstOrNull()?.let {
+        val record = records.firstOrNull()
+        if (record != null) {
             log.error(
-                "Feil i prossessering av record med offset: ${it.offset()} og key: ${it.key()} på topic: ${it.topic()}.",
+                "Feil i prossessering av record med offset: ${record.offset()} og key: ${record.key()} på topic: ${record.topic()}.",
                 thrownException,
             )
-        } ?: run {
+        } else {
             log.error("Feil uten at det ble konsumert records:", thrownException)
         }
         super.handleRemaining(thrownException, records, consumer, container)

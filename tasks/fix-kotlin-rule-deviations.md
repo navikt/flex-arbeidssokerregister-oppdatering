@@ -24,7 +24,8 @@ body.
 ## Scope
 
 - In scope: the classes in `src/main` that the Steps name.
-- Out of scope: code in `src/test`. The task file `fix-test-rule-deviations.md` covers the tests.
+- Out of scope: code in `src/test`, except the 3 assertions that depend on the type change in step 12.
+  The task file `fix-test-rule-deviations.md` covers other test changes.
 - Out of scope: JSON field names in `ArbeidssokerperiodeResponse`. They are an API contract.
 - Out of scope: other refactoring in the same classes. The Kotlin rules forbid changes to unrelated code.
 
@@ -57,9 +58,11 @@ The existing tests must verify that the behavior does not change.
 11. Move the `try`-`catch` block out of `cr.value().also { }` in `ArbeidssokerperiodeListener` and
     `SykepengesoknadListener`. Use a local `val`.
 12. Change `ArbeidssokerperiodeResponse.periodebekreftelser` from `List<PeriodebekreftelseResponse>?` to
-    `List<PeriodebekreftelseResponse>`.
+    `List<PeriodebekreftelseResponse>`. Remove the 3 now-unnecessary `!!` assertions on this field in
+    `FlexInternalControllerIntegrationTest`. Expected result: tests compile with `CI=true`.
 13. Change `ArbeidssokerperiodeBekreftelseProducer.lagBekreftelse` to an expression body. Remove the local `val`.
-14. Run `./gradlew test`. Expected result: all tests pass.
+14. Run `./gradlew test`, or run all test classes with IntelliJ when shell Docker access is blocked.
+    Expected result: all tests pass.
 15. Run a search for `!!`, `orElse(null)` and `?: run {` in `src/main`. Expected result: no matches.
 
 ## Notes
@@ -68,6 +71,14 @@ The existing tests must verify that the behavior does not change.
 - An exception from a Kafka listener makes `KafkaErrorHandler` retry the message.
   Make sure that a new exception does not change which messages the application retries.
 - In step 12, the JSON output does not change, because the field is never null now.
+- Step 12 also changes 3 test assertions. The non-null type makes their `!!` assertions compiler warnings.
+  With `CI=true`, these warnings are errors.
+- Step 14 uses the IntelliJ test runner when shell Docker access is denied.
+  This follows `.github/instructions/tests.instructions.md`.
+- Step 14 verification: all 68 tests passed across 13 test classes.
+  IntelliJ ran the 12 integration test classes. Gradle ran `BeregnGraceMSTest`.
+  Test compilation with `CI=true` and `./gradlew ktlintCheck` also passed.
+- Step 15 verification: no matches for `!!`, `orElse(null)` or `?: run {` in `src/main`.
 
 ## Progress
 
@@ -82,11 +93,11 @@ Replace ⬜ with ✅ when a step is done.
 | 5    | Remove `!!` in `RestClientConfig`                 | ✅      |
 | 6    | Remove `!!` in `TestdataResetListener`            | ✅      |
 | 7    | Make dependencies `private`                       | ✅      |
-| 8    | Use `findByIdOrNull()`                            | ⬜      |
-| 9    | Remove the getter in `EnvironmentToggles`         | ⬜      |
-| 10   | Use `if`-`else` in `KafkaErrorHandler`            | ⬜      |
-| 11   | Move `try`-`catch` out of `also`                  | ⬜      |
-| 12   | Make `periodebekreftelser` non-null               | ⬜      |
-| 13   | Use an expression body in `lagBekreftelse`        | ⬜      |
-| 14   | Verify: all tests pass                            | ⬜      |
-| 15   | Verify: no deviations remain                      | ⬜      |
+| 8    | Use `findByIdOrNull()`                            | ✅      |
+| 9    | Remove the getter in `EnvironmentToggles`         | ✅      |
+| 10   | Use `if`-`else` in `KafkaErrorHandler`            | ✅      |
+| 11   | Move `try`-`catch` out of `also`                  | ✅      |
+| 12   | Make `periodebekreftelser` non-null               | ✅      |
+| 13   | Use an expression body in `lagBekreftelse`        | ✅      |
+| 14   | Verify: all tests pass                            | ✅      |
+| 15   | Verify: no deviations remain                      | ✅      |
