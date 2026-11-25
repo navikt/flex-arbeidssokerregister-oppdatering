@@ -4,7 +4,9 @@ import no.nav.helse.flex.api.OIDCIssuer.AZUREATOR
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.arbeidssokerperiode.AvsluttetAarsak
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException
 import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
+import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseException
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import no.nav.helse.flex.sykepengesoknad.SOKNAD_DEAKTIVERES_ETTER_MAANEDER
 import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
@@ -109,7 +111,10 @@ class FlexInternalController(
     private fun hentPeriodebekreftelser(arbeidssokerperiode: Arbeidssokerperiode): List<PeriodebekreftelseResponse> =
         periodebekreftelseRepository
             .findByArbeidssokerperiodeId(
-                arbeidssokerperiode.id!!,
+                arbeidssokerperiode.id
+                    ?: throw ArbeidssokerperiodeException(
+                        "Mangler arbeidssøkerperiodeId for vedtaksperiode: ${arbeidssokerperiode.vedtaksperiodeId}.",
+                    ),
             ).map { it.tilPeriodebekreftelseResponse() }
 }
 
@@ -138,7 +143,11 @@ data class OppdaterArbeidssokerperiodeIdRequest(
 
 fun Arbeidssokerperiode.tilArbeidssokerperiodeResponse(periodebekreftelser: List<PeriodebekreftelseResponse>): ArbeidssokerperiodeResponse =
     ArbeidssokerperiodeResponse(
-        id = this.id!!,
+        id =
+            this.id
+                ?: throw ArbeidssokerperiodeException(
+                    "Mangler arbeidssøkerperiodeId for vedtaksperiode: ${this.vedtaksperiodeId}.",
+                ),
         fnr = this.fnr,
         vedtaksperiodeId = this.vedtaksperiodeId,
         vedtaksperiodeFom = this.vedtaksperiodeFom,
@@ -171,7 +180,12 @@ data class ArbeidssokerperiodeResponse(
 
 fun Periodebekreftelse.tilPeriodebekreftelseResponse(): PeriodebekreftelseResponse =
     PeriodebekreftelseResponse(
-        id = this.id!!,
+        id =
+            this.id
+                ?: throw PeriodebekreftelseException(
+                    "Mangler periodebekreftelseId for søknad: ${this.sykepengesoknadId} med " +
+                        "arbeidssøkerperiode: ${this.arbeidssokerperiodeId}.",
+                ),
         arbeidssokerperiodeId = this.arbeidssokerperiodeId,
         sykepengesoknadId = this.sykepengesoknadId,
         fortsattArbeidssoker = this.fortsattArbeidssoker,

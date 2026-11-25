@@ -6,6 +6,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.logger
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException
 import no.nav.paw.bekreftelse.paavegneav.v1.PaaVegneAv
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Bekreftelsesloesning
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Start
@@ -104,9 +105,20 @@ data class PaaVegneAvStartMelding(
 
 fun Arbeidssokerperiode.tilPaaVegneAvStartMelding(graceMS: Long) =
     PaaVegneAvStartMelding(
-        kafkaKey = kafkaRecordKey!!,
-        arbeidssokerperiodeId = id!!,
-        arbeidssokerregisterPeriodeId = arbeidssokerperiodeId!!,
+        kafkaKey =
+            kafkaRecordKey
+                ?: throw ArbeidssokerperiodeException(
+                    "Mangler Kafka key for arbeidssøkerperiode: $id med vedtaksperiode: $vedtaksperiodeId.",
+                ),
+        arbeidssokerperiodeId =
+            id
+                ?: throw ArbeidssokerperiodeException("Mangler arbeidssøkerperiodeId for vedtaksperiode: $vedtaksperiodeId."),
+        arbeidssokerregisterPeriodeId =
+            arbeidssokerperiodeId
+                ?: throw ArbeidssokerperiodeException(
+                    "Mangler periodeId i arbeidssøkerregisteret for arbeidssøkerperiode: $id med " +
+                        "vedtaksperiode: $vedtaksperiodeId.",
+                ),
         graceMS = graceMS,
     )
 

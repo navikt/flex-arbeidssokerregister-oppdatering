@@ -3,6 +3,7 @@ package no.nav.helse.flex.testdata
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.arbeidssokerperiode.ArbeidssokerperiodeRepository
 import no.nav.helse.flex.logger
+import no.nav.helse.flex.sykepengesoknad.ArbeidssokerperiodeException
 import no.nav.helse.flex.sykepengesoknad.PeriodebekreftelseRepository
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.context.annotation.Profile
@@ -31,7 +32,10 @@ class TestdataResetListener(
     ) {
         val fnr = cr.value()
         arbeidssokerperiodeRepository.findByFnr(fnr).forEach {
-            val antall = periodebekreftelseRepository.deleteByArbeidssokerperiodeId(it.id!!)
+            val arbeidssokerperiodeId =
+                it.id
+                    ?: throw ArbeidssokerperiodeException("Mangler arbeidssøkerperiodeId for vedtaksperiode: ${it.vedtaksperiodeId}.")
+            val antall = periodebekreftelseRepository.deleteByArbeidssokerperiodeId(arbeidssokerperiodeId)
             arbeidssokerperiodeRepository.delete(it)
             log.info("Slettet arbeidssokerperiode: ${it.id} og $antall tilhørerende periodebekreftelser.")
         }
