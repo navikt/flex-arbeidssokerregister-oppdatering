@@ -41,9 +41,17 @@ These rules apply to all Kafka consumers. Source: `KafkaConfig`, `KafkaErrorHand
 - The back-off has no max attempts and no max elapsed time. The Spring defaults are `Long.MAX_VALUE`. A failing record
   is therefore retried forever and blocks its partition.
 - There is no dead-letter topic and no recoverer.
+- The unbounded retry is a design decision. `KafkaErrorHandler.handleRemaining` logs an error for each failed attempt.
+  The developers monitor these errors and fix the cause.
 - `ArbeidssokerperiodeListener` and `SykepengesoknadListener` catch every exception from the service.
   - In `prod-gcp` (`EnvironmentToggles.erProduksjon()`), the listener rethrows. The error handler retries forever.
   - In all other clusters, the listener logs the error and acknowledges the record. The record is skipped.
+  - The difference is a design decision. Reason: data in dev is less predictable.
+- `SykepengesoknadListener` parses the JSON value outside the `try` block. A parse error is retried forever in all
+  clusters, also in dev. This is a design decision. Reason: it shows changes in the søknad format in dev.
+- `avroKafkaListenerContainerFactory` has no `ErrorHandlingDeserializer`. A record on `paw.arbeidssokerperioder-v1`
+  that cannot be deserialized makes the container poll the same offset again in a loop with no back-off, in all
+  clusters. `tasks/fix-architecture-review-issues.md` (I1) describes the fix.
 
 ### 2.1 Flow A: New vedtaksperiode (søknad with status FREMTIDIG)
 
@@ -111,6 +119,13 @@ one `Bekreftelse`.
 **Error handling:** A missing `arbeidssokerperiode` and Kafka send errors throw an exception. The transaction rolls
 back. See section 2.0.
 
+Flow B does not check `sendt_avsluttet` or `avsluttet_mottatt`. This is a design decision. Reason: when a søknad stops
+the vedtaksperiode, `sykepengesoknad-backend` deletes the later søknader in it. No later SENDT søknad comes.
+
+Flow B sends `fortsattArbeidssoker = true` when a søknad that is not avsluttende has no answer. This is a design
+decision. Reason: a manual change of the vedtaksperiode after the søknad and its questions were made can cause the
+missing answer.
+
 ### 2.3 Flow C: Expired søknad (status UTGAATT)
 
 **Trigger:** A record on `flex.sykepengesoknad` with `type = FRISKMELDT_TIL_ARBEIDSFORMIDLING` and
@@ -128,7 +143,11 @@ back. See section 2.0.
 
 **Outputs:** Zero or more updated `arbeidssokerperiode` rows. One PaaVegneAv `Stopp` for each row.
 
-**Error handling:** As Flow B. This flow does not check `ignorerArbeidssokerregister` or the vedtaksperiode id.
+**Error handling:** As Flow B.
+
+Flow C stops all open rows for the person. It does not check `ignorerArbeidssokerregister` or the vedtaksperiode id.
+These are design decisions. The filter on `avsluttet_aarsak` has no effect, because `sendt_avsluttet` is always set
+together with `avsluttet_aarsak`. `tasks/fix-architecture-review-issues.md` (I7) describes the removal.
 
 Søknader with other types or statuses are acknowledged and ignored (`behandleSoknad` has no `else` branch).
 
@@ -141,7 +160,7 @@ Søknader with other types or statuses are acknowledged and ignored (`behandleSo
 1. `ArbeidssokerperiodeListener.listen` receives the Avro `Periode` and calls
    `ArbeidssokerperiodeService.behandlePeriode` (transaction start).
 2. `ArbeidssokerperiodeService.finnRestartbarArbeidssokerperiode` reads all rows for `identitetsnummer`. It selects the
-   row with the latest `vedtaksperiode_tom`.
+   row with the latest `vedtaksperiode_tom`. It never restarts an older row. This is a design decision.
 3. `ArbeidssokerperiodeService.aarsakTilAtIkkeRestartbar` checks the row in this order. The first match stops the flow
    and logs the reason:
    1. `avsluttet_mottatt IS NULL` → `IKKE_MOTTATT_AVSLUTTET`.
@@ -199,6 +218,13 @@ The controller has no `@Transactional`. Each repository call runs in its own Spr
 **Error handling:** No explicit handling. An exception gives an HTTP error. A failed send after the save leaves the
 saved row in place.
 
+`oppdater-arbeidssokerperiode-id` does not set `sendt_paavegneav`, and does not clear `avsluttet_mottatt` and
+`avsluttet_tidspunkt`. If the old registry period ended, Flow E ignores the end of the new registry period.
+`tasks/fix-architecture-review-issues.md` (I4) describes the fix.
+
+`oppdater-tom` sends no new PaaVegneAv `Start`. The grace period in Arbeidssøkerregisteret still uses the old `tom`.
+`tasks/fix-architecture-review-issues.md` (I5) describes the fix.
+
 ### 2.7 Flow G: Test data reset (dev only)
 
 **Trigger:** A record on `flex.testdata-reset`. The value is a `fnr`.
@@ -225,7 +251,7 @@ saved row in place.
   for one person depends on the producer key, which this repository does not show.
 - No order exists between the two input topics. The two listeners run on separate threads.
 - Flow B needs the row from Flow A. If a SENDT søknad comes first, Flow B throws and retries (production) or skips
-  (dev).
+  (dev). This does not occur in practice. A søknad has status FREMTIDIG days before it can be SENDT.
 - `flex.arbeidssokerregister-start-stopp-topic` has 1 partition. All Start/Stopp messages have one total order.
 
 **Duplicates:**
@@ -245,11 +271,13 @@ saved row in place.
 - The Avro producers (PaaVegneAv and Bekreftelse) wait for the broker ack inside the transaction. A send failure
   throws, and the database transaction rolls back. The database and Kafka stay consistent in this case.
 - If the send succeeds and the commit then fails, the message is out and the row is not. The retry sends the message
-  again. For Bekreftelse, the retry uses a new random UUID.
+  again. For Bekreftelse, the retry uses a new random UUID. `tasks/fix-architecture-review-issues.md` (I2) describes
+  the fix.
 - `ArbeidssokerperiodeStartStoppProducer` does not wait for the ack and has no callback. A failed async send is lost.
-  The transaction still commits.
+  The transaction still commits. `tasks/fix-architecture-review-issues.md` (I3) describes the fix.
 - Flow F saves first and sends after, without a transaction. A failed send leaves the new `arbeidssokerperiode_id` in
-  the database without a PaaVegneAv `Start`.
+  the database without a PaaVegneAv `Start`. An id that is not a UUID is saved, and then the producer throws.
+  `tasks/fix-architecture-review-issues.md` (I4) describes the fix.
 
 ## 3. Data stores
 
@@ -265,6 +293,13 @@ Indexes exist on `arbeidssokerperiode (vedtaksperiode_id, fnr, opprettet, arbeid
 `periodebekreftelse (arbeidssokerperiode_id, sykepengesoknad_id, opprettet, (fortsatt_arbeidssoker, inntekt_underveis))`.
 
 The table `vedtaksperiode_exception` (V15) was dropped in V19. No code uses it.
+
+`periodebekreftelse.avsluttende_soknad` is nullable. Rows from before V11 have `NULL`. Spring Data JDBC uses the Kotlin
+default value, so `Periodebekreftelse.avsluttendeSoknad` is `false` for these rows. `flex-internal-frontend` handles
+this.
+
+Flyway does not run `v21__slett_bigquery_datastream_grants.sql`, because the name starts with a lowercase `v`.
+`tasks/fix-architecture-review-issues.md` (I8) describes the fix.
 
 **Transaction boundaries:**
 
@@ -378,7 +413,7 @@ No flow updates a `periodebekreftelse` row after insert. Flow G deletes rows.
 28. This service is the only writer to its database. **(inferred)** No other writer appears in the configuration.
 29. Arbeidssøkerregisteret owns the period state. This service only mirrors it in `arbeidssokerperiode_id`, `avsluttet_mottatt` and `avsluttet_tidspunkt`. **(inferred)**
 30. Listeners call services. Services call repositories, producers and clients. **(inferred)** No architecture test exists. `FlexInternalController` calls repositories directly.
-31. Only one writer updates an `arbeidssokerperiode` row at a time. **(inferred)** The entity has no `@Version`. `save` writes all columns.
+31. Only one writer updates an `arbeidssokerperiode` row at a time. **(inferred)** The entity has no `@Version`. `save` writes all columns. Nothing enforces the rule. `tasks/fix-architecture-review-issues.md` (I6) describes the fix.
 
 ## 7. Glossary
 
@@ -386,7 +421,7 @@ No flow updates a `periodebekreftelse` row after insert. Flow G deletes rows.
 |-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Arbeidssøkerregisteret            | The NAV register of job seekers. Team PAW owns it.                                                                                                   |
 | Arbeidssøkerperiode               | A row in `arbeidssokerperiode`. It is this service's link between one vedtaksperiode and one period in Arbeidssøkerregisteret.                      |
-| Periode / registry period         | A period in Arbeidssøkerregisteret (Avro `Periode`). Its id is stored in `arbeidssokerperiode.arbeidssokerperiode_id`.                              |
+| Periode / registry period         | A period in Arbeidssøkerregisteret (Avro `Periode`). Its id is stored in `arbeidssokerperiode.arbeidssokerperiode_id`. `tasks/migrate-database-column.md` renames the column. |
 | Friskmeldt til arbeidsformidling (FTA) | A sykepenger scheme for people who are fit for work and look for a job. Søknad type `FRISKMELDT_TIL_ARBEIDSFORMIDLING`.                        |
 | Vedtaksperiode                    | The FTA decision period. Fields `friskTilArbeidVedtakId` and `friskTilArbeidVedtakPeriode` on the søknad.                                           |
 | Søknad (sykepengesøknad)          | A `SykepengesoknadDTO` on `flex.sykepengesoknad`.                                                                                                    |
@@ -407,48 +442,4 @@ No flow updates a `periodebekreftelse` row after insert. Flow G deletes rows.
 
 ## 8. Open questions
 
-1. **Unbounded retries block a whole partition in production.** Any exception in Flows A–E retries forever. One person
-   who is not in Arbeidssøkerregisteret (`ArbeidssokerperiodeException`) stops all later records in that partition of
-   `flex.sykepengesoknad`. Is this intended? There is no dead-letter topic.
-2. **Dev and production handle errors differently.** Dev skips failing records. Production blocks. Dev data can
-   therefore differ from production behavior.
-3. **JSON parse errors retry forever in all clusters.** `tilSykepengesoknadDTO()` runs outside the `try` block in
-   `SykepengesoknadListener`.
-4. **Avro deserialization errors have no defined handling.** No `ErrorHandlingDeserializer` is configured for
-   `paw.arbeidssokerperioder-v1`.
-5. **Kafka send before database commit.** If the commit fails after a successful send, the retry sends the message
-   again. Bekreftelse gets a new random UUID each time, so the receiver cannot detect the duplicate.
-6. **`StartStoppMelding` can be lost.** `ArbeidssokerperiodeStartStoppProducer` does not call `.get()` and has no
-   callback. The other producers wait for the ack. Is this intended?
-7. **Flow F `oppdater-arbeidssokerperiode-id` is not atomic.** It saves first and sends after, without a transaction.
-   An id that is not a UUID is saved, and then `UUID.fromString` throws in the producer. The database keeps the
-   invalid id.
-8. **Flow F `oppdater-arbeidssokerperiode-id` does not update `sendt_paavegneav`.** It also does not clear
-   `avsluttet_mottatt` or `avsluttet_tidspunkt`, as Flow D does.
-9. **Flow F `oppdater-tom` sends no new PaaVegneAv `Start`.** The grace period in Arbeidssøkerregisteret then uses the
-   old `tom`. The change also moves which søknad is avsluttende in Flow B.
-10. **Lost updates are possible.** `Arbeidssokerperiode` has no `@Version`. Flows D and E (6 threads), Flows B and C
-    (1 thread) and Flow F can update the same row at the same time. Each `save` writes all columns from its own copy.
-11. **Flow C stops all rows for the person.** It ignores the vedtaksperiode id of the søknad. It also ignores
-    `ignorerArbeidssokerregister`. The filter `avsluttet_aarsak != UTGAATT` adds nothing, because `sendt_avsluttet` is
-    always set together with `avsluttet_aarsak`.
-12. **Flow B does not check `sendt_avsluttet` or `avsluttet_mottatt`.** After a `Stopp` (Flow B or C), a later SENDT
-    søknad can send a second `Stopp` or a Bekreftelse. A Bekreftelse can also go to a registry period that has ended.
-13. **`fortsattArbeidssoker == null` becomes `true`.** A non-avsluttende søknad without an answer gets only a warning.
-    `sendBekreftelseMelding` always sends `fortsattArbeidssoker = true`.
-14. **Race between topics.** Flow A checks the registry period, and then commits later. A Flow E record for that period
-    can run between the check and the commit. Flow E then finds no row, and the end is lost.
-15. **SENDT before FREMTIDIG.** If Flow B runs before Flow A for the same vedtaksperiode, it throws
-    `PeriodebekreftelseException`. In production this retries forever.
-16. **Two meanings of `arbeidssokerperiode_id`.** In `arbeidssokerperiode` it is the registry period id. In
-    `periodebekreftelse` it is a foreign key to `arbeidssokerperiode.id`.
-17. **Migration `v21__slett_bigquery_datastream_grants.sql` never runs.** The file name starts with a lowercase `v`.
-    Flyway 12.4.0 matches the `V` prefix with case-sensitive `startsWith`. The app user can still have `REPLICATION`.
-18. **`periodebekreftelse.avsluttende_soknad` is nullable in the database.** The entity field is a non-null `Boolean`
-    with default `false`. Rows from before V11 have `NULL`. It is unclear how Spring Data JDBC reads these rows.
-19. **`soknad.tom` is not null-checked in Flow B.** `isEqual(soknad.tom)` throws if `tom` is null.
-20. **`KafkaKeyGeneratorClient` returns a nullable body.** `hentKafkaRecordKey` uses `!!`, so an empty body gives a
-    `NullPointerException`.
-21. **`@EnableScheduling` is set, but no `@Scheduled` method exists.**
-22. **Flow D only looks at the latest row by `vedtaksperiode_tom`.** An older row that can be restarted is never
-    restarted.
+No open questions.
