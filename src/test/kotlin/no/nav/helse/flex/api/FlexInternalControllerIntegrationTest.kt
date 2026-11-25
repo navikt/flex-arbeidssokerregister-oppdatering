@@ -65,7 +65,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
         objectMapper.readValue<FlexInternalResponse>(hentArbeidssokerperioder()).also { flexInternalResponse ->
             flexInternalResponse.arbeidssokerperioder.single().also { arbeidssokerperiodeResponse ->
                 arbeidssokerperiodeResponse.vedtaksperiodeId shouldBe vedtaksperiodeId
-                arbeidssokerperiodeResponse.periodebekreftelser!!.forEach {
+                arbeidssokerperiodeResponse.periodebekreftelser.forEach {
                     it.arbeidssokerperiodeId shouldBe lagretArbeidssokerperiode.id!!
                 }
             }
@@ -87,7 +87,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
         objectMapper.readValue<FlexInternalResponse>(hentArbeidssokerperioder()).also { flexInternalResponse ->
             flexInternalResponse.arbeidssokerperioder.single().also {
                 it.vedtaksperiodeId shouldBe vedtaksperiodeId
-                it.periodebekreftelser!!.size shouldBe 0
+                it.periodebekreftelser.size shouldBe 0
             }
         }
     }
@@ -150,7 +150,7 @@ class FlexInternalControllerIntegrationTest : FellesTestOppsett() {
             it.avsluttetTidspunkt shouldBe avsluttetTidspunkt
             it.sendtAvsluttet shouldBe sendtAvsluttet
             it.avsluttetAarsak shouldBe AvsluttetAarsak.AVSLUTTET_PERIODE
-            it.periodebekreftelser!!.single() shouldBe periodebekreftelseResponse
+            it.periodebekreftelser.single() shouldBe periodebekreftelseResponse
         }
     }
 

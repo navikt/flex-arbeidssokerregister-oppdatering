@@ -173,7 +173,7 @@ data class ArbeidssokerperiodeResponse(
     val avsluttetTidspunkt: Instant? = null,
     val sendtAvsluttet: Instant? = null,
     val avsluttetAarsak: AvsluttetAarsak? = null,
-    val periodebekreftelser: List<PeriodebekreftelseResponse>? = emptyList(),
+    val periodebekreftelser: List<PeriodebekreftelseResponse> = emptyList(),
 )
 
 fun Periodebekreftelse.tilPeriodebekreftelseResponse(): PeriodebekreftelseResponse =
