@@ -13,7 +13,7 @@ import java.time.Instant
 @Component
 class ArbeidssokerregisterClient(
     @param:Qualifier("arbeidssokerregisterRestClient")
-    val restClient: RestClient,
+    private val restClient: RestClient,
 ) {
     fun hentSisteArbeidssokerperiode(request: ArbeidssokerperiodeRequest): List<ArbeidssokerperiodeResponse> =
         restClient

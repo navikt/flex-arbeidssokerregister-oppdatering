@@ -25,7 +25,7 @@ private const val UTFOERT_AV = "flex-arbeidssokerregister-oppdatering"
 @Component
 class ArbeidssokerperiodeBekreftelseProducer(
     @param:Qualifier("avroKafkaProducer")
-    val kafkaProducer: Producer<Long, Bekreftelse>,
+    private val kafkaProducer: Producer<Long, Bekreftelse>,
 ) {
     private val log = logger()
 

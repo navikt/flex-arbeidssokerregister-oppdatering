@@ -17,7 +17,7 @@ class KafkaErrorHandler :
         },
     ) {
     // Bruker aliased logger for unngå kollisjon med CommonErrorHandler.logger(): LogAccessor.
-    val log = slf4jLogger()
+    private val log = slf4jLogger()
 
     override fun handleRemaining(
         thrownException: Exception,
