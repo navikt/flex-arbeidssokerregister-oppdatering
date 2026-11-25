@@ -5,8 +5,8 @@
 Tests in `src/test` were written before `.github/instructions/tests.instructions.md`.
 Some tests start the full Spring context through `FellesTestOppsett`, but test one class and not a flow.
 These tests are neither unit tests nor integration tests, and none of them mock beans.
-`TestdataResetListenerTest`, `VedtaksperiodeIntegrationTest` and `PeriodebekreftelseIntegrationTest` use `@Order`.
-In `TestdataResetListenerTest`, later tests use data that earlier tests save.
+`TestdataResetListenerTest`, `VedtaksperiodeIntegrationTest` and `PeriodebekreftelseIntegrationTest` uses `@Order`.
+In `TestdataResetListenerTest`, later tests uses data that earlier tests saved.
 
 ## Goal
 
@@ -25,6 +25,8 @@ In `TestdataResetListenerTest`, later tests use data that earlier tests save.
 - In scope: `@Order` in `TestdataResetListenerTest`, `VedtaksperiodeIntegrationTest` and
   `PeriodebekreftelseIntegrationTest`.
 - Out of scope: changes to the 5 tests in the investigation. A new task must do the changes after the decision.
+- Out of scope: the two date-conversion tests in `PeriodebekreftelseIntegrationTest`.
+  [Isolate date-conversion tests](isolate-date-conversion-tests.md) covers moving them to unit tests.
 - Out of scope: code in `src/main`. The task file `fix-kotlin-rule-deviations.md` covers it.
 - Out of scope: changes to `FellesTestOppsett` and `TestKafkaConfig`, unless a test needs a missing bean or helper.
 
@@ -55,23 +57,37 @@ Make each test with `@Order` independent, so that it saves its own data and does
 ## Notes
 
 - Integration tests need a running Docker daemon.
-- `.github/instructions/tests.instructions.md` forbids `@Order` in new tests only. This task removes it from the
-  existing tests too.
-- All integration tests share one database. Delete rows with `slettFraDatabase()` in `@BeforeEach` or `@AfterEach`.
-- Remove the `@TestMethodOrder` annotation and the unused imports when a class no longer uses `@Order`.
+- All integration tests share one database. Delete rows with `slettFraDatabase()` before or after each test.
+
+The investigations selected these decisions:
+
+| Test | Decision |
+|------|----------|
+| `ArbeidssokerperiodeBekreftelseProducerTest` | Delete; integration flows cover its assertions and serialization. |
+| `ArbeidssokerperiodePaaVegneAvProducerTest` | Delete; integration flows cover Start and Stopp. |
+| `ArbeidssokerperiodeStartStoppProducerTest` | Delete; integration flows cover both operations and all current assertions. |
+| `KafkaKeyGeneratorClientTest` | Use a hand-written transport fake; keep request, response and HTTP error checks. |
+| `ArbeidssokerregisterClientTest` | Use a hand-written transport fake; keep request and literal-JSON parsing checks. |
+
+These changes remain pending in [Simplify producer and client tests](simplify-producer-and-client-tests.md).
+That task also moves the clients' OAuth header checks to `VedtaksperiodeIntegrationTest`.
+The old client tests can leave HTTP requests in shared server queues.
+The same task removes that shared setup.
+
+The two date-conversion tests in `PeriodebekreftelseIntegrationTest` still use the full Spring context.
+[Isolate date-conversion tests](isolate-date-conversion-tests.md) covers moving them to a plain unit test class
+while preserving their summer-time and winter-time checks.
 
 ## Progress
 
-Replace ⬜ with ✅ when a step is done.
-
-| Step | Task                                                     | Status |
-|------|----------------------------------------------------------|--------|
-| 1    | Delete `ApplicationContextTest`                          | ✅      |
-| 2    | Investigate the producer tests                           | ⬜      |
-| 3    | Investigate the client tests                             | ⬜      |
-| 4    | Write the decisions and a new task                       | ⬜      |
-| 5    | Remove `@Order` from `TestdataResetListenerTest`         | ⬜      |
-| 6    | Remove `@Order` from `VedtaksperiodeIntegrationTest`     | ⬜      |
-| 7    | Remove `@Order` from `PeriodebekreftelseIntegrationTest` | ⬜      |
-| 8    | Verify: each changed class passes alone                  | ⬜      |
-| 9    | Verify: all tests pass                                   | ⬜      |
+| Step | Task | Status |
+|------|------|--------|
+| 1 | Delete `ApplicationContextTest` | ✅ |
+| 2 | Investigate the producer tests | ✅ |
+| 3 | Investigate the client tests | ✅ |
+| 4 | Write the decisions and a new task | ✅ |
+| 5 | Remove `@Order` from `TestdataResetListenerTest` | ✅ |
+| 6 | Remove `@Order` from `VedtaksperiodeIntegrationTest` | ✅ |
+| 7 | Remove `@Order` from `PeriodebekreftelseIntegrationTest` | ✅ |
+| 8 | Verify: each changed class passes alone | ✅ |
+| 9 | Verify: all tests pass | ✅ |

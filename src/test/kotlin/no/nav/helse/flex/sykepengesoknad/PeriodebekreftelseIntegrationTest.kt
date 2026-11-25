@@ -15,17 +15,13 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.paw.bekreftelse.paavegneav.v1.vo.Stopp
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
 import java.time.LocalDate
 import java.util.*
 import kotlin.jvm.optionals.toList
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     @AfterEach
     fun verifiserAtTopicErTomt() {
@@ -41,7 +37,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     private val periodeFomTom: Periode = Periode(fom = LocalDate.of(2025, 1, 1), tom = LocalDate.of(2025, 1, 31))
 
     @Test
-    @Order(1)
     fun `Søknad med med ignorerArbeidssokerregister satt blir ikke behandlet`() {
         val fortsattArbeidssoker = true
         val inntektUnderveis = false
@@ -53,7 +48,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(2)
     fun `Søknad hvor bruker vil fortsett å være arbeidssøker`() {
         val lagretPeriode = lagreArbeidssokerperiode()
 
@@ -73,7 +67,6 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
     }
 
     @Test
-    @Order(2)
     fun `Søknad hvor bruker ikke vil fortsett å være arbeidssøker`() {
         val lagretPeriode = lagreArbeidssokerperiode()
 

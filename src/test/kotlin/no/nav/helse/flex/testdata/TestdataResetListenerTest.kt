@@ -1,87 +1,60 @@
 package no.nav.helse.flex.testdata
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.FNR
 import no.nav.helse.flex.FellesTestOppsett
 import no.nav.helse.flex.arbeidssokerperiode.Arbeidssokerperiode
 import no.nav.helse.flex.sykepengesoknad.Periodebekreftelse
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
+import org.awaitility.Awaitility
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.util.*
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class TestdataResetListenerTest : FellesTestOppsett() {
     private val vedtaksperiodeFom = LocalDate.now().minusMonths(1)
     private val vedtaksperiodeTom = LocalDate.now().plusMonths(2)
 
+    @BeforeEach
+    @AfterEach
+    fun setUp() {
+        slettFraDatabase()
+    }
+
     @Test
-    @Order(1)
     fun `Lagrer arbeidssøkerperioder for to brukere`() {
-        arbeidssokerperiodeRepository.save(
-            Arbeidssokerperiode(
-                fnr = FNR,
-                vedtaksperiodeId = UUID.randomUUID().toString(),
-                vedtaksperiodeFom = vedtaksperiodeFom,
-                vedtaksperiodeTom = vedtaksperiodeTom,
-                opprettet = Instant.now(),
-            ),
-        )
+        lagreArbeidssokerperiode(FNR)
+        lagreArbeidssokerperiode("22222222222")
 
-        arbeidssokerperiodeRepository.save(
-            Arbeidssokerperiode(
-                fnr = "22222222222",
-                vedtaksperiodeId = UUID.randomUUID().toString(),
-                vedtaksperiodeFom = vedtaksperiodeFom,
-                vedtaksperiodeTom = vedtaksperiodeTom,
-                opprettet = Instant.now(),
-            ),
-        )
-
-        arbeidssokerperiodeRepository.findAll().toList().also {
-            it.size shouldBe 2
-        }
+        arbeidssokerperiodeRepository.findAll().toList() shouldHaveSize 2
     }
 
     @Test
-    @Order(2)
     fun `Lagrer periodebekreftelser tilhørende en arbeidsøkerperiode`() {
-        repeat(2) {
-            periodebekreftelseRepository.save(
-                Periodebekreftelse(
-                    arbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr(FNR).single().id!!,
-                    sykepengesoknadId = UUID.randomUUID().toString(),
-                    fortsattArbeidssoker = true,
-                    inntektUnderveis = false,
-                    opprettet = Instant.now(),
-                ),
-            )
-        }
+        val arbeidssokerperiode = lagreArbeidssokerperiode(FNR)
+        val annenArbeidssokerperiode = lagreArbeidssokerperiode("22222222222")
 
-        periodebekreftelseRepository.save(
-            Periodebekreftelse(
-                arbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr("22222222222").single().id!!,
-                sykepengesoknadId = UUID.randomUUID().toString(),
-                fortsattArbeidssoker = true,
-                inntektUnderveis = false,
-                opprettet = Instant.now(),
-            ),
-        )
+        lagrePeriodebekreftelser(arbeidssokerperiode, 2)
+        lagrePeriodebekreftelser(annenArbeidssokerperiode, 1)
 
-        periodebekreftelseRepository.findAll().toList().also {
-            it.size shouldBe 3
-        }
+        periodebekreftelseRepository.findAll().toList() shouldHaveSize 3
     }
 
     @Test
-    @Order(3)
     fun `Sletter data for èn bruker ved mottatt melding om testdata reset`() {
+        val arbeidssokerperiode = lagreArbeidssokerperiode(FNR)
+        val ikkeSlettetArbeidssokerperiode = lagreArbeidssokerperiode("22222222222")
+
+        lagrePeriodebekreftelser(arbeidssokerperiode, 2)
+        lagrePeriodebekreftelser(ikkeSlettetArbeidssokerperiode, 1)
+
         val key = UUID.randomUUID().toString()
-        val ikkeSlettetArbeidssokerperiodeId = arbeidssokerperiodeRepository.findByFnr("22222222222").single().id
 
         kafkaProducer.send(ProducerRecord(TESTDATA_RESET_TOPIC, key, FNR)).get()
 
@@ -90,12 +63,44 @@ class TestdataResetListenerTest : FellesTestOppsett() {
             it.value() shouldBe FNR
         }
 
-        periodebekreftelseRepository.findAll().toList().single().also {
-            it.arbeidssokerperiodeId shouldBe ikkeSlettetArbeidssokerperiodeId
-        }
+        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
+            val periodebekreftelser = periodebekreftelseRepository.findAll().toList()
+            periodebekreftelser shouldHaveSize 1
+            periodebekreftelser.single().arbeidssokerperiodeId shouldBe ikkeSlettetArbeidssokerperiode.id
 
-        arbeidssokerperiodeRepository.findAll().toList().single().also {
-            it.fnr shouldBe "22222222222"
+            val arbeidssokerperioder = arbeidssokerperiodeRepository.findAll().toList()
+            arbeidssokerperioder shouldHaveSize 1
+            arbeidssokerperioder.single().id shouldBe ikkeSlettetArbeidssokerperiode.id
+            arbeidssokerperioder.single().fnr shouldBe ikkeSlettetArbeidssokerperiode.fnr
+        }
+    }
+
+    private fun lagreArbeidssokerperiode(fnr: String): Arbeidssokerperiode =
+        arbeidssokerperiodeRepository.save(
+            Arbeidssokerperiode(
+                fnr = fnr,
+                vedtaksperiodeId = UUID.randomUUID().toString(),
+                vedtaksperiodeFom = vedtaksperiodeFom,
+                vedtaksperiodeTom = vedtaksperiodeTom,
+                opprettet = Instant.now(),
+            ),
+        )
+
+    private fun lagrePeriodebekreftelser(
+        arbeidssokerperiode: Arbeidssokerperiode,
+        antall: Int,
+    ) {
+        val arbeidssokerperiodeId = arbeidssokerperiode.id.shouldNotBeNull()
+        repeat(antall) {
+            periodebekreftelseRepository.save(
+                Periodebekreftelse(
+                    arbeidssokerperiodeId = arbeidssokerperiodeId,
+                    sykepengesoknadId = UUID.randomUUID().toString(),
+                    fortsattArbeidssoker = true,
+                    inntektUnderveis = false,
+                    opprettet = Instant.now(),
+                ),
+            )
         }
     }
 }
