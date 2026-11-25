@@ -32,7 +32,8 @@ package holds listeners, producers and clients.
 - `src/main/resources/`: application configuration and Flyway migrations in `db/migration/`.
 - `buildSrc/`: the `avro-codegen` plugin. It generates Java classes from external Avro schemas into `build/`.
 - `nais/`: deployment configuration and Kafka topic definitions.
-- `documentation/`: architecture and writing style. `tasks/`: task plans.
+- `documentation/`: knowledge about the project, its architecture and language related instructions. 
+- `tasks/`: task plans and issues related to the project.
 
 ## Commands
 
