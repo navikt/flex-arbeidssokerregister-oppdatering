@@ -66,33 +66,30 @@ class ArbeidssokerperiodeBekreftelseProducer(
         )
     }
 
-    private fun lagBekreftelse(periodeBekreftelse: BekreftelseMelding): Bekreftelse {
-        val bruker =
-            Bruker().also {
-                it.type = BrukerType.SLUTTBRUKER
-                it.id = periodeBekreftelse.fnr
-            }
-        val metadata =
-            Metadata(Instant.now(), bruker, UTFOERT_AV, AARSAK)
-
-        val bekreftelse =
-            Bekreftelse(
-                UUID.fromString(periodeBekreftelse.arbeidssokerregisterPeriodeId),
-                Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
-                UUID.randomUUID(),
-                Svar(
-                    metadata,
-                    periodeBekreftelse.periodeStart,
-                    periodeBekreftelse.periodeSlutt,
-                    // "inntektUnderveis" og "fortsattArbeidssoker" er null hvis det er siste søknad i en periode. Da
-                    // sendes det ikke Periodebekreftelse. Feltene kan ikke være null i Avro-klassen Periode.svar,
-                    // men kan settes til false,
-                    periodeBekreftelse.inntektUnderveis == true,
-                    periodeBekreftelse.fortsattArbeidssoker == true,
+    private fun lagBekreftelse(periodeBekreftelse: BekreftelseMelding): Bekreftelse =
+        Bekreftelse(
+            UUID.fromString(periodeBekreftelse.arbeidssokerregisterPeriodeId),
+            Bekreftelsesloesning.FRISKMELDT_TIL_ARBEIDSFORMIDLING,
+            UUID.randomUUID(),
+            Svar(
+                Metadata(
+                    Instant.now(),
+                    Bruker().also {
+                        it.type = BrukerType.SLUTTBRUKER
+                        it.id = periodeBekreftelse.fnr
+                    },
+                    UTFOERT_AV,
+                    AARSAK,
                 ),
-            )
-        return bekreftelse
-    }
+                periodeBekreftelse.periodeStart,
+                periodeBekreftelse.periodeSlutt,
+                // "inntektUnderveis" og "fortsattArbeidssoker" er null hvis det er siste søknad i en periode. Da
+                // sendes det ikke Periodebekreftelse. Feltene kan ikke være null i Avro-klassen Periode.svar,
+                // men kan settes til false,
+                periodeBekreftelse.inntektUnderveis == true,
+                periodeBekreftelse.fortsattArbeidssoker == true,
+            ),
+        )
 }
 
 data class BekreftelseMelding(

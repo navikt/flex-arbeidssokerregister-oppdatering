@@ -91,6 +91,6 @@ Replace ⬜ with ✅ when a step is done.
 | 10   | Use `if`-`else` in `KafkaErrorHandler`            | ✅      |
 | 11   | Move `try`-`catch` out of `also`                  | ✅      |
 | 12   | Make `periodebekreftelser` non-null               | ✅      |
-| 13   | Use an expression body in `lagBekreftelse`        | ⬜      |
+| 13   | Use an expression body in `lagBekreftelse`        | ✅      |
 | 14   | Verify: all tests pass                            | ⬜      |
 | 15   | Verify: no deviations remain                      | ⬜      |
