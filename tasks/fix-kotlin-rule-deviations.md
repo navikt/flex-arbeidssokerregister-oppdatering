@@ -82,7 +82,7 @@ Replace ⬜ with ✅ when a step is done.
 | 5    | Remove `!!` in `RestClientConfig`                 | ✅      |
 | 6    | Remove `!!` in `TestdataResetListener`            | ✅      |
 | 7    | Make dependencies `private`                       | ✅      |
-| 8    | Use `findByIdOrNull()`                            | ⬜      |
+| 8    | Use `findByIdOrNull()`                            | ✅      |
 | 9    | Remove the getter in `EnvironmentToggles`         | ⬜      |
 | 10   | Use `if`-`else` in `KafkaErrorHandler`            | ⬜      |
 | 11   | Move `try`-`catch` out of `also`                  | ⬜      |

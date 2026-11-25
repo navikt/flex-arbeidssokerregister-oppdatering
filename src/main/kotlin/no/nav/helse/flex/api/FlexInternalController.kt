@@ -12,6 +12,7 @@ import no.nav.helse.flex.sykepengesoknad.SOKNAD_DEAKTIVERES_ETTER_MAANEDER
 import no.nav.helse.flex.sykepengesoknad.SykepengesoknadService
 import no.nav.helse.flex.sykepengesoknad.beregnGraceMS
 import no.nav.security.token.support.core.api.ProtectedWithClaims
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -52,8 +53,7 @@ class FlexInternalController(
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository
-                .findById(request.id)
-                .orElse(null) ?: return ResponseEntity.notFound().build()
+                .findByIdOrNull(request.id) ?: return ResponseEntity.notFound().build()
 
         arbeidssokerperiode.copy(vedtaksperiodeTom = request.vedtaksperiodeTom).also {
             arbeidssokerperiodeRepository.save(it)
@@ -70,8 +70,7 @@ class FlexInternalController(
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository
-                .findById(request.id)
-                .orElse(null) ?: return ResponseEntity.notFound().build()
+                .findByIdOrNull(request.id) ?: return ResponseEntity.notFound().build()
 
         arbeidssokerperiode.copy(vedtaksperiodeFom = request.vedtaksperiodeFom).also {
             arbeidssokerperiodeRepository.save(it)
@@ -88,8 +87,7 @@ class FlexInternalController(
 
         val arbeidssokerperiode =
             arbeidssokerperiodeRepository
-                .findById(request.id)
-                .orElse(null) ?: return ResponseEntity.notFound().build()
+                .findByIdOrNull(request.id) ?: return ResponseEntity.notFound().build()
 
         val oppdatertArbeidssokerperiode =
             arbeidssokerperiode.copy(arbeidssokerperiodeId = request.arbeidssokerperiodeId.trim()).also {
