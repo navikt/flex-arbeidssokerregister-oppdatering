@@ -85,7 +85,7 @@ Replace ⬜ with ✅ when a step is done.
 | 8    | Use `findByIdOrNull()`                            | ✅      |
 | 9    | Remove the getter in `EnvironmentToggles`         | ✅      |
 | 10   | Use `if`-`else` in `KafkaErrorHandler`            | ✅      |
-| 11   | Move `try`-`catch` out of `also`                  | ⬜      |
+| 11   | Move `try`-`catch` out of `also`                  | ✅      |
 | 12   | Make `periodebekreftelser` non-null               | ⬜      |
 | 13   | Use an expression body in `lagBekreftelse`        | ⬜      |
 | 14   | Verify: all tests pass                            | ⬜      |

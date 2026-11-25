@@ -28,17 +28,16 @@ class SykepengesoknadListener(
         cr: ConsumerRecord<String, String>,
         acknowledgment: Acknowledgment,
     ) {
-        cr.value().tilSykepengesoknadDTO().also {
-            try {
-                sykepengesoknadService.behandleSoknad(it)
-            } catch (e: Exception) {
-                log.error(
-                    "Feil ved behandling av søknad: ${it.id} med vedtaksperiodeId: ${it.friskTilArbeidVedtakId}.",
-                    e,
-                )
-                if (environmentToggles.erProduksjon()) {
-                    throw e
-                }
+        val soknad = cr.value().tilSykepengesoknadDTO()
+        try {
+            sykepengesoknadService.behandleSoknad(soknad)
+        } catch (e: Exception) {
+            log.error(
+                "Feil ved behandling av søknad: ${soknad.id} med vedtaksperiodeId: ${soknad.friskTilArbeidVedtakId}.",
+                e,
+            )
+            if (environmentToggles.erProduksjon()) {
+                throw e
             }
         }
         acknowledgment.acknowledge()
