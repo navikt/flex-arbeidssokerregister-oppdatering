@@ -66,7 +66,7 @@ Replace ⬜ with ✅ when a step is done.
 
 | Step | Task                                                     | Status |
 |------|----------------------------------------------------------|--------|
-| 1    | Delete `ApplicationContextTest`                          | ⬜      |
+| 1    | Delete `ApplicationContextTest`                          | ✅      |
 | 2    | Investigate the producer tests                           | ⬜      |
 | 3    | Investigate the client tests                             | ⬜      |
 | 4    | Write the decisions and a new task                       | ⬜      |

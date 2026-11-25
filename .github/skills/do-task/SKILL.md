@@ -51,6 +51,9 @@ Do not guess. A wrong guess gives a wrong change.
 6. Ask the user to confirm the expected result after the deploy.
 7. If the step is an investigation step, write the result in the file that the step names.
    If the step names no file, write the result in the Notes of the task file.
+8. If asked to commit, create a new branch with the name `do-task-<task file name>`. Commit the change with a 
+   norwegian commit message and a body that contains the step number(s) and a summary of the step 
+   changes. 
 
 ## Verification
 
