@@ -25,7 +25,7 @@ repositories {
     }
 }
 
-val tokenSupportVersion = "6.0.12"
+val tokenSupportVersion = "7.1.0"
 val mockWebServerVersion = "5.5.1"
 val testContainersVersion = "2.0.5"
 val logstashLogbackEncoderVersion = "9.0"
