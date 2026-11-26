@@ -13,9 +13,15 @@ ktlint controls formatting. This file does not give formatting rules.
 - Use `val`. Use `var` only for local state that must change inside a function.
 - Use read-only types (`List`, `Map`, `Set`) in signatures and properties.
 - Use `copy()` to change a data class instance.
-- Do not use `!!`. Use a safe call, or `?:` with `return`, `throw` or a default value.
+- Use `requireNotNull` for invalid input or arguments. It throws `IllegalArgumentException`.
+- Use `checkNotNull` for broken internal state or invariants. It throws `IllegalStateException`.
+  Treat missing IDs on persisted entities as broken internal state, even when the entity is a function argument.
+- Give null checks a concise lazy message that names the missing value and includes relevant, non-sensitive IDs.
+- Use a domain exception for business or integration failures, such as a missing required upstream response.
+- Use a safe call, or `?:` with `return` or a default value, when null has a valid meaning.
+- Use `!!` only in tests or after a clear local guarantee when Kotlin cannot smart-cast the value.
+  Prefer a smart cast or a non-null local value when possible.
   Reason: `!!` throws a `NullPointerException` without context.
-- When a missing value stops the flow, throw a domain exception with the relevant IDs in the message.
 - Make a type nullable only when null has a meaning. Do not give a nullable type a non-null default.
 - Use `findByIdOrNull()` from Spring Data. Do not use `findById().orElse(null)`.
 

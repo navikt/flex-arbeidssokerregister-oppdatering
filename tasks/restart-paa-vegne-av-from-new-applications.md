@@ -57,7 +57,7 @@ Defer an application when registry ids differ, so that application processing ca
    The restart decision must follow the eligibility, registry-validation and ordering rules in Goal.
    Tracking must include active-period and terminal-stop no-ops, but must roll back on deferral, validation failure or send failure.
    A successful restart must mark responsibility active, update `sendtPaaVegneAv`, and clear the paired `BRUKER` stop fields.
-   The existing row id, vedtaksperiode, Kafka key and confirmation history must remain intact.
+   The existing row id, vedtaksperiode, Kafka-key and confirmation history must remain intact.
    First-time creation and its validations must remain unchanged.
 4. Add a restart-specific grace calculation beside `beregnGraceMS`.
    The deadline must equal `vedtaksperiodeTom.plusDays(1).plusMonths(4)` at the start of day in `Europe/Oslo`.

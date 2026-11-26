@@ -35,8 +35,9 @@ class RestClientConfig {
             .baseUrl(url)
             .requestInterceptor(
                 lagBearerTokenInterceptor(
-                    clientConfigurationProperties.registration["kafka-key-generator-client-credentials"]
-                        ?: throw IllegalStateException("Mangler OAuth2-registrering: kafka-key-generator-client-credentials."),
+                    checkNotNull(clientConfigurationProperties.registration["kafka-key-generator-client-credentials"]) {
+                        "Mangler OAuth2-registrering: kafka-key-generator-client-credentials."
+                    },
                     oAuth2AccessTokenService,
                 ),
             ).build()
@@ -52,8 +53,9 @@ class RestClientConfig {
             .baseUrl(url)
             .requestInterceptor(
                 lagBearerTokenInterceptor(
-                    clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]
-                        ?: throw IllegalStateException("Mangler OAuth2-registrering: arbeidssoekerregisteret-client-credentials."),
+                    checkNotNull(clientConfigurationProperties.registration["arbeidssoekerregisteret-client-credentials"]) {
+                        "Mangler OAuth2-registrering: arbeidssoekerregisteret-client-credentials."
+                    },
                     oAuth2AccessTokenService,
                 ),
             ).build()

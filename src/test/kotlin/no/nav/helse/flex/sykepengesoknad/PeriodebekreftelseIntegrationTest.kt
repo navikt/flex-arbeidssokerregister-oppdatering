@@ -118,11 +118,45 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         val soknad =
             lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(friskTilArbeidVedtakId = null)
 
-        assertThrows<Exception> {
-            sykepengesoknadService.behandleSoknad(soknad)
-        }
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                sykepengesoknadService.behandleSoknad(soknad)
+            }
+        exception.message shouldBe "Mangler vedtaksperiodeId for søknad: ${soknad.id}."
 
         periodebekreftelseRepository.findAll().toList().size shouldBe 0
+    }
+
+    @Test
+    fun `Søknad som mangler fom feiler uten å lagre eller sende bekreftelse`() {
+        lagreArbeidssokerperiode()
+        val soknad = lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(fom = null)
+
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                sykepengesoknadService.behandleSoknad(soknad)
+            }
+        exception.message shouldBe "Mangler fom for søknad: ${soknad.id}."
+
+        periodebekreftelseRepository.findAll().toList() shouldHaveSize 0
+        bekreftelseConsumer.waitForRecords(0)
+        paaVegneAvConsumer.waitForRecords(0)
+    }
+
+    @Test
+    fun `Søknad som mangler tom feiler uten å lagre eller sende bekreftelse`() {
+        lagreArbeidssokerperiode()
+        val soknad = lagSendtSoknad(fortsattArbeidssoker = true, inntektUnderveis = false).copy(tom = null)
+
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                sykepengesoknadService.behandleSoknad(soknad)
+            }
+        exception.message shouldBe "Mangler tom for søknad: ${soknad.id}."
+
+        periodebekreftelseRepository.findAll().toList() shouldHaveSize 0
+        bekreftelseConsumer.waitForRecords(0)
+        paaVegneAvConsumer.waitForRecords(0)
     }
 
     @Test

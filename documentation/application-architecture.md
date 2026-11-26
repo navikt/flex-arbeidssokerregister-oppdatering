@@ -328,7 +328,7 @@ deserialization accepts only classes in `no.nav.paw.arbeidssokerregisteret.api` 
 
 | Target                                        | Client                                                     | Call                                                         | Purpose                                                    |
 |-----------------------------------------------|------------------------------------------------------------|--------------------------------------------------------------|------------------------------------------------------------|
-| `paw-kafka-key-generator` (namespace `paw`)   | `KafkaKeyGeneratorClient` (`kafkaKeyGeneratorRestClient`)  | `POST /api/v1/record-key` with `{ident}`                     | Get the `Long` Kafka key for a person (Flow A).            |
+| `paw-kafka-key-generator` (namespace `paw`)   | `KafkaKeyGeneratorClient` (`kafkaKeyGeneratorRestClient`)  | `POST /api/v1/record-key` with `{ident}`                     | Get the `Long` Kafka-key for a person (Flow A).            |
 | `paw-arbeidssoekerregisteret-api-oppslag-v2` (namespace `paw`) | `ArbeidssokerregisterClient` (`arbeidssokerregisterRestClient`) | `POST /api/v1/veileder/arbeidssoekerperioder?siste=true` with `{identitetsnummer}` | Get the latest period in Arbeidssøkerregisteret (Flow A). |
 
 Both clients are Spring `RestClient` on Apache HttpClient 5 (`RestClientConfig`):
@@ -388,7 +388,7 @@ No flow updates a `periodebekreftelse` row after insert. Flow G deletes rows.
 3. Flow G deletes `periodebekreftelse` rows before the parent `arbeidssokerperiode` row. **(verified)** Code order and the foreign key.
 4. Only an FTA søknad with status FREMTIDIG and without `ignorerArbeidssokerregister` creates an `arbeidssokerperiode`. **(verified)** `behandleSoknad` and `behandleVedtaksperiode`.
 5. Flow A creates a row only if Arbeidssøkerregisteret returns exactly one period that is not ended. **(verified)** `singleOrNull` and the `avsluttet` check.
-6. Flow A gets the Kafka key before it calls Arbeidssøkerregisteret and before it writes. **(verified)** Code order in `behandleVedtaksperiode`.
+6. Flow A gets the Kafka-key before it calls Arbeidssøkerregisteret and before it writes. **(verified)** Code order in `behandleVedtaksperiode`.
 7. Every PaaVegneAv and Bekreftelse message uses `kafka_record_key` from `paw-kafka-key-generator` as key. **(verified)** The only source of `kafkaRecordKey` is Flow A.
 8. Every `StartStoppMelding` uses the name-based UUID of `fnr` as key. **(verified)** `asProducerRecordKey`.
 9. A PaaVegneAv or Bekreftelse send must succeed before the database transaction commits. **(verified)** `.get()` inside `@Transactional`.
@@ -435,7 +435,7 @@ No flow updates a `periodebekreftelse` row after insert. Flow G deletes rows.
 | StartStoppMelding                 | A JSON message to `sykepengesoknad-backend` that says a registry period started (`START`) or ended (`STOPP`).                                        |
 | Restart                           | Flow D. It moves an `arbeidssokerperiode` to a new registry period after the old one ended.                                                         |
 | `AvsluttetAarsak`                 | Why a PaaVegneAv `Stopp` was sent: `BRUKER`, `AVSLUTTET_PERIODE` or `UTGAATT`.                                                                       |
-| `kafka_record_key`                | The `Long` key from `paw-kafka-key-generator` for a person. PAW topics use it as the Kafka key.                                                     |
+| `kafka_record_key`                | The `Long` key from `paw-kafka-key-generator` for a person. PAW topics use it as the Kafka-key.                                                     |
 | graceMS                           | The grace period in the PaaVegneAv `Start`: milliseconds from `vedtaksperiode_tom + 1 day` to 4 months later (`beregnGraceMS`).                     |
 | PAW                               | The team that owns Arbeidssøkerregisteret and the `paw.*` topics.                                                                                    |
 | Flex                              | The team that owns this service and the `flex.*` topics.                                                                                             |
