@@ -65,7 +65,7 @@ class UtgattSoknadIntegrationTest : FellesTestOppsett() {
             it.avsluttetAarsak shouldBe AvsluttetAarsak.UTGAATT
         }
 
-        paaVegneAvConsumer.fetchRecords(Duration.ofSeconds(1)).also { records -> records.size shouldBe 1 }
+        paaVegneAvConsumer.fetchRecords(Duration.ofSeconds(1)).single()
     }
 
     @Test

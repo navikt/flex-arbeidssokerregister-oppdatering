@@ -29,6 +29,8 @@ ktlint controls formatting. This file does not give formatting rules.
 - Use expression bodies for functions that return one expression.
 - Use early `return` for guard clauses. Keep the main flow flat.
 - Use standard library collection functions (`filter`, `map`, `singleOrNull`) instead of loops that build collections.
+- Use `single()` or `singleOrNull()` to get the only element. Do not check the size and then use `first()` or an index.
+- Do not call `toList()` on an `Iterable` before `single()`, `map` or `filter`. These functions accept an `Iterable`.
 - Put mapping between types in extension functions, for example `Arbeidssokerperiode.tilPaaVegneAvStartMelding()`.
 
 ## Spring and Java habits

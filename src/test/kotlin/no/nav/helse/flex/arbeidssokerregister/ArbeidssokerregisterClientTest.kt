@@ -43,11 +43,7 @@ class ArbeidssokerregisterClientTest : FellesTestOppsett() {
                 .build()
         arbeidssokerperiodeMockWebServer.enqueue(mockResponse)
 
-        val response =
-            arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR))
-        response.size shouldBe 1
-
-        response.single().also {
+        arbeidssokerregisterClient.hentSisteArbeidssokerperiode(ArbeidssokerperiodeRequest(FNR)).single().also {
             it.periodeId shouldBe "04a78565-a5ae-43ee-8e44-42893060995a"
             it.startet.tidspunkt shouldBe Instant.parse("2025-01-01T00:00:00.000Z")
             it.startet.aarsak shouldBe "Test"

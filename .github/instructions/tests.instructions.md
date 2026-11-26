@@ -92,6 +92,17 @@ Every test must be a unit test or an integration test.
 - Name a unit test class `<Class>Test`. Name an integration test class `<Flow or class>IntegrationTest`.
 - Write test method names as Norwegian sentences in backticks that describe the expected behavior.
 - Assert with Kotest matchers, for example `shouldBe` and `shouldHaveSize`. Use `assertThrows` from JUnit for exceptions.
+- To assert on one expected element, use `single().also { }`. Do not assert `shouldHaveSize 1` and then read the element.
+  Reason: `single()` fails when the count is not 1, and the assertions stay in one block.
+
+  ```kotlin
+  myObject.findAll().single().also {
+      it.id shouldBe expectedId
+      it.value shouldBe expectedValue
+  }
+  ```
+
+- Use `shouldHaveSize` only when you expect zero or more than one element.
 - Compare timestamps with `should be within seconds of` from `FellesTestOppsett`.
 - Use `FNR`, `VEDTAKSPERIODE_ID` and `lagSoknad()` from `FellesTestOppsett` for test data.
 - Put other test data in private `lag...` and `lagre...` functions, and shared checks in private `verifiser...` functions.

@@ -145,7 +145,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
 
         sykepengesoknadService.behandleSoknad(soknad)
 
-        periodebekreftelseRepository.findAll().toList().single().also {
+        periodebekreftelseRepository.findAll().single().also {
             it.inntektUnderveis shouldBe null
         }
 
@@ -298,7 +298,7 @@ class PeriodebekreftelseIntegrationTest : FellesTestOppsett() {
         inntektUnderveis: Boolean? = null,
         avsluttendeSoknad: Boolean? = false,
     ) {
-        periodebekreftelseRepository.findAll().toList().single().also {
+        periodebekreftelseRepository.findAll().single().also {
             it.id shouldNotBe null
             it.arbeidssokerperiodeId shouldBe arbeidssokerperiode.id
             it.sykepengesoknadId shouldBe soknad.id

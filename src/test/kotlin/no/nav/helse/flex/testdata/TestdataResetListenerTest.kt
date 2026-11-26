@@ -64,14 +64,14 @@ class TestdataResetListenerTest : FellesTestOppsett() {
         }
 
         Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
-            val periodebekreftelser = periodebekreftelseRepository.findAll().toList()
-            periodebekreftelser shouldHaveSize 1
-            periodebekreftelser.single().arbeidssokerperiodeId shouldBe ikkeSlettetArbeidssokerperiode.id
+            periodebekreftelseRepository.findAll().single().also {
+                it.arbeidssokerperiodeId shouldBe ikkeSlettetArbeidssokerperiode.id
+            }
 
-            val arbeidssokerperioder = arbeidssokerperiodeRepository.findAll().toList()
-            arbeidssokerperioder shouldHaveSize 1
-            arbeidssokerperioder.single().id shouldBe ikkeSlettetArbeidssokerperiode.id
-            arbeidssokerperioder.single().fnr shouldBe ikkeSlettetArbeidssokerperiode.fnr
+            arbeidssokerperiodeRepository.findAll().single().also {
+                it.id shouldBe ikkeSlettetArbeidssokerperiode.id
+                it.fnr shouldBe ikkeSlettetArbeidssokerperiode.fnr
+            }
         }
     }
 
