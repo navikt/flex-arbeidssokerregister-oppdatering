@@ -65,7 +65,7 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
         sykepengesoknadService.behandleSoknad(soknad)
 
-        arbeidssokerperiodeRepository.findAll().toList().single().also {
+        arbeidssokerperiodeRepository.findAll().single().also {
             it.vedtaksperiodeId shouldBe VEDTAKSPERIODE_ID
             it.kafkaRecordKey shouldBe 1000L
             it.arbeidssokerperiodeId shouldBe arbeidssokerperiodeId
@@ -93,9 +93,8 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
         sykepengesoknadService.behandleSoknad(soknad)
 
-        arbeidssokerperiodeRepository.findAll().toList().also {
-            it shouldHaveSize 1
-            it.single().id shouldBe lagretPeriode.id
+        arbeidssokerperiodeRepository.findAll().single().also {
+            it.id shouldBe lagretPeriode.id
         }
     }
 
