@@ -89,7 +89,7 @@ Replace ⬜ with ✅ when a step is done.
 | Step | Task | Status |
 |------|------|--------|
 | 1 | Delete duplicate producer tests | ⬜ |
-| 2 | Convert Kafka key client tests | ⬜ |
+| 2 | Convert Kafka-key client tests | ⬜ |
 | 3 | Convert register client tests | ⬜ |
 | 4 | Check OAuth headers in application flow | ⬜ |
 | 5 | Verify affected classes alone | ⬜ |

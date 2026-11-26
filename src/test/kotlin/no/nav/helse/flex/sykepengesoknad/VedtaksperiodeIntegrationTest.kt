@@ -114,18 +114,23 @@ class VedtaksperiodeIntegrationTest : FellesTestOppsett() {
 
     @Test
     fun `Søknad som mangler vedtaksperiodeId feiler`() {
-        assertThrows<Exception> {
-            sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
-        }
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakId = null))
+            }
+        exception.message shouldBe "Mangler vedtaksperiodeId for søknad: ${soknad.id}."
 
         arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
 
     @Test
     fun `Søknad som mangler friskTilArbeidVedtakPeriode feiler`() {
-        assertThrows<Exception> {
-            sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
-        }
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                sykepengesoknadService.behandleSoknad(soknad.copy(friskTilArbeidVedtakPeriode = null))
+            }
+        exception.message shouldBe
+            "Mangler friskTilArbeidVedtakPeriode for søknad: ${soknad.id} med vedtaksperiode: ${soknad.friskTilArbeidVedtakId}."
 
         arbeidssokerperiodeRepository.findAll().toList().size shouldBe 0
     }
